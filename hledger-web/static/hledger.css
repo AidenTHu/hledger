@@ -244,6 +244,18 @@ ul {
     height: 3rem;
 }
 
+#search-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: white;
+    padding-bottom: 0.5rem;
+}
+
+#content-scroll {
+    overflow-y: auto;
+}
+
 #addmodal .btn-close {
     margin-left: 47rem;
 }
