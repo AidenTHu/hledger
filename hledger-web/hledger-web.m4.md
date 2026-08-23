@@ -172,16 +172,13 @@ file or any files it includes.
 
 Note, unlike any other hledger command, in this mode you (or any visitor)
 can alter or wipe the data files.
-
-Normally whenever a file is changed in this way, hledger-web saves a numbered backup
+Normally when hledger-web changes any data, it will save a numbered backup of the file
 (assuming file permissions allow it, the disk is not full, etc.)
 hledger-web is not aware of version control systems, currently; if you use one,
-you'll have to arrange to commit the changes yourself (eg with a cron job
-or a file watcher like entr).
+you'll have to arrange to commit the changes yourself.
 
-Changes which would leave the journal file(s) unparseable or non-valid
+Changes which would leave the journal file(s) unparseable or invalid
 (eg with failing balance assertions) are prevented.
-(Probably. This needs re-testing.)
 
 # RELOADING
 
@@ -191,8 +188,8 @@ when you reload the page or navigate to a new page.
 If a change makes a file unparseable,
 hledger-web will display an error message until the file has been fixed.
 
-(Note: if you are viewing files mounted from another machine, make
-sure that both machine clocks are roughly in step.)
+(If you are viewing files mounted from another machine, make sure that
+both machines have roughly the same idea of what time it is.)
 
 # JSON API
 
