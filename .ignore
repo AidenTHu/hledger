@@ -1,0 +1,9 @@
+# Extra search config for ripgrep and VS Code search (not read by git).
+# These take precedence over .gitignore, letting searches from the top level
+# find matches in the site repo's main docs (if site/ is checked out here),
+# while git continues to ignore site/ entirely.
+!/site/
+/site/*
+!/site/src/
+/site/src/*
+!/site/src/*.md

@@ -118,10 +118,7 @@ old
 /hledger-lib/test/doctests
 /examples/edk-hledger-ui-mobile.gif
 /examples/tty-ui-1.gif
-/site/*
-!/site/src/
-/site/src/*
-!/site/src/*.md
+/site/
 /finance
 /examples/demo/
 /doc/ghrelnotes.md
