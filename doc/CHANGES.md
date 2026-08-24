@@ -53,6 +53,10 @@ For package-specific changes, see the hledger package changelogs.
 
 [#2410]: https://github.com/simonmichael/hledger/issues/2410
 
+# 1.52.2 2026-08-24
+
+
+
 # 1.99.3 2026-06-24
 
 ## AI usage

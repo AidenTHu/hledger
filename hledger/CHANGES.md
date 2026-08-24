@@ -256,6 +256,10 @@ Scripts/addons
 [#2692]: https://github.com/simonmichael/hledger/issues/2692
 [#2693]: https://github.com/simonmichael/hledger/issues/2693
 
+# 1.52.2 2026-08-24
+
+
+
 # 1.99.3 2026-06-24
 
 ## Breaking changes
