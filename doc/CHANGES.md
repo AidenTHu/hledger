@@ -20,6 +20,39 @@ General changes in the hledger project.
 For package-specific changes, see the hledger package changelogs.
 
 
+# eb17f5c1
+
+## Docs
+
+- ai.journal: switch to simpler t/kt/Mt output-token units; import June/July usage; other edits
+- AI: various edits and clarifications (extra usage notes, policy reference links)
+- ANNOUNCE: edits
+- CREDITS, .mailmap: various edits (headings, alignment, stats table; consolidated Alex Chen's commits; tidied committer names)
+- DECISIONS: updates
+- FUNDING: updated links
+- ghrelnotes: note the updated Windows binary; fix the eget command
+- hledger.conf.sample: edits
+- PULLREQUESTS, pull request template: many edits; link to the AI policy; first-time contributors' PRs may no longer use AI tools
+- REGRESSIONS: discontinue the regression bounties; other edits
+- relnotes/changelog: AI usage section edits; fix a link
+- RELEASING: edit
+- RULES: new doc gathering repo policies, old and new, in one place
+- SPEC-holdings: record decisions (future-dated postings stay included by default; XIRR's final cashflow is the displayed Value at the report date)
+- SPEC-lots: add a roadmap section for future work (per-account lot-tracking opt-out, tax boundary declarations, AVERAGE vs transfers, non-local-method coherence checks)
+
+## Tools/infrastructure
+
+- .gitignore, .ignore: stop tracking site/ under git entirely, but keep site/src/*.md visible to ripgrep/VS Code search via a new .ignore file
+- CI: binaries-mac-arm64-hx, an experimental workflow using the hx build tool (an alternative to stack/cabal, for easier reproducible builds); cache the official cabal binary; build with -O1
+- CI: bump most third-party actions to their latest major version; binaries-mac-arm64 bumped to macos-26-arm64; binaries-mac-x64 lists dependency versions like the others
+- Justfile: various `just ai-*` AI-usage-reporting recipe tweaks; `just holdings-*` recipes for trying the holdings command against hledger/beancount/rledger example data; `just installrel`, `just contribs*` fixes; gitignore .hx; experimental hx build tool config
+- stack/cabal: ensure haskeline 0.8.4.1 is used, fixing the Windows build again [#2410]
+- tools/aicommits: new script (plus `just ai-commits*` recipes) to report AI usage parsed from commit messages' "AI usage:" trailers
+- tools/skills: add a credits skill documenting the CREDITS.md refresh process
+
+
+[#2410]: https://github.com/simonmichael/hledger/issues/2410
+
 # 1.99.3 2026-06-24
 
 ## AI usage

@@ -17,6 +17,28 @@ API/developer-ish changes in hledger-lib.
 For user-visible changes, see the hledger package changelog.
 
 
+# eb17f5c1
+
+Breaking changes
+
+- `Journal`'s derived JSON instance no longer includes its transient
+  `jparse*` parser-state fields (`jincludefilestack` is renamed to
+  `jparseincludefilestack`, for consistency with the others, and then
+  dropped along with them). This affects only hledger-lib users who
+  serialise a `Journal` themselves; hledger and hledger-web don't expose
+  Journal JSON.
+
+Fixes
+
+- `divideAmount`/`divideMixedAmount` no longer raise an error when
+  dividing by zero; they now return the amount unchanged.
+
+Improvements
+
+- `Hledger.Data.Errors.decorateExcerpt` is now exported, and there's a
+  new `wordsmay`, a total variant of `words'`.
+
+
 # 1.99.3 2026-06-24
 
 Breaking changes
