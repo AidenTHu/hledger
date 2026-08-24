@@ -1,6 +1,6 @@
 # AI policy
 
-Last updated: 2026-08-05
+Last updated: 2026-08-24
 
 The productivity benefits from AI-assisted software development are becoming obvious.
 And the disruptions, costs and risks of AI will keep becoming clearer.
@@ -48,7 +48,9 @@ Here are our current policies for AI use in hledger.
 1. hledger does not use AI at runtime.
 
 2. hledger 1.x (2007..2025) was developed without AI assistance.
-   New commits intended for the legacy hledger1 branch may not use AI.
+   New commits intended for the legacy hledger1 branch may not use AI,
+   except rarely, at maintainer's discretion, for security-related fixes
+   (disclosure is still required).
 
 3. hledger 2.x (2026..) is developed with careful AI assistance,
    in ways that increase quality and human maintainability.
