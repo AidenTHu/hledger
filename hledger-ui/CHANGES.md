@@ -25,16 +25,14 @@ See also the hledger changelog.
 
 # f0229d4b
 
-
-
 Fixes
 
-- list and tree mode no longer get out of sync in whether parent accounts
+- List and tree mode no longer get out of sync in whether parent accounts
   are elided; switching modes (eg with the T key) now sets this from the
   target mode directly, instead of toggling it (#2429; see hledger
-  changelog for the underlying --no-elide balance report changes)
+  changelog for the underlying --no-elide balance report changes).
 
-- recenter (C-l) now behaves consistently near the end of a list [#2593]
+- Recenter (C-l) now behaves consistently near the end of a list [#2593].
   The near-end scroll cap was computed from the full terminal height
   rather than the list viewport's actual (smaller) height, so recentering
   a selection a few items above the last one could scroll those last
@@ -42,15 +40,15 @@ Fixes
   last item, which does nothing.
   (Juan Wajnerman)
 
-- pressing DOWN at the last list item no longer scrolls past it into
-  blank padding space, hiding real items off the top of the screen [#2278]
+- Pressing DOWN at the last list item no longer scrolls past it into
+  blank padding space, hiding real items off the top of the screen [#2278].
   (Juan Wajnerman)
 
-- when the selection is near the end of a list, as many items as possible
-  are now shown, with no blank padding visible below the last real item
+- When the selection is near the end of a list, as many items as possible
+  are now shown, with no blank padding visible below the last real item.
   (Juan Wajnerman)
 
-- fixed a memory leak (and CPU/GC thrashing) when reloading with --watch [#1825]
+- Fixed a memory leak (and CPU/GC thrashing) when reloading with --watch [#1825].
   Reload rebuilt each screen, but the new selection index was computed
   lazily from the previous generation's screen state, so each reload
   pinned another link in a growing chain and memory grew without bound.
@@ -60,7 +58,7 @@ Fixes
 
 Features
 
-- add L key to toggle lot detail display
+- Add L key to toggle lot detail display.
   L toggles showing lot subaccounts and per-lot detail (like the CLI
   --lots flag), on the accounts, register and transaction screens. The
   journal is always loaded with full lot detail retained and collapsed
@@ -70,49 +68,18 @@ Features
 
 Improvements
 
-- help: add some more pages; -w, --webman view manuals on hledger.org
-  Add --webman, in the shared help flags (so it spans hledger, hledger-ui
-  and hledger-web like --man/--info), and a -w flag on the help command,
-  which open the online manual on hledger.org. The URL selects the matching
-  manual version - major.minor for a release build, or "dev" for a newer
-  build - and, for hledger, scrolls to the current command's section.
-
-  Also add the help subtopics install/docs/support/home, which open the
-  corresponding hledger.org page in a browser; and make bare "hledger help"
-  show the quickref card, like plain "hledger".
-
-- help: add -? for the quickref card, show it by default
-  Add a -? flag, in the shared help flags, that shows the quick reference
-  card. It works in hledger, hledger-ui and hledger-web, since much of the
-  card applies across the tools. (Quote it as '-?' to avoid shell globbing.)
-
-  Also make the card hledger's default output when no command is given,
-  replacing the commands list (still shown by the commands command).
-
-- help: rename the --tldr flag to --examples
-  Rename the --tldr command-examples help flag to --examples across hledger,
-  hledger-ui and hledger-web, for clarity - people in need of tldr may not
-  know the acronym.
-
-  We'll also stop syncing with and using content from the official
-  tldr-pages repo, since it adds friction and maintenance cost and
-  restricts our content quite a lot (commands only, style rules..), and
-  built-in docs are more robust than a separate tool to install and
-  update. We keep using tldr's basic format and, for now, an external
-  tldr executable for rendering, since it does a better job.
-
-  Also simplify the manual's intro help pointers to just `hledger help`.
-
-- error screen reloading is less flickery and more robust
+- Error screen reloading is less flickery and more robust.
   Every screen now regenerates from its own stored parameters, replacing
   a fragile workaround that special-cased reloading from an error screen
   below a transaction screen (popping twice and replaying synthetic
   keystrokes).
 
-- the transaction screen now refreshes in place on reload [#1825]
+- The transaction screen now refreshes in place on reload [#1825].
   Previously the transaction screen did not update on reload; to see
   edits you had to exit and re-enter it. It now rebuilds its transaction
   list from the reloaded journal and reselects the same transaction.
+
+- Add the -? and --webman flags; --tldr was renamed to --examples (see hledger changelog).
 
 [#1825]: https://github.com/simonmichael/hledger/issues/1825
 [#2278]: https://github.com/simonmichael/hledger/issues/2278

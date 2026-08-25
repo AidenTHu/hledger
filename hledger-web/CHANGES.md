@@ -27,7 +27,7 @@ See also the hledger changelog.
 
 Fixes
 
-- prevent HTML injection in the add form's completions (Arthur Cinader, Simon Michael, #2698)
+- Prevent HTML injection in the add form's completions (Arthur Cinader, Simon Michael, #2698).
   An XSS (cross-site scripting) vulnerability has been fixed in the add
   transaction form's autocomplete. Journal data from an untrusted source
   could execute javascript when shown as a completion suggestion. All
@@ -36,7 +36,7 @@ Fixes
 
 Improvements
 
-- --port 0 lets the OS choose a free port [#2559] (Arthur Cinader)
+- --port 0 lets the OS choose a free port [#2559] (Arthur Cinader).
   The chosen port is reported in the startup message and used in the
   default base url, so scripts can discover it. To learn the port, we
   bind the listening socket ourselves (with streaming-commons'
@@ -44,40 +44,7 @@ Improvements
   warp. Supported with --serve and --serve-api; --serve-browse reports
   an error, since it needs a known port up front to open the browser at.
 
-- help: add some more pages; -w, --webman view manuals on hledger.org
-  Add --webman, in the shared help flags (so it spans hledger, hledger-ui
-  and hledger-web like --man/--info), and a -w flag on the help command,
-  which open the online manual on hledger.org. The URL selects the matching
-  manual version - major.minor for a release build, or "dev" for a newer
-  build - and, for hledger, scrolls to the current command's section.
-
-  Also add the help subtopics install/docs/support/home, which open the
-  corresponding hledger.org page in a browser; and make bare "hledger help"
-  show the quickref card, like plain "hledger".
-
-- help: add -? for the quickref card, show it by default
-  Add a -? flag, in the shared help flags, that shows the quick reference
-  card. It works in hledger, hledger-ui and hledger-web, since much of the
-  card applies across the tools. (Quote it as '-?' to avoid shell globbing.)
-
-  Also make the card hledger's default output when no command is given,
-  replacing the commands list (still shown by the commands command).
-
-- help: rename the --tldr flag to --examples
-  Rename the --tldr command-examples help flag to --examples across hledger,
-  hledger-ui and hledger-web, for clarity - people in need of tldr may not
-  know the acronym.
-
-  We'll also stop syncing with and using content from the official
-  tldr-pages repo, since it adds friction and maintenance cost and
-  restricts our content quite a lot (commands only, style rules..), and
-  built-in docs are more robust than a separate tool to install and
-  update. We keep using tldr's basic format and, for now, an external
-  tldr executable for rendering, since it does a better job.
-
-  Also simplify the manual's intro help pointers to just `hledger help`.
-
-- keep the account sidebar's scroll position when switching accounts [#2679] (Arthur Cinader)
+- Keep the account sidebar's scroll position when switching accounts [#2679] (Arthur Cinader).
   When reviewing a long chart of accounts, clicking an account reloaded the
   page scrolled to the top, so the sidebar jumped back to the top and you
   lost your place while working down the account list.
@@ -90,6 +57,8 @@ Improvements
   where both panes extend below the viewport. (Restoring the position is
   done from an inline script that runs mid-parse, before the sidebar is
   first painted, avoiding a visible stutter.)
+
+- Add the -? and --webman flags; --tldr was renamed to --examples (see hledger changelog).
 
 [#2559]: https://github.com/simonmichael/hledger/issues/2559
 [#2679]: https://github.com/simonmichael/hledger/issues/2679
