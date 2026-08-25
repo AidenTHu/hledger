@@ -719,6 +719,92 @@ main = do
               ,"-e '/./,/^$/!d'"               --  replace consecutive newlines with one
               ]
 
+            -- Capitalise and add a trailing period to the first line of each
+            -- changelog item that has additional (indented) body lines, so it
+            -- reads as a complete sentence and doesn't run into the body.
+            -- An item with no body (a single "- ..." line, typically a terse
+            -- doc/tooling note) is left exactly as written.
+            capitaliseAndPunctuateFirstLines s
+              | null s    = s  -- lines/unlines isn't a safe round trip for ""
+              | otherwise = unlines $ concatMap fixblock $ blocks $ lines s
+              where
+                -- split into blank-line separators and the contiguous, non-blank
+                -- line groups (each one changelog item) between them
+                blocks [] = []
+                blocks (l:ls)
+                  | null l    = [l] : blocks ls
+                  | otherwise = let (item, rest) = break null (l:ls) in item : blocks rest
+                fixblock []        = []
+                fixblock [oneline] = [oneline]  -- no body lines: leave the item as written
+                fixblock (first:rest) = fixline first : rest
+                fixline l = case stripPrefix "- " l of
+                  Nothing   -> l
+                  Just rest ->
+                    let capitalised = capitalise rest
+                        (main, annotations) = peelTrailingAnnotations capitalised
+                    in "- " ++ if null annotations
+                       then addPeriod capitalised
+                       -- a trailing issue ref/author name sits outside the
+                       -- sentence; normalise to a single period after it,
+                       -- dropping any that ended up before it
+                       else stripTrailingPeriod main ++ annotations ++ "."
+                capitalise (c:cs) | isLower c = toUpper c : cs
+                capitalise cs' = cs'
+                addPeriod t
+                  | endsInPunctuation trimmed = t
+                  | otherwise = t ++ "."
+                  where trimmed = dropWhileEnd isSpace t
+                stripTrailingPeriod t = case reverse (dropWhileEnd isSpace t) of
+                  ('.':cs) -> reverse cs
+                  _        -> t
+                endsInPunctuation t = case reverse t of
+                  (c:_) -> c `elem` (".!?:" :: String)
+                  []    -> True
+
+                -- Peel zero or more trailing " [...]"/" (...)" annotation groups
+                -- (eg an issue ref like "[#1941]", or an author-name attribution
+                -- like "(Henning Thielemann)") off the end of a line. Assumes no
+                -- nested brackets within a group.
+                peelTrailingAnnotations t = case stripOneGroup t of
+                  Just (t', grp) | isAnnotationGroup grp ->
+                    let (t'', grps) = peelTrailingAnnotations t' in (t'', grps ++ grp)
+                  _ -> (t, "")
+                  where
+                    -- everything but the last character of s, without using init/last
+                    dropLastChar s = case reverse s of
+                      (_:cs) -> reverse cs
+                      []     -> ""
+                    stripOneGroup s = case reverse trimmed of
+                      (')':_) -> strip '('
+                      (']':_) -> strip '['
+                      _       -> Nothing
+                      where
+                        trimmed = dropWhileEnd isSpace s
+                        strip open = case reverse (elemIndices open (dropLastChar trimmed)) of
+                          (i:_) -> Just (dropWhileEnd isSpace (take i trimmed), " " ++ drop i trimmed)
+                          []    -> Nothing
+
+                -- A group is an annotation - an issue ref like "[#1941]", an
+                -- author-name attribution like "(Henning Thielemann)", or a
+                -- mix like "(Arthur Cinader, Simon Michael, #2698)" - if
+                -- every word in it is either a "#digits" token or starts with
+                -- a capital letter. Issue refs are conventionally bracketed
+                -- and author names parenthesised, but recognise either form
+                -- for either kind rather than assuming. Anything else is
+                -- presumed to be a substantive part of the sentence, not an
+                -- annotation.
+                isAnnotationGroup grp = case dropWhile isSpace grp of
+                  (opener:inner) | opener `elem` ("[(" :: String) -> case reverse inner of
+                    (closer:revcontent) | closer `elem` (")]" :: String) ->
+                      let ws = words (reverse revcontent)
+                      in not (null ws) && all (\w -> looksLikeIssueRef w || startsUpper w) ws
+                    _ -> False
+                  _ -> False
+                looksLikeIssueRef ('#':ds) = not (null ds) && all isDigit ds
+                looksLikeIssueRef _        = False
+                startsUpper (c:_) = isUpper c
+                startsUpper []    = False
+
             -- Directories to exclude when doing git log for the project changelog.
             -- https://git-scm.com/docs/gitglossary.html#gitglossary-aiddefpathspecapathspec
             projectChangelogExcludes = unwords [
@@ -751,7 +837,7 @@ main = do
 
             -- Find the new commit messages relevant to this changelog, and clean them.
             let scanpath = fromMaybe projectChangelogExcludes mpkg
-            newitems <- fromStdout <$> (cmd Shell
+            newitems <- capitaliseAndPunctuateFirstLines . fromStdout <$> (cmd Shell
               "set -o pipefail;"  -- so git log failure will cause this action to fail
               gitlog changelogGitFormat (lastscannedrev++"..") "--" scanpath
               "|" commitMessageToChangelogItemCmd
