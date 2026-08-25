@@ -198,6 +198,10 @@ Last updated: 2025-11
         `just completions`, commit any changes
   - changelogs x 5 (*/CHANGES.md)  
         `just changelogs [-c]`  
+        group the new/unreleased entries by topic -
+        choose topics appropriate to this release's actual changes, using the previous major release's
+        topic headings as a starting point (not a fixed list); keep `## Breaking changes` and the
+        trailing `## Docs`/`## Examples`/`## Scripts/addons`/`## API` sections as-is  
         add notable changes from site, finance repos to project changelog (major release only)  
         add issue links with `md-issue-refs`, uniquify  
         add author github nicks  
