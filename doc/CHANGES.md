@@ -20,10 +20,13 @@ General changes in the hledger project.
 For package-specific changes, see the hledger package changelogs.
 
 
-# eb17f5c1
+# f0229d4b
 
 ## Docs
 
+- ai.journal: updates
+- RELEASING: revise release script with lessons from the 1.52.2 release
+- AI: allow maintainer-discretion exceptions for hledger 1.x security fixes
 - ai.journal: switch to simpler t/kt/Mt output-token units; import June/July usage; other edits
 - AI: various edits and clarifications (extra usage notes, policy reference links)
 - ANNOUNCE: edits
@@ -42,6 +45,7 @@ For package-specific changes, see the hledger package changelogs.
 
 ## Tools/infrastructure
 
+- skills: add release skill for assisting hledger releases
 - .gitignore, .ignore: stop tracking site/ under git entirely, but keep site/src/*.md visible to ripgrep/VS Code search via a new .ignore file
 - CI: binaries-mac-arm64-hx, an experimental workflow using the hx build tool (an alternative to stack/cabal, for easier reproducible builds); cache the official cabal binary; build with -O1
 - CI: bump most third-party actions to their latest major version; binaries-mac-arm64 bumped to macos-26-arm64; binaries-mac-x64 lists dependency versions like the others

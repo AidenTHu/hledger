@@ -23,7 +23,16 @@ User-visible changes in hledger-web.
 See also the hledger changelog.
 
 
-# eb17f5c1
+# f0229d4b
+
+Fixes
+
+- prevent HTML injection in the add form's completions (Arthur Cinader, Simon Michael, #2698)
+  An XSS (cross-site scripting) vulnerability has been fixed in the add
+  transaction form's autocomplete. Journal data from an untrusted source
+  could execute javascript when shown as a completion suggestion. All
+  hledger-web users are encouraged to upgrade. Full technical details:
+  GHSA-538p-cvc4-4qjm.
 
 Improvements
 
