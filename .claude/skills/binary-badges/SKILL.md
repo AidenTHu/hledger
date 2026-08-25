@@ -63,9 +63,8 @@ For each static shields.io badge line:
 3. **Set the colour**:
    - `brightgreen` if the package version equals the current stable version
      from the top of the page.
-   - `red` otherwise (this matches the file's existing convention — compare
-     against the "release binaries" badge in the Official binaries section,
-     which is `brightgreen` when current).
+   - `e05d44` (hex, no `#`) otherwise, matching the red used by repology
+     for outdated packages.
 4. **Sanity-check the label** while you're in there: shields.io labels use
    `_` for spaces, and the visible alt text (`![Alt]`) should describe the
    same thing the label encodes (e.g. `![Fedora_45]` next to a label reading
