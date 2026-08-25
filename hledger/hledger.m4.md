@@ -7889,7 +7889,7 @@ You can list all of a command's options by running `hledger CMD -h`.
 
 **[Help commands](#help-commands)**
 
-- [help](#help)                                    - show documentation
+- [help](#help) (h)                                - show documentation
 
 **[User interface commands](#user-interface-commands)**
 

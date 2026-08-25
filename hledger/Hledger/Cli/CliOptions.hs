@@ -127,7 +127,7 @@ import Hledger
 import Hledger.Cli.DocFiles
 import Hledger.Cli.Version
 import Data.Time.Clock.POSIX (POSIXTime)
-import Data.List (find, isPrefixOf, isSuffixOf)
+import Data.List (dropWhileEnd, find, isPrefixOf, isSuffixOf)
 import Data.Function ((&))
 
 
@@ -523,13 +523,16 @@ parseCommandHelp :: CommandHelpStr -> Maybe CommandHelp
 parseCommandHelp t =
   case lines t of
     [] -> Nothing
-    (l1:_:l3:ls) -> Just $ CommandHelp cmdname (if null cmdalias then Nothing else Just cmdalias) preamble postamble
+    (l1:_:l3raw:ls) -> Just $ CommandHelp cmdname (if null cmdalias then Nothing else Just cmdalias) preamble postamble
       where
         cmdname = l1
+        -- pandoc's plain writer appends a trailing space after a single-character
+        -- parenthetical (eg "(h) "), so strip trailing whitespace before matching.
+        l3 = dropWhileEnd isSpace l3raw
         (cmdalias, rest) =
           if "(" `isPrefixOf` l3 && ")" `isSuffixOf` l3
           then (drop 1 $ init l3, ls)
-          else ([], l3:ls)
+          else ([], l3raw:ls)
         (preamblels, rest2) = break (== "Flags:") $ dropWhile null rest
         postamblels = dropWhile null $ dropWhile (not.null) rest2
         preamble = unlines $ reverse $ dropWhile null $ reverse preamblels

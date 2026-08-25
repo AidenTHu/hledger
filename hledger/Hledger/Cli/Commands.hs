@@ -284,7 +284,7 @@ commandsList _progversion builtin othercmds cmdaliases =
   -- ,""
     -----------------------------------------80-------------------------------------
   ,section "USER INTERFACES"
-  ," help                     show documentation"
+  ," help (h)                 show documentation"
   ," repl                     run multiple commands from an interactive prompt"
   ," run                      run multiple commands from a file or command line"
   ,"+ui                       run a terminal UI"
