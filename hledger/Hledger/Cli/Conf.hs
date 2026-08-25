@@ -114,7 +114,7 @@ confLookup cmd Conf{confSections} =
   M.fromList [(csName,csArgs) | ConfSection{csName,csArgs} <- confSections]
 
 -- | Get the command aliases (custom commands) defined in this config file,
--- in order of definition. They are defined git-style in an @[alias]@ (or @[aliases]@)
+-- in order of definition. They are defined git-style in an @[alias]@
 -- section, like @NAME = CMDLINE@; a value may continue on following, more-indented lines.
 -- If a name is defined more than once, the last definition should win (callers can rely
 -- on the ordering here). An [alias] section line without an @=@ raises a usage error.
@@ -128,7 +128,7 @@ confAliasesE :: Conf -> Either String [(CommandAlias, CommandLine)]
 confAliasesE conf@Conf{confSections} = concat <$> mapM sectionaliases confSections
   where
     sectionaliases ConfSection{csName, csArgs}
-      | csName `elem`["alias", "aliases"] = mapM aliasline csArgs
+      | csName == "alias" = mapM aliasline csArgs
       | otherwise = Right []
     aliasline (lnum, l) = case break (=='=') l of
       (name, '=':cmdline) | not $ null $ strip name -> Right (strip name, strip cmdline)
@@ -353,9 +353,9 @@ confp = do
   let s = ConfSection "general" genas
   ss <- many $ do
     (n, ma) <- sectionstartp
-    -- In an [alias]/[aliases] section, a NAME = ... value can span more-indented lines; parse each
+    -- In an [alias] section, a NAME = ... value can span more-indented lines; parse each
     -- alias as one logical (joined) line. Other sections keep one argument per line.
-    as <- if n `elem` ["alias","aliases"] then many aliasdefp else many arglinep
+    as <- if n == "alias" then many aliasdefp else many arglinep
     return $ ConfSection n (maybe as (:as) ma)
   whitespacep  -- tolerate trailing whitespace with no final newline (a blank last line)
   eof
@@ -409,7 +409,7 @@ arglinep = try $ do
   commentlinesp
   return (lnum, strip a)
 
--- | Parse one alias definition in an [alias]/[aliases] section: a "NAME = ..." line, plus any
+-- | Parse one alias definition in an [alias] section: a "NAME = ..." line, plus any
 -- following lines indented more than it, joined (whitespace-normalised) into one logical line.
 -- Blank and comment lines are skipped; a line indented no more than the NAME line, a section
 -- header, or end of file ends the definition. This is what lets an alias's command line span
