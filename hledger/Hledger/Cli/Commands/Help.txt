@@ -1,5 +1,7 @@
 help
 
+(h) 
+
 Show some part of hledger's documentation, selected by arguments:
 
 - quickref (or no args): a quick reference / overview
