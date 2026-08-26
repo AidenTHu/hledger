@@ -5,6 +5,8 @@
 [![on hackage](https://img.shields.io/hackage/v/hledger.svg?label=hackage&colorB=green)](https://hackage.haskell.org/package/hledger)
 [![](https://repology.org/badge/version-for-repo/stackage_nighly/hledger.svg)](https://repology.org/metapackage/hledger)
 [![](https://repology.org/badge/version-for-repo/stackage_lts/hledger.svg)](https://repology.org/metapackage/hledger)
+
+<!-- 2026-08-26 gitscope.dev seems gone, but wait a little
 \
 [![Repo Health](https://api.gitscope.dev/api/badges/simonmichael/hledger/health.svg "Overall repository health score from 0-100%. Calculated from activity, maintenance, community engagement, and issue management.")](https://gitscope.dev/docs/badges)
 [![Maintained](https://api.gitscope.dev/api/badges/simonmichael/hledger/maintained.svg "Maintenance status: very active, active, maintained, or stale based on recent commit and issue activity.")](https://gitscope.dev/docs/badges)
@@ -16,6 +18,7 @@
 [![Open bugs](https://api.gitscope.dev/api/badges/simonmichael/hledger/label/A-BUG.svg "Open bugs")](https://github.com/plaintextaccounting/hledger/issues?q=is:issue+label:A-BUG+state:open) 
 [![Open wishes](https://api.gitscope.dev/api/badges/simonmichael/hledger/label/A-WISH.svg "Open wishes")](https://github.com/plaintextaccounting/hledger/issues?q=is:issue+label:A-WISH+state:open)
 [![Issues Resolved](https://api.gitscope.dev/api/badges/simonmichael/hledger/resolved.svg "Percentage of issues resolved/closed during last N days. Higher is better. Click to see closed bugs.")](https://github.com/plaintextaccounting/hledger/issues?q=is:issue+state:closed)
+-->
 
 <!--
 [![Contributor Friendly](https://api.gitscope.dev/api/badges/simonmichael/hledger/contributor-friendly.svg "Does the project welcome new contributors based on good first issues, contributing guides, and response patterns.")](https://hledger.org/CONTRIBUTING.html)
