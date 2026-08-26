@@ -17,6 +17,8 @@ comment
 
 #############################################################################
 Comparing roi and holdings
+(For a realistic comparison, with transfers, fees and closed
+positions, see lots.journal.)
 
 $ hledger -f examples/lots/irr.journal roi --inv assets:stocks --pnl 'revenues:gain|equity:unrealised-gain' -e 2026-04-01 --value=end,$
 +---++------------+------------++---------------+----------+-------------+------++----------++------------+----------+
