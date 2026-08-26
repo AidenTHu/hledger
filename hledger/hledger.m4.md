@@ -821,8 +821,10 @@ You can prevent this by setting your preferred options in the `HLEDGER_LESS` var
 
 ### HTML output
 
-HTML output can be styled by an optional `hledger.css` file in the same directory
-(there is a sample in the hledger source repository).
+HTML output has some default styling built in; eg, it prevents wrapping
+within dates and individual commodity amounts.
+It can be customised (or overridden) by an optional `hledger.css` file in the
+same directory (there is a sample in the hledger repo).
 
 HTML output will be a HTML fragment, not a complete HTML document.
 Like other hledger output, for non-ascii characters it will use the system locale's text encoding
