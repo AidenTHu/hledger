@@ -27,59 +27,27 @@ See also the hledger changelog.
 
 Fixes
 
-- List and tree mode no longer get out of sync in whether parent accounts
-  are elided; switching modes (eg with the T key) now sets this from the
-  target mode directly, instead of toggling it (#2429; see hledger
-  changelog for the underlying --no-elide balance report changes).
+- Pressing DOWN at the last list item, or pressing C-l (recenter) when
+  near the end of a list, no longer scroll into blank padding space;
+  instead they keep as many items as possible on screen. [#2278,
+  #2593].  (Juan Wajnerman)
 
-- Recenter (C-l) now behaves consistently near the end of a list [#2593].
-  The near-end scroll cap was computed from the full terminal height
-  rather than the list viewport's actual (smaller) height, so recentering
-  a selection a few items above the last one could scroll those last
-  items off the bottom of the screen - inconsistent with recentering the
-  last item, which does nothing.
-  (Juan Wajnerman)
-
-- Pressing DOWN at the last list item no longer scrolls past it into
-  blank padding space, hiding real items off the top of the screen [#2278].
-  (Juan Wajnerman)
-
-- When the selection is near the end of a list, as many items as possible
-  are now shown, with no blank padding visible below the last real item.
-  (Juan Wajnerman)
-
-- Fixed a memory leak (and CPU/GC thrashing) when reloading with --watch [#1825].
-  Reload rebuilt each screen, but the new selection index was computed
-  lazily from the previous generation's screen state, so each reload
-  pinned another link in a growing chain and memory grew without bound.
-  Reload now forces the new selection index and the whole screen stack
-  strictly, so no previous-generation screen, list, or journal is
-  retained after a reload.
-
-Features
-
-- Add L key to toggle lot detail display.
-  L toggles showing lot subaccounts and per-lot detail (like the CLI
-  --lots flag), on the accounts, register and transaction screens. The
-  journal is always loaded with full lot detail retained and collapsed
-  for display unless lots mode is on, so the toggle is instant (no
-  reload). The lots state persists across reloads and resets to the
-  startup state on ESC.
+- Fixed a long-standing memory leak (and CPU/GC thrashing) when reloading with --watch [#1825].
+  Now --watch mode has no extra memory/CPU cost, and can be used freely with large journals,
+  or enabled by default in your config file.
 
 Improvements
 
+- The L key now toggles showing lot subaccounts and per-lot detail
+  (ie, it toggles the CLI's --lots flag). It resets to the startup
+  state if ESC is pressed.
+
+- The transaction screen now refreshes in place, when there's a reload
+  [#1825]. Previously you had to exit and re-enter it.
+
 - Error screen reloading is less flickery and more robust.
-  Every screen now regenerates from its own stored parameters, replacing
-  a fragile workaround that special-cased reloading from an error screen
-  below a transaction screen (popping twice and replaying synthetic
-  keystrokes).
 
-- The transaction screen now refreshes in place on reload [#1825].
-  Previously the transaction screen did not update on reload; to see
-  edits you had to exit and re-enter it. It now rebuilds its transaction
-  list from the reloaded journal and reselects the same transaction.
-
-- Add the -? and --webman flags; --tldr was renamed to --examples (see hledger changelog).
+- Add the -? and --webman flags; rename --tldr to --examples (see hledger changelog).
 
 [#1825]: https://github.com/simonmichael/hledger/issues/1825
 [#2278]: https://github.com/simonmichael/hledger/issues/2278

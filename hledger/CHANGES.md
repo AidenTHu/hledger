@@ -5,24 +5,6 @@
 | (__| | |
  \___|_|_|
 
-Breaking changes
-
-Fixes
-
-Features
-
-Improvements
-
-Docs
-
-Examples
-
-Scripts/addons
-
-API
-
-AI usage
-
 -->
 
 User-visible changes in the hledger command line tool and library.
@@ -32,205 +14,133 @@ User-visible changes in the hledger command line tool and library.
 
 ## Breaking changes
 
-- `stats`'s `-1` flag has been renamed to `--oneline`, consistent with `print --oneline` (and git's `log --oneline`), avoiding confusion with the hledger-wide use of `-1` as a synonym for `--depth 1`/`depth:1`.
+- In journal format, a single tab is also now accepted as the separator between account and amount, for improved compatibility with Ledger. This also means account names can no longer contain tab characters.
 
-- Config files can no longer specify the command to run via a bare first word in the general section. Since config files can now define command aliases (which can run shell commands), letting a config file also select the default command was too risky - eg `hledger --conf evil.conf` could be enough to trigger a shell command defined in `evil.conf`. The command to run must now always be given on the command line.
+- Config files can no longer specify the command to run via a bare first word in the general section. Since config files can now define command aliases (which can run shell commands), letting a config file also select the default command was too risky. The command to run must now always be given on the command line.
 
-- A single tab is now accepted as an account/amount separator (matching Ledger's behaviour), alongside two or more spaces or tabs. As a result, account names can no longer contain a single tab; this should be rare or nonexistent in practice.
+- The `--tldr` flag has been renamed to `--examples`.
 
-## Command aliases
+- `stats`'s `-1` flag has been renamed to `--oneline`, consistent with `print --oneline` (and git's `log --oneline`).
 
-- Command aliases (custom commands) can now be defined in config files:
-  - In an `[alias]` section, one alias per line: `NAME = COMMAND ARGS..`. The command line can continue on further, more-indented lines (blank and comment lines within it are ignored), so a long alias can be spaced out, or have individual argument lines commented out. `[aliases]` is accepted as a synonym for `[alias]`. (The older, more error-prone `[alias NAME]` section form, whose command line ran greedily to the next section or end of file, has been removed; a leftover `[alias NAME]` section is now just ignored, like any other unrecognised section.)
-  - An alias's command can be a builtin command, an addon command, or another alias; if a name is defined more than once, the last definition wins. Aliases cannot override builtin command names. A self-referencing alias resolves to the builtin/addon of that name, useful for adding default options (eg `ui = ui --watch`).
-  - An alias whose command line begins with `!` runs as a shell command, as in git, with any command-line arguments appended. For safety, shell aliases are honoured only from a *trusted* config file - one given explicitly with `--conf`, or a user-level config file (`~/.hledger.conf` or the XDG one) - not from an automatically-found local `hledger.conf`, which is refused with an error. This keeps a config file from an untrusted shared or downloaded directory from running arbitrary shell commands.
-  - Aliases also work in `run` scripts and at the `repl` prompt, and are listed in a new ALIASES group in the commands list (its name column sized to the widest alias).
-  - Also in the REPL: `! SHELLCMD` runs a one-off shell command directly without leaving the REPL - always allowed, since (unlike the config-defined shell aliases above) it's your own live input.
-
-## Command line
-
-- CLI: ANSI colour is no longer used when `TERM=dumb`, even though `hSupportsANSIColor` alone reports colour support in that case (eg an Emacs subshell), which was leaking escape codes into piped or redirected output. Explicit `--color=yes`/`always` still forces colour.
-
-- `acc`, `comm`, `desc` are now official short spellings for their respective commands.
-
-## Commodities & prices
-
-- `stats` (and other places that guess a base currency): a commodity with several `alias:` tags no longer gets an extra, skewing vote towards its own currency; only real price directives are counted now.
+- The `demo` command, which played asciinema recordings, has been removed.
 
 ## Config files
 
-- Config files: a `#` inside single or double quotes is no longer treated as starting a comment (eg `foo = run -- echo '# foo'` now works correctly); only an unquoted `#` starts a comment.
+- Command aliases: you can now define custom commands by adding `NAME = COMMAND...` to the `[alias]` section of your config file. COMMAND can be a builtin command, an addon command, another alias, or a shell command prefixed with `!`, and can be continued on multiple indented lines. (Shell commands will run only from your user config file or one specified explicitly with `--conf`.)
 
-- Config files: leading whitespace (including tabs) before a general argument, `[alias]` line, or section header is now ignored, and a trailing blank line with trailing whitespace but no final newline is tolerated. Config file errors now follow hledger's standard FILE:LINE-plus-excerpt format: parse errors are no longer mangled by an extra "show"; a bad `[alias]` line reports its position; argument lines are validated at config-read time, reporting a bad line (eg from an unclosed quote after a `#` cut it short) with its position instead of crashing later with a raw parser error; and bad alias definitions are returned as a graceful error instead of an imprecise exception.
+- In config files, a `#` inside single or double quotes is no longer misparsed as a comment start.
 
-- `--conf`/`--no-conf` flags written inside a config file are now dropped (they can have no effect there, since the config file to use was already decided before reading it) instead of being passed along inertly.
+- Leading whitespace before a section header, and a trailing line containing whitespace with no final newline, are now accepted. 
 
-## Data entry
+- `--conf`/`--no-conf` flags inside a config file are now dropped, instead of being passed along and causing trouble later.
 
-- `add`: no longer offers a default amount with an ambiguous digit group mark (eg `-1.000` instead of `-1.000,` for decimal-comma journals), which misparsed if accepted. [#2656]
+- Config file errors now follow hledger's standard FILE:LINE-and-excerpt format, and parse errors are displayed properly.
 
-## Data import
+## Command line
 
-- `import`: no longer gets stuck when there are multiple downloaded copies of a data file; the oldest is now deleted after a successful archiving import even if it wasn't itself archived this run (having already been archived in an earlier one).
+- Colour handling is more robust:
 
-- CSV import: `--debug=2` now shows clearer output when reading a rules file.
+  - ANSI colour is no longer used when `TERM=dumb`, eg in an Emacs shell, which was leaking escape codes into piped or redirected output. `--color=yes` can still override.
+  - Colour output now works in terminals where the background lightness can't be detected, eg inside Emacs (a light background will be assumed).
+  - In terminals without truecolor support, eg Emacs vterm or a stripped `COLORTERM` over ssh/tmux, we now downgrade to the nearest xterm 256-colour.
 
-## Error messages
+- Balance assertion failure messages show a better troubleshooting command:
+  - regex metacharacters (eg the curly braces in `{2026-07-12, 2.5 €}`) will be escaped
+  - `-E` is added, so zero-amount postings will also be shown
+  - instead of `-I`, the more precise `--ignore-assertions` is used.
 
-- The balance assertion failure error's suggested troubleshooting command has been improved: account names containing regex metacharacters (eg lot subaccounts like `{2026-07-12, 2.5 €}`) are now escaped, so the command is copy-pastable; `-E` is added, so zero-amount postings (sometimes used to assert balances) are also shown; and it now suggests the more precise `--ignore-assertions` instead of `-I`.
+- `acc`, `comm`, `desc` are now official short spellings for the `accounts`, `commodities`, and `descriptions` commands.
+
+- Abbreviating `print`'s `--locations` flag as `--loc` now works as expected.
 
 ## Help & docs
 
-- `help`: no longer reads (or checks) the journal in `run`/`repl`, so eg `help usage` no longer fails because of an unrelated balance assertion error in your data (also fixes the same latent issue for `setup`/`demo`/`test`).
+- `help` has been reorganised and is now an entry point for all hledger docs.
 
-- `help`: a clash between `help -m`/`-p` and same-named flags that take a value on other commands (eg `print -m`) is now handled with the less-friendly-but-accurate cmdargs error, instead of breaking.
+  - `help` with no arguments (or `hledger` with no command) shows a quick reference card.
+  - `help commands` shows the full commands list.
+  - `help examples [CMD]` shows command examples (like `--examples`).
+  - `help usage [CMD]` shows command options and docs (like `-h`).
+  - `help manual [TOPIC]` or `help TOPIC` shows the full manual, in several formats, now including the HTML versions at hledger.org.
+  - `help install`/`docs`/`support`/`home`/`sponsor`/`relnotes` open the corresponding hledger.org page in a web browser.
 
-- The four places listing hledger's commands (`hledger commands`, the manual's overview, `commandsList`, `quickref.txt`) now use consistent descriptions and details: fixed several stale or inconsistent bits (wrong links, missing `acc`/`comm`/`desc` aliases, wording mismatches), and command doc summaries were reworded to consistently begin with an imperative verb.
+- `help`'s matching of manual topics is more powerful.
+  `help manual TOPIC` (or `help TOPIC`) now matches by exact match or unique prefix, with all viewers.
+  It now also searches the hledger-ui and hledger-web manuals.
+  A topic matching several headings, or nothing, now warns or lists the candidates instead of failing or being ignored.
 
-- The `demo` command (which played embedded asciinema casts) has been removed, along with its docs and registration; it required `asciinema` to be installed and was never developed further. The casts themselves remain in the source tree (see `DEMOS.md`) but are no longer embedded.
+- `help manual` has a new `-l` flag which lists manual topics rather than showing them.
+  And `help manual` with no further arguments lists all topics, indented to show some of their hierarchy.
 
-- `help` is now the single entry point for hledger's documentation, consolidated from several previously separate mechanisms:
-  - `help commands` replaces the standalone `commands` command (which now just suggests `help commands`); `help usage [CMD]`, `help manual [TOPIC]`, `help examples [..]`, and `help quickref` show command-line usage, the manual, brief examples, and the quick reference card respectively.
-  - Plain `hledger` (and bare `hledger help`) now shows the quick reference card by default, replacing the commands list (still available via `help commands`). A new `-?` flag (in the shared help flags, so it also works in hledger-ui and hledger-web) shows the card explicitly; quote it as `'-?'` to avoid shell globbing.
-  - `help` now dispatches identically at the CLI and in the REPL (previously the REPL had a separate, more limited path); in the REPL, `?` and bare `help` show the quick reference card, and `h` is a short alias for `help` (`h commands`, `h -l text`, `h manual journal`, etc).
-  - New `install`/`docs`/`support`/`home`/`sponsor`/`relnotes` subtopics open the corresponding hledger.org page (release notes, for `relnotes`) in a browser.
-  - A new `-w`/`--webman` flag (in the shared help flags, so it also spans hledger-ui and hledger-web) opens the online manual on hledger.org instead of a local viewer; the URL selects the matching manual version - major.minor for a release build, or "dev" for a newer build - and, for hledger, scrolls to the current command's section.
+- When `TERM=dumb`, or in Emacs shells that don't support TUIs, `help manual` now defaults to showing plain text instead of failing to run a manual viewer. And it shows only the introduction, not the whole manual.
 
-- The `--tldr` command-examples help flag has been renamed to `--examples` (across hledger, hledger-ui and hledger-web), for clarity - people in need of `tldr` may not know the acronym. We're also dropping the sync with and use of content from the official tldr-pages repo (it added friction and maintenance cost, and restricted our content to commands only), in favour of maintaining these examples ourselves; we still use tldr's basic format, and for now an external `tldr` executable for rendering, since it does a better job. The manual's intro help pointers have also been simplified to just `hledger help`.
+- `help` now has `h` as its official alias.
 
-- The quick reference card, commands list, and `help manual` topic listing now share a consistent one-line gradient heading (replacing the old multi-line ASCII banner); the commands list drops its "Usage:"/"Commands (...)" header lines and has tighter section spacing. The quickref card also gained: the program name and version right-aligned on the title line; an underlined "Input formats" heading like the other sections; check types; and various small wording/layout tweaks. An obsolete `!hledger -h` example was dropped from the card's REPL commands section. These gradient banners now also render sensibly on terminals that previously showed no colour at all: they fall back to the light-background palette when the background lightness can't be detected (eg inside Emacs), and downgrade to the nearest xterm 256-colour when the terminal lacks truecolor support (eg Emacs vterm, or a stripped `COLORTERM` over ssh/tmux).
+## Data entry
 
-- `help TOPIC` (and `help manual TOPIC`) now resolves TOPIC to an actual manual section heading before invoking any viewer - an exact match wins, otherwise a unique prefix - so prefix matching now works consistently across all viewers, including `info` and the web anchor. Matching now also searches the hledger-ui and hledger-web manuals (eg `help keys` finds hledger-ui's KEYS section, `help 'json api'` finds hledger-web's), with `-ui`/`-web` suffixes added to disambiguate same-named sections. A topic matching several headings, or matching nothing, now prints a short note (listing candidates when ambiguous) instead of silently showing the manual from the top or raising an error. A new `-l` flag lists matching topics instead of showing the manual; `help manual` with no topic lists all topics, indented to show the manual's heading hierarchy (the all-caps CSV heading is now treated as a level-3 subsection, a sibling of Journal/Timeclock/Timedot).
+- Numbers can now also use `_` or `'` as digit group marks. (Kevin F. Konrad, [#273], [#1489])
 
-- `help`: a dumb terminal (eg `TERM=dumb`, as used in Emacs shells) is now treated like non-interactive output: plain text is shown instead of trying (and failing) to run `info`. When falling back to plain text, only the manual's introduction (up to and including DESCRIPTION) is shown by default, with a note on how to read the rest; a specific requested topic still shows the whole manual. Emacs line-oriented buffers that can't display a fullscreen viewer (`M-x shell`, eshell) also get plain text, while Emacs terminal emulators (term/ansi-term/vterm) and explicit `-i`/`-m`/`-p` flags are unaffected.
+- `add` no longer offers default amounts with ambiguous digit group marks (eg instead of `-1.000` it will ofer `-1.000,`, avoiding misparsing. [#2656]
 
-- `commands`: with `--builtin`, the "OTHER ADDONS" heading is no longer shown; the default output is less cluttered, with a coloured (blue-green gradient) banner, and the heading adjusts when `--builtin` is used.
+- `import` with `archive` enabled, if there are multiple downloaded copies of the source file,  now properly deletes processed files and always makes progress. (Previously it could stall, reprocessing the oldest file each time.)
 
-- `--examples` (formerly `--tldr`) with no `tldr` executable installed now hides just the warning, not the rest of the output.
+- `--debug=2` now shows clearer output when reading a CSV rules file.
 
-## Holdings
+## Lot tracking
 
-- New `holdings` command, showing your investment holdings with cost basis, market value and gain. Columns: Date/Age, Units, Unit/Avg cost, Cost (total cost basis), Price, Value, Weight (% of portfolio value, when all displayed holdings share one valuation commodity), UGain/UGain% (unrealised gain), RGain (realised gain from disposals so far), and XIRR (annualised return, using the same solver as `roi`'s IRR); a totals row is shown by default (`-N` to suppress). Supports `--lots` (one row per lot instead of per account), `--tree`, `--depth`, `--no-elide`, `--full-names`, `-S`/`--sort-amount` (largest value first), `--drop`, `--round`, `--title`, the usual query arguments, and `-V`/`-X`/`--value` for the valuation commodity/date (the general `-B`/`-V`/`-X`/`--value` flags are otherwise ignored; holdings always does its own valuation). Output as text (paged, `-o` supported), csv, tsv, json, html, or fods. By default, fully-disposed commodities/accounts are hidden; `-E`/`--empty` shows them (with zero units), keeping their realised gains and XIRR visible.
+Lot tracking has been reworked extensively since 1.99.3. In summary:
 
-- `holdings`: show one row per account and commodity, with its own Cost/Value/Weight/UGain/RGain/XIRR (previously an account holding several commodities showed aggregated attributes on the first commodity's line only). Also, with `--lots`, different commodities acquired with the same date and cost are no longer wrongly merged into one row. [#2693]
+- How lot tracking is enabled has changed: a `lots:` tag enables it only on commodities now, not accounts. An account's `lots:` tag now just sets that account's disposal method (FIFO, LIFO, etc - a value is now required), or opts the account out of tracking with `lots: NONE` (eg for tax-sheltered accounts).
 
-## Journal
+- Many more real-world entries are now recognised and handled correctly: transfers involving multiple source or destination accounts, transfers written with `{}` cost annotations, transfer fees that are unpriced or split across several postings, in-kind (priceless) disposals, and entries whose amounts are implied or set by balance assignments.
 
-- Journal: digit group marks can now also be `_` or `'`, in addition to `,`/`.`/space. [#273] [#1489] (Kevin F. Konrad)
+- Several bugs that could silently produce wrong numbers are fixed: a transfer's sent and received quantities must now match (previously lots could be silently dropped, or a shortfall silently treated as a no-gain fee); fees are now deducted before a transfer selects its lots, so FIFO/LIFO etc choose from the right lots; amounts stay correct when lot detail is collapsed for display (previously balances could be wrong or fees double-counted); and a transfer into an `AVERAGE` pool now re-averages the pool's cost, as an acquisition does.
 
-## Lots & gains
+- Lot names are shown consistently and are always usable: a lot now displays the same name (same cost precision) when acquired, disposed, or transferred; inferred cost bases display enough digits to be exact; and any lot name shown in reports or errors can be used to reference that lot. Also, `print --lots` output can now always be read back by hledger.
 
-- Lots: an account `lots: NONE` tag opts that account (and its subaccounts) out of lot tracking entirely, eg for tax-sheltered accounts where cost basis is irrelevant. Precedence: an explicit posting lot annotation still enables tracking; the account opt-out beats a commodity's `lots:` tag; the nearest account declaration wins. `lots: NONE` on a *commodity* declaration is rejected (commodities are untracked by default).
+- Error messages are clearer and more accurate: they show the entry as it was written, not hledger's processed version; "no lots available" errors list the lots actually available; quantity-mismatch errors suggest the likely cause; an unbalanced entry is reported as such instead of producing a confusing inferred cost; and incompatible mixes of global (`*ALL` etc) and per-account disposal methods are now rejected.
 
-- Lots: re-average `AVERAGE` pools when a lot is transferred in. Previously the transferred lot kept its own cost basis, silently violating the pool's shared-cost invariant, and a later disposal used the un-pooled basis. A transfer-in now re-averages the pool exactly like an acquisition (a no-op under `AVERAGEALL`, since the lot never leaves the global pool); transfers out already carried the pooled cost.
+- Balance assertions on lot subaccounts can't be checked correctly (assertions are checked before lots are calculated), and are now handled consistently: close --lots no longer generates them, and when lot detail is hidden (in print output or hledger-ui) existing ones are ignored instead of failing spuriously. The manual and the assertion failure message now explain this limitation.
 
-- Lots: don't classify zero-amount postings (eg balance assertion carriers written beside a transfer) as transfers; they move no lots.
+- `close` no longer generates a spurious zero posting for some emptied accounts, and `close --lots` output is more readable (lot subaccount balances no longer show redundant costs).
 
-- Lots: classify a priced fee disposal written beside a matched transfer pair as a disposal, not (wrongly) as a transfer source.
-
-- Lots: don't let a virtual (parenthesised) posting trigger unrealised-gain inference, which could unbalance an otherwise-valid entry.
-
-- Lots: detect split/consolidating transfers (one source feeding several destinations, or several sources one destination) written with `{}` cost basis annotations, not just bare postings. [#2692]
-
-- Lots: `print --lots` output of an unpriced-fee transfer now round-trips; its basis-annotated fee dispose fragment was wrongly rejected on re-read. [#2692]
-
-- Lots: check transfer quantities properly, and support many-to-many transfers. Sent and received quantities per commodity must now match: previously, extra lots from a one-source-many-destinations transfer could be silently dropped, and a shortfall was silently treated as an undocumented fee disposal with no gain. [#2692]
-
-- Lots: a transfer's fee auto-split is now processed before the transfer itself selects its lots, so the disposal method (FIFO etc) sees the full pre-transfer lot set, not whatever the transfer happened to leave behind. [#2692]
-
-- Lots: keep correct amounts when collapsing lot detail for display. The merged posting's amount is now the sum of its per-lot fragments, fixing wrong balances (and double-counted fees) when the original posting was elided or a balance assignment. [#2692]
-
-- Lots: transactions whose amounts were only known after balancing (elided or balance-assignment amounts) are now reclassified consistently with fully-explicit ones, fixing spurious "transfer-to posting has no matching transfer-from posting" errors. [#2690]
-
-- Lots: a displayed lot name (eg from `print --lots` or an error message) can now always be used to reference its lot, even when the shown cost is rounded from a longer inferred value. The "no lots available" error now also lists the account's actual available lots. [#2689]
-
-- `close --lots`: lot subaccount balances are now shown without costs even with `--show-costs` (a lot name already carries its cost info; transacted costs on lot postings made the output unreadable). [#2689]
-
-- `close`: no longer generates a spurious zero posting for an account emptied by postings with mismatched costs. [#2689]
-
-- Lots: reject amountless gain postings consistently, even when the disposal's amounts were only known after balancing. [#2686]
-
-- Lots: accept a priced transfer fee whose outflow amount comes from a balance assignment (previously failed as unbalanced). [#2686]
-
-- Lots: error excerpts now show the entry as the user actually wrote it - postings reverted to their original form, generated postings dropped - instead of the processed in-memory form with inferred amounts and generated postings filled in. [#2686]
-
-- Lots: postings whose amounts are only known after balancing (elided or from balance assignments) can now be classified, via a safe reclassification pass that runs once balancing is done. [#2686]
-
-- Lots: detect unpriced transfer fees, not just priced ones, for auto-splitting; and fix balance assertions on the outflow posting so they're checked after the full original quantity, not mid-transaction. [#2686]
-
-- Lots: the styled/widened cost basis is now stored with the lot (not just used when rendering the acquiring posting), so dispose and transfer postings render the same lot subaccount name as the acquire (previously they could differ in precision, eg `{2026-01-15, $50.00}` vs `{2026-01-15, $50}`, splitting the lot in reports).
-
-- `close --lots`: opening balance assertions on lot subaccounts are now also disabled (closing ones already were), for the same reason - assertions can't be correctly checked on lot subaccounts in general. [#2659]
-
-- Lots: inferred cost bases now show enough decimal digits to be exact, using the commodity's display precision as a minimum (eg buying 100 avocados `@@ €250` now shows `{€2.5}` instead of the misleadingly-rounded `{€2}`). [#2659]
-
-- `print`, hledger-ui: lot balance assertions are now ignored once lot detail is hidden, fixing spurious assertion failures in hledger-ui (toggling assertions off then on) and in `print | hledger -f-` round-trips.
-
-- Lots: a transfer fee split across several fee postings (eg commission plus network fee) now also auto-splits; previously the fee had to be a single posting matching the missing quantity exactly, even though it followed the error's own advice.
-
-- Lots: reject incoherent mixes of global and local cost-basis reduction methods at load time (previously accepted silently). A global method like `*ALL` is only coherent when every account holding the commodity uses it; the error shows the global method's declaration and each conflicting account's method and source. Local methods (FIFO, LIFO, HIFO, SPECID, AVERAGE) can still be freely mixed per account.
-
-- Lots: when a mismatched-transfer-quantities error is in the "received more than sent" direction (eg a sign error or rounding adjustment in imported data), the hint now points at those causes instead of the usual fee-related suggestions.
-
-- Lots: lotfulness is now declared by commodities only, not by an account's `lots:` tag (which now only sets the account's disposal order, and requires a value - a valueless one is now an error). This avoids lots being silently transferred into an untracked account and stranded there. A commodity can still be tracked in only some accounts, using explicit cost basis annotations with no `lots:` tag.
-
-- Lots: when a disposal is written beside a matched transfer pair (eg a split-out fee disposal paid in cash) and the entry's residual exactly matches one posting's amount, the inferred cost is now attached to that posting only, instead of being spread across all of the commodity's postings (which broke transfer classification); such a fee disposal's price can now also be elided.
-
-- Lots: when a lot-tracked commodity's quantities don't add up between accounts (eg an in-kind fee recorded only in cash), hledger no longer infers a confusing conversion cost; it now reports the more fundamental balancedness check, showing the mismatched residual plainly with a note on why no cost was inferred and how to fix it.
-
-- Lots: priceless in-kind disposals are now allowed generally, not just for a single fee posting matching the disposed quantity - covering an in-kind transfer fee, an in-kind donation split across postings, or several disposals feeding one receiving posting. No gain/loss is calculated for these.
-
-- Lots: the manual now explains lots' limited balance-assertion support (assertions are checked before lots are calculated, so they can't be correctly checked on lot subaccounts in general), and the balance assertion failure message mentions this. [#2659]
-
-## print & print-like commands
-
-- `print`: new `--oneline` flag shows just each transaction's first line (date, status, code, description, and any same-line comment), for a compact one-transaction-per-line overview.
-
-- `print`: abbreviating `--locations` to `--loc` now works as expected (a hidden `--location` flag, added defensively when `--locations` was introduced, made `--loc` an ambiguous abbreviation; it has been removed).
+- A new `holdings` report shows your lot-tracked investment holdings, per account and commodity or per lot, with units, cost basis, current price and market value, portfolio weight, unrealised and realised gains, and XIRR annualised return.
 
 ## REPL & run
 
-- `run`/`repl`: a successful addon command or `!`-shell alias no longer ends the rest of a command sequence; only a failure now stops it and propagates the exit code.
+The `repl` and `run` commands have been improved since 1.99.3. In summary:
 
-- `run`/`repl`: a command alias that expands to `run -- ...` now works correctly.
+- Most general flags given to `repl`/`run` at startup (such as `-I`, `--strict`, `-b`/`-e`, `--depth`, `--cost`, `--color`) are now applied to every command in the session or script (overrideable by flags within the session).
 
-- `run`/`repl`: the session's explicit `-f` file option(s), if any, are now forwarded to an addon command it runs, so eg running the `edit` addon from a repl session started with non-default file(s) operates on those same files.
+- `run` scripts are more robust: successfully running an addon command no longer ends the script.
 
-- `run`: a command alias that runs `run` with inline commands (eg `myreport = run -- CMD1 -- CMD2`) no longer needs a redundant extra `--` separator.
+- File handling is more flexible: an `-f` at startup sets the default journal file(s) for all commands, and is passed to addon commands; and a nonexistent default journal file is tolerated, as at the command line (so `add`/`import` can create it).
 
-- `run`/`repl`: when a command name comes only from the config file (none written on the command line), a spurious empty `""` argument is no longer added, which broke commands that treat arguments as patterns (eg `files` configured as the default command via `--conf`).
+- The REPL now auto-reloads before each command, detecting changes in input files, the config file, or installed addon commands. This can be disabled with the `--no-watch` flag.
 
-- REPL: `--no-watch` disables all of the REPL's auto-reloading (below); watching remains on by default.
+- The REPL is friendlier: it shows a small startup banner, and the journal's base file name in the prompt; the help and quit commands are `h` and `q`; and `echo` interprets common backslash escapes like `\n` and `\t`.
 
-- REPL, before each command, auto-reloads: any changed input file (or included file); the active config file's `[alias]` definitions, if the file changed on disk; and the addon command list, if `PATH` changed (so newly-installed `hledger-*` executables become usable without restarting). A notice is printed on each reload; a reload that fails to parse keeps the previous version and shows the error, and the command still runs.
-
-- REPL: the coloured prompt no longer garbles the display in terminals that only partially emulate xterm, such as Emacs's `M-x shell` (comint); such environments now get a plain prompt, while vterm and real terminals keep the coloured one.
-
-- REPL: `CMD -h` now shows the same full help as at the command line (previously truncated, cut off before the general options), paged through the same pager used elsewhere.
-
-- REPL: `echo` now interprets the common backslash escapes `\n`, `\t`, `\r`, `\\` (previously printed literally; unrecognised escapes are left as written).
-
-- REPL: a colourful startup banner (program name, version, usage hint) and a faint prompt are now shown at startup; the prompt format changed from `%` to `BASEFILENAME>`.
-
-- REPL and `run` now tolerate a nonexistent default journal file, like the plain CLI: `add`/`import` can create it, and starting a repl session or running a command file no longer requires the file to already exist (other commands still report "not found" when actually run).
-
-- `run`/`repl`: general flags - input, reporting and display flags such as `-I`, `--strict`, `--alias`, `-b`/`-e`, `--depth`, `--cost`, `--value`, `--color` - are now applied to every command they run; a command's own flags still take precedence (eg a command's `--strict` overrides run's `-I`, or `--depth 2` overrides run's `--depth 1`). `--file` is excluded (it continues to act as the default journal), as are the help-action flags (`-h`/`--help`/`--examples`/`--info`/`--man`/`--version`).
+- Getting help in the REPL works better: `help` and `CMD -h` now show the same full, paged output as at the command line, and `help` (also `setup`) no longer fails when there's a problem in the journal.
 
 ## Reports
 
-- `--tree --transpose` now shows leaf accounts only. [#1941] (JoeJoeflyn)
+- `print` has a new `--oneline` flag showing just each entry's first line, for a compact overview.
 
-- `balance`: new `--full-names` flag (renamed from `--full-path`) shows full account names; it now also works in txt output, not just csv/html/fods. New `--no-elide` flag: in list mode it now also shows parent accounts, with their own (usually zero) exclusive balances, so `--no-elide -E` gives a complete table of every posted-to account and its parents, with full names. Parent accounts within `--drop`'d levels are still omitted, as in tree mode. (Henning Thielemann) [#2429] [#2661]
+- Multi-period balance reports using `--tree` and `--transpose` together now show only the leaf accounts, for less confusing output. [#1941] (JoeJoeflyn)
 
-- `balance`: `--drop` no longer mangles the total row's "Total:" heading in single-period csv/tsv/html/fods output. [#2688]
+- `balance` has a new `--full-names` flag, which in tree mode shows full account names instead of the usual indented leaf names. (Henning Thielemann, [#2429], [#2661]) 
 
-- `balance`: `--transpose` can now be repeated to cancel its effect (an even number of the flags has no effect), so it can be overridden, eg when already enabled via a config file.
+- `balance`'s `--no-elide` flag now also has an effect in list mode: it adds the parents of the posted-to accounts, shown with their own exclusive balances (usually zero, so add `-E` to see them). Eg `bal --no-elide -E` shows a complete table of every posted-to account and its parents. (Henning Thielemann, [#2429], [#2661])
 
-- `roi`: `--pnl` is truly optional again: when omitted, it's now treated as matching no postings (as documented), instead of matching all of them. [#2670] (Dmitry Astapov)
+- In `balance`'s single-period csv/tsv/html/fods output, `--drop` no longer causes the total row's "Total:" heading to be truncated. [#2688]
 
-## Other
+- Omitting `roi`'s `--pnl` option now works as documented, selecting no postings; previously it selected all postings. (Dmitry Astapov, [#2670])
 
-- `setup`: the `commodities` check now ignores undeclared unused commodity aliases, matching `check commodities`'s logic.
+- Repeating the `--transpose` flag now toggles it, allowing a previous `--transpose` to be cancelled.
+
+- `setup` no longer reports unused commodity aliases as undeclared commodities; it's now consistent with `check commodities`.
+
+- HTML output now prevents wrapping within dates and individual commodity amounts, by default. Each amount is wrapped in a `span` with an "amount" class, date cells are marked with a "date" class. `aregister` gets the same builtin table styles as the other reports. A `hledger.css` file now overrides the builtin styles (previously the builtin styles took precedence), and an example `hledger.css` file  provided in the repo.
 
 ## Docs
 
@@ -251,16 +161,15 @@ User-visible changes in the hledger command line tool and library.
 
 ## Examples
 
-- `examples/lots/irr.journal`: new roi vs holdings comparison example, with detailed comparison notes (also added to `lots.journal`)
-- `examples/lots/lot-entries.journal` renamed to `lots.journal`, and updated so a plain `hledger holdings` demonstrates all columns (added a market price, shifted the story dates a year into the past)
-- `examples/home-page-example.journal`: the journal shown on hledger.org's home page is now committed and kept up to date
-- `hledger.css`: sample stylesheet added for styling HTML report output (prevents wrapping within dates and commodity amounts)
-- `examples/csv/banking/`: new rules for SimpleFIN (json and csv exports) and for Unify Federal Credit Union
+- `examples/home-page-example.journal` is the example journal from the hledger.org home page
+- `examples/lots/lots.journal` is renamed (from lot-entries.journal), updated so `hledger holdings` shows a full report, and contains notes comparing roi and holdings XIRR
+- `examples/lots/irr.journal` is another example comparing roi and holdings XIRR
+- `examples/csv/banking/` has new rules for SimpleFIN (json and csv exports) and for Unify Federal Credit Union
 
 ## Scripts/addons
 
-- `bin/hledger-bar` (a progress-bar addon): `-h`/`--help` and the verbosity/scale flags (`-v`, `-vv`, new `-sSCALE`) can now appear anywhere among the arguments, not just in a fixed position
-- `bin/getprices`: add a delay between requests
+- `bin/hledger-bar` now allows its flags to appear anywhere among the arguments, and sets scale with a new `-s` option.
+- `bin/getprices` now has a small delay between requests, reducing failures with some providers.
 
 
 [#273]: https://github.com/simonmichael/hledger/issues/273

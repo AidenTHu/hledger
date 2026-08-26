@@ -27,41 +27,31 @@ See also the hledger changelog.
 
 Fixes
 
-- Prevent HTML injection in the add form's completions (Arthur Cinader, Simon Michael, #2698).
-  An XSS (cross-site scripting) vulnerability has been fixed in the add
-  transaction form's autocomplete. Journal data from an untrusted source
-  could execute javascript when shown as a completion suggestion. All
-  hledger-web users are encouraged to upgrade. Full technical details:
-  GHSA-538p-cvc4-4qjm.
+- An XSS (cross-site scripting) vulnerability has been fixed in the
+  add form's autocomplete. Journal data from an untrusted source could
+  execute javascript when shown as a completion suggestion. All
+  hledger-web users should upgrade.
+  (Arthur Cinader, Simon Michael, [#2698], advisory GHSA-538p-cvc4-4qjm)
 
 Improvements
 
+- Keep the account sidebar's scroll position when switching accounts
+  [#2679] (Arthur Cinader).  The sidebar and the main content now
+  scroll independently (on wider screens), so you don't lose your
+  place when clicking an account - the account stays exactly where it
+  was.  doesn't scroll. And, the sidebar's scroll position is
+  remembered across navigations.
+
 - --port 0 lets the OS choose a free port [#2559] (Arthur Cinader).
   The chosen port is reported in the startup message and used in the
-  default base url, so scripts can discover it. To learn the port, we
-  bind the listening socket ourselves (with streaming-commons'
-  bindRandomPortTCP, which warp's own helpers build on) and hand it to
-  warp. Supported with --serve and --serve-api; --serve-browse reports
-  an error, since it needs a known port up front to open the browser at.
+  default base url, so scripts can discover it. Supported with --serve
+  and --serve-api.
 
-- Keep the account sidebar's scroll position when switching accounts [#2679] (Arthur Cinader).
-  When reviewing a long chart of accounts, clicking an account reloaded the
-  page scrolled to the top, so the sidebar jumped back to the top and you
-  lost your place while working down the account list.
-
-  The sidebar and the main content now scroll independently (on wider
-  screens), so the window itself doesn't scroll, and the sidebar's scroll
-  position is remembered across navigations (per-tab, in sessionStorage).
-  The account you clicked stays exactly where it was. This is most
-  noticeable with a long account list, and/or long transaction lists,
-  where both panes extend below the viewport. (Restoring the position is
-  done from an inline script that runs mid-parse, before the sidebar is
-  first painted, avoiding a visible stutter.)
-
-- Add the -? and --webman flags; --tldr was renamed to --examples (see hledger changelog).
+- Add the -? and --webman flags; rename --tldr to --examples (see hledger changelog).
 
 [#2559]: https://github.com/simonmichael/hledger/issues/2559
 [#2679]: https://github.com/simonmichael/hledger/issues/2679
+[#2698]: https://github.com/simonmichael/hledger/issues/2698
 
 
 # 1.52.2 2026-08-24

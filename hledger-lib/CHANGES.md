@@ -17,7 +17,12 @@ API/developer-ish changes in hledger-lib.
 For user-visible changes, see the hledger package changelog.
 
 
-# f0229d4b
+# d4e0c16a
+
+- `Write.Spreadsheet`'s `Cell` has a new `cellParts` field, holding a multi-commodity amount's individual amounts for writers (eg HTML) that want to style each one separately; other writers can ignore it and use `cellContent` as before. `Data.Amount` has a new `showMixedAmountOneLinePartsB`, like `showMixedAmountOneLineB` but returning the amounts individually rather than joined.
+
+
+
 
 
 
