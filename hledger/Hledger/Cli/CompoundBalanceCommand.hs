@@ -359,12 +359,13 @@ compoundBalanceReportAsHtml ropts cbr =
               oneLineNoCostFmt "" (Just nbsp) ropts cbr
       colspanattr = colspan_ $ T.pack $ show $ length $ NonEmpty.head cells
   in do
-    link_ [rel_ "stylesheet", href_ "hledger.css"]
+    -- the builtin styles, then the optional user stylesheet so it can override them
     style_ $ stylesheet $
       tableStyle ++ [
       ("td:nth-child(1)", "white-space:nowrap"),
       ("tr:nth-child(odd) td", "background-color:#eee")
       ]
+    link_ [rel_ "stylesheet", href_ "hledger.css"]
     table_ $ do
       unless (T.null title) $
         tr_ $ th_ [colspanattr, style_ alignleft] $ h2_ $ toHtml title

@@ -40,6 +40,7 @@ import Hledger.Cli.CliOptions
 import Hledger.Cli.Utils
 import Hledger.Write.Csv (CSV, printCSV, printTSV)
 import Hledger.Write.Html (formatRow, htmlAsLazyText, toHtml)
+import Hledger.Write.Html.Attribute (tableStylesheet)
 import Hledger.Write.Ods (printFods)
 import Hledger.Write.Spreadsheet qualified as Spr
 
@@ -187,6 +188,8 @@ accountTransactionsReportItemAsRecord
 accountTransactionsReportAsHTML :: CliOpts -> Query -> Query -> AccountTransactionsReport -> TL.Text
 accountTransactionsReportAsHTML copts reportq thisacctq items =
   htmlAsLazyText $ do
+    -- the builtin styles, then the optional user stylesheet so it can override them
+    L.style_ tableStylesheet
     L.link_ [L.rel_ "stylesheet", L.href_ "hledger.css"]
     L.table_ $ do
       when (headingopt copts) $ L.thead_ $ L.tr_ $ do

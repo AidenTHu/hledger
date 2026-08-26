@@ -33,6 +33,7 @@ import Hledger.Data.Types (Amount, MixedAmount, acommodity)
 import Hledger.Data.Amount (AmountFormat)
 
 import Data.List qualified as List
+import Data.Maybe (isNothing)
 import Data.Text qualified as Text
 import Data.Text (Text)
 import Text.WideString (WideBuilder)
@@ -146,12 +147,17 @@ data Cell border text =
         cellSpan :: Span,
         cellAnchor :: Text,
         cellClass :: Class,
+        -- | The cell content split into parts to be joined with ", ":
+        -- individual amounts of a multi-commodity amount, for writers
+        -- (eg HTML) that want to style each amount separately.
+        -- Empty for other cells and writers; 'cellContent' is always complete.
+        cellParts :: [text],
         cellContent :: text
     }
 
 instance Functor (Cell border) where
-    fmap f (Cell typ border style span anchor class_ content) =
-        Cell typ border style span anchor class_ $ f content
+    fmap f (Cell typ border style span anchor class_ parts content) =
+        Cell typ border style span anchor class_ (map f parts) (f content)
 
 defaultCell :: (Lines border) => text -> Cell border text
 defaultCell text =
@@ -162,6 +168,7 @@ defaultCell text =
         cellSpan = NoSpan,
         cellAnchor = mempty,
         cellClass = Class mempty,
+        cellParts = [],
         cellContent = text
     }
 
@@ -222,7 +229,14 @@ cellFromMixedAmount bopts (cls, mixedAmt) =
         cellType =
           case Amt.unifyMixedAmount mixedAmt of
             Just amt -> amountType bopts amt
-            Nothing -> TypeMixedAmount
+            Nothing -> TypeMixedAmount,
+        -- Individual amounts, for writers that style them separately (eg HTML).
+        -- Only when they can be recovered exactly from the one-line rendering
+        -- (padding to displayMinWidth is insignificant in those writers).
+        cellParts =
+          if Amt.displayOneLine bopts && isNothing (Amt.displayMaxWidth bopts)
+            then map fst $ Amt.showMixedAmountOneLinePartsB bopts mixedAmt
+            else []
     }
 
 cellsFromMixedAmount ::

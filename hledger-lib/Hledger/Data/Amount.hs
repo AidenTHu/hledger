@@ -174,6 +174,7 @@ module Hledger.Data.Amount (
   showMixedAmountB,
   showMixedAmountLinesB,
   showMixedAmountLinesPartsB,
+  showMixedAmountOneLinePartsB,
   wbToText,
   wbUnpack,
   mixedAmountSetPrecision,
@@ -1369,6 +1370,15 @@ showMixedAmountLinesPartsB opts@AmountFormat{displayMaxWidth=mmax,displayMinWidt
       where
         elisionStr = elisionDisplay (Just m) (wbWidth sep) (length long) $ lastDef nullAmountDisplay short
         (short, long) = partition ((m>=) . wbWidth . adBuilder) xs
+
+-- | Like 'showMixedAmountOneLineB' but returns the individual amounts as separate
+-- builders, along with their amounts, and without any padding or eliding
+-- (displayMinWidth and displayMaxWidth are ignored).
+-- Used eg for HTML output, where each amount gets its own styled element.
+showMixedAmountOneLinePartsB :: AmountFormat -> MixedAmount -> [(WideBuilder, Amount)]
+showMixedAmountOneLinePartsB opts ma =
+    [ (showAmountB opts a, a)
+    | a <- orderedAmounts opts $ if displayCost opts then ma else mixedAmountStripCosts ma ]
 
 -- | Helper for showMixedAmountB to deal with single line displays. This does not
 -- honour displayOneLine: all amounts will be displayed as if displayOneLine

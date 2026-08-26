@@ -41,7 +41,9 @@ tableStyle :: [(Text, Text)]
 tableStyle =
   [("table", collapse),
    ("th, td", lpad),
-   ("th.account, td.account", "padding-left:0;")]
+   ("th.account, td.account", "padding-left:0;"),
+   -- prevent wrapping within dates and individual amounts
+   ("td.date, span.amount", "white-space:nowrap")]
 
 bold, doubleborder, topdoubleborder, bottomdoubleborder :: Text
 bold = "font-weight:bold"
