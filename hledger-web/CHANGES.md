@@ -49,9 +49,9 @@ Improvements
 
 - Add the -? and --webman flags; rename --tldr to --examples (see hledger changelog).
 
-[#2559]: https://github.com/simonmichael/hledger/issues/2559
-[#2679]: https://github.com/simonmichael/hledger/issues/2679
-[#2698]: https://github.com/simonmichael/hledger/issues/2698
+[#2559]: https://github.com/plaintextaccounting/hledger/issues/2559
+[#2679]: https://github.com/plaintextaccounting/hledger/issues/2679
+[#2698]: https://github.com/plaintextaccounting/hledger/issues/2698
 
 
 # 1.52.2 2026-08-24
@@ -156,7 +156,7 @@ Docs
 - openapi.yaml (the OpenAPI spec for hledger-web's JSON API) has been updated.
   (n0vdd)
 
-[#2544]: https://github.com/simonmichael/hledger/issues/2544
+[#2544]: https://github.com/plaintextaccounting/hledger/issues/2544
 
 
 # 1.51.2 2026-01-08
@@ -165,7 +165,7 @@ Docs
 
 - Allow base 4.22 / ghc 9.14.
 
-[#2520]: https://github.com/simonmichael/hledger/issues/2520
+[#2520]: https://github.com/plaintextaccounting/hledger/issues/2520
 
 
 # 1.51.1 2025-12-08
@@ -365,7 +365,7 @@ Docs
   This is also applicable to `hledger print`'s JSON output format.
 
 [ghc-debug]: https://gitlab.haskell.org/ghc/ghc-debug
-[openapi.yaml]: https://github.com/simonmichael/hledger/blob/master/hledger-web/config/openapi.yaml
+[openapi.yaml]: https://github.com/plaintextaccounting/hledger/blob/master/hledger-web/config/openapi.yaml
 [tldr]: https://tldr.sh
 
 
@@ -401,9 +401,9 @@ Docs
   the non-display of costs,
   and non-zeros that look like zero because of hidden costs.
 
-[#2140]: https://github.com/simonmichael/hledger/issues/2140
-[#2163]: https://github.com/simonmichael/hledger/issues/2163
-[#2166]: https://github.com/simonmichael/hledger/issues/2166
+[#2140]: https://github.com/plaintextaccounting/hledger/issues/2140
+[#2163]: https://github.com/plaintextaccounting/hledger/issues/2163
+[#2166]: https://github.com/plaintextaccounting/hledger/issues/2166
 
 # 1.32.3 2024-01-28
 
@@ -581,20 +581,20 @@ Improvements
 Fixes
 
 - Toggle showing zero items properly even when called with --empty. 
-  ([#1237](https://github.com/simonmichael/hledger/issues/1237), Stephen Morgan)
+  ([#1237](https://github.com/plaintextaccounting/hledger/issues/1237), Stephen Morgan)
 
 - Do not hide empty accounts if they have non-empty subaccounts. 
-  ([#1237](https://github.com/simonmichael/hledger/issues/1237), Stephen Morgan)
+  ([#1237](https://github.com/plaintextaccounting/hledger/issues/1237), Stephen Morgan)
 
 - Allow unbalanced postings (parenthesised account name) in the add transaction form. 
-  ([#1058](https://github.com/simonmichael/hledger/issues/1058), Stephen Morgan)
+  ([#1058](https://github.com/plaintextaccounting/hledger/issues/1058), Stephen Morgan)
 
 - An XSS (cross-site scripting) vulnerability has been fixed.
   Previously (since hledger-web 0.24), javascript code could be added 
   to any autocompleteable field and could be executed automatically 
   by subsequent visitors viewing the journal.
   Thanks to Gaspard Baye and Hamidullah Muslih for reporting this vulnerability.
-  ([#1525](https://github.com/simonmichael/hledger/issues/1525), Arsen Arsenović)
+  ([#1525](https://github.com/plaintextaccounting/hledger/issues/1525), Arsen Arsenović)
 
 API changes
 

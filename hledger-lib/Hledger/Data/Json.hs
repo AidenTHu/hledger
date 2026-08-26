@@ -42,7 +42,7 @@ instance ToJSON Pos where
   toJSON = toJSON . unPos
   toEncoding = toEncoding . unPos
 
--- https://github.com/simonmichael/hledger/issues/1195
+-- https://github.com/plaintextaccounting/hledger/issues/1195
 
 -- The default JSON output for Decimal can contain 255-digit integers
 -- (for repeating decimals caused by implicit transaction prices).

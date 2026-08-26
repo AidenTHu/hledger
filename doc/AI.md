@@ -171,7 +171,7 @@ because the cost of designing and building it outweighed the need and the availa
 
 ## Measuring usage
 
-The hledger project's estimated AI usage is tracked in [ai.journal](https://github.com/simonmichael/hledger/blob/main/doc/ai/ai.journal).
+The hledger project's estimated AI usage is tracked in [ai.journal](https://github.com/plaintextaccounting/hledger/blob/main/doc/ai/ai.journal).
 
 Some notes on tracking AI usage:
 

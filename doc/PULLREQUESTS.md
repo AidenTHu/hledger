@@ -5,7 +5,7 @@ Last updated: 2026-07
 ## Guidelines
 
 <!-- keep synced -->
-From <https://github.com/simonmichael/hledger/blob/main/.github/pull_request_template.md?plain=1>:
+From <https://github.com/plaintextaccounting/hledger/blob/main/.github/pull_request_template.md?plain=1>:
 
 We welcome help, but we must also balance the cost and benefit of pull requests,
 with available maintainer/reviewer time, and with our [AI policy](https://hledger.org/AI.html).

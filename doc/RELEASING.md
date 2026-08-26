@@ -251,7 +251,7 @@ Last updated: 2025-11
   - release tags pushed to github  
       `just reltags-push VER`
   - github draft release with release binaries attached  
-      <https://github.com/simonmichael/hledger/releases/new> *(XXX safari may not show new tag, may need brave)*  
+      <https://github.com/plaintextaccounting/hledger/releases/new> *(XXX safari may not show new tag, may need brave)*  
       `just ghrel-notes` (in release branch)  
       `just ghbin-download` <!-- (or if throttled: `just ghbin-open`, download to tmp/, unzip the unix ones) -->  
       `just ghrel-bin-upload VER`  
@@ -280,7 +280,7 @@ Last updated: 2025-11
     `j devtag-push`
   - RELEASING.md checklist/notes updated
   - monitor/support/handle issues:
-    [issue tracker](https://github.com/simonmichael/hledger/issues?q=is%3Aopen+is%3Aissue), matrix, irc, mail list, forum, reddit
+    [issue tracker](https://github.com/plaintextaccounting/hledger/issues?q=is%3Aopen+is%3Aissue), matrix, irc, mail list, forum, reddit
 
 Some more good things to do after a release:
 
@@ -494,7 +494,7 @@ A local developer build of unreleased code. This is typically in `main` or a dev
 ### Repos and branches
 
 **hledger repo**\
-The `hledger` git repository, containing the hledger software, reference manuals, and developer docs. <https://github.com/simonmichael/hledger>
+The `hledger` git repository, containing the hledger software, reference manuals, and developer docs. <https://github.com/plaintextaccounting/hledger>
 
 **site repo**\
 The `hledger_website` git repository, containing most of the hledger website which appears at <https://hledger.org>. Usually checked out under the hledger repo as `site/`. <https://github.com/simonmichael/hledger_website>

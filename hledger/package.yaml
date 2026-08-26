@@ -110,7 +110,7 @@ dependencies:
 - extra >=1.7.11
 - filepath
 - githash >=0.1.6.2
-# https://github.com/simonmichael/hledger/issues/2410
+# https://github.com/plaintextaccounting/hledger/issues/2410
 # haskeline 0.8.4.0+ is needed to fix ANSI display by add on MS Windows (https://github.com/haskell/haskeline/issues/130).
 # But most stackage snapshots have an older haskeline, that can't be upgraded because it's a GHC core lib.
 # Dev builds and the github release builds force the newer haskeline (by using a recent stackage snapshot, or cabal), so are free of the bug.

@@ -123,7 +123,7 @@ hledger guesses a journal's base currency, eg for fetching prices, and shows it 
 
 ### Keep Open Collective, but steer small donations elsewhere
 
-([#2660](https://github.com/simonmichael/hledger/issues/2660))
+([#2660](https://github.com/plaintextaccounting/hledger/issues/2660))
 Open Source Collective, our fiscal host, charges 10% on every donation, holds the funds
 (they are legally owned by OSC, not by the project or by Simon), pays no interest,
 and can add friction to routine reimbursements.

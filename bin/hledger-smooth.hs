@@ -4,7 +4,7 @@
 -- See hledger-check-fancyassertions.hs.
 
 
--- This is an unfinished prototype, see https://github.com/simonmichael/hledger/issues/1171
+-- This is an unfinished prototype, see https://github.com/plaintextaccounting/hledger/issues/1171
 -- Requires a contemporaneous version of the hledger package.
 -- Requires journal entries to be sorted by date.
 -- Run it inside an up to date hledger source tree, eg: bin/hledger-smooth.hs ACCT

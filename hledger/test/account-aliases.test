@@ -147,7 +147,7 @@ $ hledger -f- reg '^a$' '^b$'
 2017-01-01                      b                                1             1
                                 b                               -1             0
 
-# recursive aliases https://github.com/simonmichael/hledger/issues/1055
+# recursive aliases https://github.com/plaintextaccounting/hledger/issues/1055
 
 # ** 10. Recursive command line simple aliases.
 <

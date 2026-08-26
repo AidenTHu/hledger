@@ -203,7 +203,7 @@ tests:
     - hledger-lib
 
   # cabal users: when run by cabal, doctest requires a ghc environment file, so cabal.project ensures that
-  # https://github.com/simonmichael/hledger/issues/1139
+  # https://github.com/plaintextaccounting/hledger/issues/1139
   doctest:
     source-dirs: test
     main: doctests.hs  # can't call it doctest.hs ("File name does not match module name")

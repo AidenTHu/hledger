@@ -79,7 +79,7 @@ See also: [ACHIEVEMENTS](ACHIEVEMENTS.md)
 - Effectiveness: Improve getting-started experience, just-works quality, practicality,
 real-world usefulness.
 - Investment: Improve suitability for investment tracking
-([#1015](https://github.com/simonmichael/hledger/issues/1015))
+([#1015](https://github.com/plaintextaccounting/hledger/issues/1015))
 - Charts: Add charts and more visual appeal.
 - Correctness: More support for enforcing correctness & accounting rules.
 

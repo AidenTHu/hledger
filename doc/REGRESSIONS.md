@@ -127,80 +127,80 @@ Fixer  bounties began on 2024-01-01.
 - [Open Collective expense requests](https://opencollective.com/hledger/expenses)  <!-- not ?amount=50-100 because other currencies -->
 
 
-[#2642]: https://github.com/simonmichael/hledger/issues/2642
-[#2564]: https://github.com/simonmichael/hledger/issues/2564
-[#2553]: https://github.com/simonmichael/hledger/issues/2553
-[#2514]: https://github.com/simonmichael/hledger/issues/2514
-[#2512]: https://github.com/simonmichael/hledger/issues/2512
-[#2503]: https://github.com/simonmichael/hledger/issues/2503
-[#2498]: https://github.com/simonmichael/hledger/issues/2498
-[#2495]: https://github.com/simonmichael/hledger/issues/2495
-[#2493]: https://github.com/simonmichael/hledger/issues/2493
-[#2479]: https://github.com/simonmichael/hledger/issues/2479
-[#2478]: https://github.com/simonmichael/hledger/issues/2478
-[#2469]: https://github.com/simonmichael/hledger/issues/2469
-[#2465]: https://github.com/simonmichael/hledger/issues/2465
-[#2454]: https://github.com/simonmichael/hledger/issues/2454
-[#2452]: https://github.com/simonmichael/hledger/issues/2452
-[#2444]: https://github.com/simonmichael/hledger/issues/2444
-[#2417]: https://github.com/simonmichael/hledger/issues/2417
-[#2407]: https://github.com/simonmichael/hledger/issues/2407
-[#2406]: https://github.com/simonmichael/hledger/issues/2406
-[#2405]: https://github.com/simonmichael/hledger/issues/2405
-[#2397]: https://github.com/simonmichael/hledger/issues/2397
-[#2396]: https://github.com/simonmichael/hledger/issues/2396
-[#2389]: https://github.com/simonmichael/hledger/issues/2389
-[#2386]: https://github.com/simonmichael/hledger/issues/2386
-[#2352]: https://github.com/simonmichael/hledger/issues/2352
-[#2302]: https://github.com/simonmichael/hledger/issues/2302
-[#2284]: https://github.com/simonmichael/hledger/issues/2284
-[#2254]: https://github.com/simonmichael/hledger/issues/2254
-[#2227]: https://github.com/simonmichael/hledger/issues/2227
-[#2225]: https://github.com/simonmichael/hledger/issues/2225
-[#2224]: https://github.com/simonmichael/hledger/issues/2224
-[#2196]: https://github.com/simonmichael/hledger/issues/2196
-[#2156]: https://github.com/simonmichael/hledger/issues/2156
-[#2153]: https://github.com/simonmichael/hledger/issues/2153
-[#2150]: https://github.com/simonmichael/hledger/issues/2150
-[#2137]: https://github.com/simonmichael/hledger/issues/2137
-[#2134]: https://github.com/simonmichael/hledger/issues/2134
-[#2130]: https://github.com/simonmichael/hledger/issues/2130
-[#2127]: https://github.com/simonmichael/hledger/issues/2127
-[#2125]: https://github.com/simonmichael/hledger/issues/2125
-[#2115]: https://github.com/simonmichael/hledger/issues/2115
-[#2091]: https://github.com/simonmichael/hledger/issues/2091
-[#2072]: https://github.com/simonmichael/hledger/issues/2072
-[#2071]: https://github.com/simonmichael/hledger/issues/2071
-[#2045]: https://github.com/simonmichael/hledger/issues/2045
-[#2034]: https://github.com/simonmichael/hledger/issues/2034
-[#2032]: https://github.com/simonmichael/hledger/issues/2032
-[#2023]: https://github.com/simonmichael/hledger/issues/2023
-[#2020]: https://github.com/simonmichael/hledger/issues/2020
-[#2018]: https://github.com/simonmichael/hledger/issues/2018
-[#2012]: https://github.com/simonmichael/hledger/issues/2012
-[#1933]: https://github.com/simonmichael/hledger/issues/1933
-[#1932]: https://github.com/simonmichael/hledger/issues/1932
-[#1851]: https://github.com/simonmichael/hledger/issues/1851
-[#1800]: https://github.com/simonmichael/hledger/issues/1800
-[#1782]: https://github.com/simonmichael/hledger/issues/1782
-[#1745]: https://github.com/simonmichael/hledger/issues/1745
-[#1736]: https://github.com/simonmichael/hledger/issues/1736
-[#1698]: https://github.com/simonmichael/hledger/issues/1698
-[#1688]: https://github.com/simonmichael/hledger/issues/1688
-[#1656]: https://github.com/simonmichael/hledger/issues/1656
-[#1642]: https://github.com/simonmichael/hledger/issues/1642
-[#1638]: https://github.com/simonmichael/hledger/issues/1638
-[#1625]: https://github.com/simonmichael/hledger/issues/1625
-[#1607]: https://github.com/simonmichael/hledger/issues/1607
-[#1597]: https://github.com/simonmichael/hledger/issues/1597
-[#1568]: https://github.com/simonmichael/hledger/issues/1568
-[#1566]: https://github.com/simonmichael/hledger/issues/1566
-[#1527]: https://github.com/simonmichael/hledger/issues/1527
-[#1526]: https://github.com/simonmichael/hledger/issues/1526
-[#1523]: https://github.com/simonmichael/hledger/issues/1523
-[#1508]: https://github.com/simonmichael/hledger/issues/1508
-[#1468]: https://github.com/simonmichael/hledger/issues/1468
-[#1439]: https://github.com/simonmichael/hledger/issues/1439
+[#2642]: https://github.com/plaintextaccounting/hledger/issues/2642
+[#2564]: https://github.com/plaintextaccounting/hledger/issues/2564
+[#2553]: https://github.com/plaintextaccounting/hledger/issues/2553
+[#2514]: https://github.com/plaintextaccounting/hledger/issues/2514
+[#2512]: https://github.com/plaintextaccounting/hledger/issues/2512
+[#2503]: https://github.com/plaintextaccounting/hledger/issues/2503
+[#2498]: https://github.com/plaintextaccounting/hledger/issues/2498
+[#2495]: https://github.com/plaintextaccounting/hledger/issues/2495
+[#2493]: https://github.com/plaintextaccounting/hledger/issues/2493
+[#2479]: https://github.com/plaintextaccounting/hledger/issues/2479
+[#2478]: https://github.com/plaintextaccounting/hledger/issues/2478
+[#2469]: https://github.com/plaintextaccounting/hledger/issues/2469
+[#2465]: https://github.com/plaintextaccounting/hledger/issues/2465
+[#2454]: https://github.com/plaintextaccounting/hledger/issues/2454
+[#2452]: https://github.com/plaintextaccounting/hledger/issues/2452
+[#2444]: https://github.com/plaintextaccounting/hledger/issues/2444
+[#2417]: https://github.com/plaintextaccounting/hledger/issues/2417
+[#2407]: https://github.com/plaintextaccounting/hledger/issues/2407
+[#2406]: https://github.com/plaintextaccounting/hledger/issues/2406
+[#2405]: https://github.com/plaintextaccounting/hledger/issues/2405
+[#2397]: https://github.com/plaintextaccounting/hledger/issues/2397
+[#2396]: https://github.com/plaintextaccounting/hledger/issues/2396
+[#2389]: https://github.com/plaintextaccounting/hledger/issues/2389
+[#2386]: https://github.com/plaintextaccounting/hledger/issues/2386
+[#2352]: https://github.com/plaintextaccounting/hledger/issues/2352
+[#2302]: https://github.com/plaintextaccounting/hledger/issues/2302
+[#2284]: https://github.com/plaintextaccounting/hledger/issues/2284
+[#2254]: https://github.com/plaintextaccounting/hledger/issues/2254
+[#2227]: https://github.com/plaintextaccounting/hledger/issues/2227
+[#2225]: https://github.com/plaintextaccounting/hledger/issues/2225
+[#2224]: https://github.com/plaintextaccounting/hledger/issues/2224
+[#2196]: https://github.com/plaintextaccounting/hledger/issues/2196
+[#2156]: https://github.com/plaintextaccounting/hledger/issues/2156
+[#2153]: https://github.com/plaintextaccounting/hledger/issues/2153
+[#2150]: https://github.com/plaintextaccounting/hledger/issues/2150
+[#2137]: https://github.com/plaintextaccounting/hledger/issues/2137
+[#2134]: https://github.com/plaintextaccounting/hledger/issues/2134
+[#2130]: https://github.com/plaintextaccounting/hledger/issues/2130
+[#2127]: https://github.com/plaintextaccounting/hledger/issues/2127
+[#2125]: https://github.com/plaintextaccounting/hledger/issues/2125
+[#2115]: https://github.com/plaintextaccounting/hledger/issues/2115
+[#2091]: https://github.com/plaintextaccounting/hledger/issues/2091
+[#2072]: https://github.com/plaintextaccounting/hledger/issues/2072
+[#2071]: https://github.com/plaintextaccounting/hledger/issues/2071
+[#2045]: https://github.com/plaintextaccounting/hledger/issues/2045
+[#2034]: https://github.com/plaintextaccounting/hledger/issues/2034
+[#2032]: https://github.com/plaintextaccounting/hledger/issues/2032
+[#2023]: https://github.com/plaintextaccounting/hledger/issues/2023
+[#2020]: https://github.com/plaintextaccounting/hledger/issues/2020
+[#2018]: https://github.com/plaintextaccounting/hledger/issues/2018
+[#2012]: https://github.com/plaintextaccounting/hledger/issues/2012
+[#1933]: https://github.com/plaintextaccounting/hledger/issues/1933
+[#1932]: https://github.com/plaintextaccounting/hledger/issues/1932
+[#1851]: https://github.com/plaintextaccounting/hledger/issues/1851
+[#1800]: https://github.com/plaintextaccounting/hledger/issues/1800
+[#1782]: https://github.com/plaintextaccounting/hledger/issues/1782
+[#1745]: https://github.com/plaintextaccounting/hledger/issues/1745
+[#1736]: https://github.com/plaintextaccounting/hledger/issues/1736
+[#1698]: https://github.com/plaintextaccounting/hledger/issues/1698
+[#1688]: https://github.com/plaintextaccounting/hledger/issues/1688
+[#1656]: https://github.com/plaintextaccounting/hledger/issues/1656
+[#1642]: https://github.com/plaintextaccounting/hledger/issues/1642
+[#1638]: https://github.com/plaintextaccounting/hledger/issues/1638
+[#1625]: https://github.com/plaintextaccounting/hledger/issues/1625
+[#1607]: https://github.com/plaintextaccounting/hledger/issues/1607
+[#1597]: https://github.com/plaintextaccounting/hledger/issues/1597
+[#1568]: https://github.com/plaintextaccounting/hledger/issues/1568
+[#1566]: https://github.com/plaintextaccounting/hledger/issues/1566
+[#1527]: https://github.com/plaintextaccounting/hledger/issues/1527
+[#1526]: https://github.com/plaintextaccounting/hledger/issues/1526
+[#1523]: https://github.com/plaintextaccounting/hledger/issues/1523
+[#1508]: https://github.com/plaintextaccounting/hledger/issues/1508
+[#1468]: https://github.com/plaintextaccounting/hledger/issues/1468
+[#1439]: https://github.com/plaintextaccounting/hledger/issues/1439
 
 
 ## Old regression bounties
@@ -221,7 +221,7 @@ Here's the old description of the regression bounties, for the record:
 > ### Regression finder bounty
 > 
 > **Before 2026-07** we offered a $50 bounty for newly reported regression bugs (arising any time in the past, still affecting latest main).
-> ([original announcement](https://github.com/simonmichael/hledger/issues/1570))
+> ([original announcement](https://github.com/plaintextaccounting/hledger/issues/1570))
 > 
 > ### Regression fixer bounty
 > 

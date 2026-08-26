@@ -13,7 +13,7 @@ from the disposed lot's accumulated revaluation balance rather than computed
 on the spot.
 
 This was the trade-off discussed in commit
-[80b320acc](https://github.com/simonmichael/hledger/commit/80b320acc):
+[80b320acc](https://github.com/plaintextaccounting/hledger/commit/80b320acc):
 that commit chose not to generate revaluation postings, paying the cost of
 a less inspectable ugain in exchange for less synthetic noise. The
 disposal-only-gain rework documented in `PLAN-gain-checking.md` (the

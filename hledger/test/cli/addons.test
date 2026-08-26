@@ -34,27 +34,27 @@ $  PATH=$PATH:addons hledger --conf /dev/null addon
 
 
 # These tests are commented out, as they are not working properly. See:
-#  https://github.com/simonmichael/hledger/issues/457
-#  https://github.com/simonmichael/hledger/pull/1140#issuecomment-562793255
+#  https://github.com/plaintextaccounting/hledger/issues/457
+#  https://github.com/plaintextaccounting/hledger/pull/1140#issuecomment-562793255
 #
-# # 0. test for `>` in https://github.com/simonmichael/hledger/issues/457
+# # 0. test for `>` in https://github.com/plaintextaccounting/hledger/issues/457
 # # note a shelltest already provides one level of quoting, so amt:>0 not 'amt:>0'
 # #
 # $ hledger -f - ui amt:>0
 # >2 !/could not parse/
 # >=1
 #
-# # 0. test for `<` in https://github.com/simonmichael/hledger/issues/457
+# # 0. test for `<` in https://github.com/plaintextaccounting/hledger/issues/457
 # $ hledger -f - ui amt:<0
 # >2 !/could not parse/
 # >=1
 #
-# # 0. test for `>=` in https://github.com/simonmichael/hledger/issues/457
+# # 0. test for `>=` in https://github.com/plaintextaccounting/hledger/issues/457
 # $ hledger -f - ui amt:>=0
 # >2 !/could not parse/
 # >=1
 #
-# # 0. test for `<=` in https://github.com/simonmichael/hledger/issues/457
+# # 0. test for `<=` in https://github.com/plaintextaccounting/hledger/issues/457
 # $ hledger -f - ui amt:<=0
 # >2 !/could not parse/
 # >=1

@@ -398,7 +398,7 @@ This requires a well-configured environment. Here are some tips:
 - On Windows, for best results you should run hledger in the same kind of environment in which it was built.
   Eg hledger built in the standard CMD.EXE environment (like the binaries on our download page)
   might show display problems when run in a cygwin or msys terminal, and vice versa.
-  (See eg [#961](https://github.com/simonmichael/hledger/issues/961#issuecomment-471229644)).
+  (See eg [#961](https://github.com/plaintextaccounting/hledger/issues/961#issuecomment-471229644)).
 
 ## Regular expressions
 
@@ -570,7 +570,7 @@ Only one config file is used. Here's a small example:
 ```
 
 And here is a commented starter config file:
-<https://github.com/simonmichael/hledger/blob/main/hledger.conf.sample>
+<https://github.com/plaintextaccounting/hledger/blob/main/hledger.conf.sample>
 
 You can put not only options, but also arguments in a config file.
 
@@ -889,7 +889,7 @@ for Beancount, the top level account names must be `Assets`, `Liabilities`, `Equ
 
 A top level hledger account named `revenue` or `revenues` (case insensitive) will be converted to `Income` for Beancount.
 To adjust other top level account names, you should use `--alias` (see [Account aliases](#alias-directive),
-or this [hledger2beancount.conf](https://github.com/simonmichael/hledger/blob/main/examples/hledger2beancount.conf) file).
+or this [hledger2beancount.conf](https://github.com/plaintextaccounting/hledger/blob/main/examples/hledger2beancount.conf) file).
 <!-- (see also "hledger and Beancount" <https://hledger.org/beancount.html>). -->
 
 #### Beancount account names
@@ -979,17 +979,17 @@ This is not yet much used; feedback is welcome.
 
 Our JSON is rather large and verbose, since it is a faithful representation of hledger's internal data types. 
 To understand its structure, read the Haskell type definitions, which are mostly in
-<https://github.com/simonmichael/hledger/blob/main/hledger-lib/Hledger/Data/Types.hs>.
+<https://github.com/plaintextaccounting/hledger/blob/main/hledger-lib/Hledger/Data/Types.hs>.
 [hledger-web's OpenAPI specification][openapi.yaml] may also be relevant.
 
-[openapi.yaml]: https://github.com/simonmichael/hledger/blob/main/hledger-web/config/openapi.yaml
+[openapi.yaml]: https://github.com/plaintextaccounting/hledger/blob/main/hledger-web/config/openapi.yaml
 
 hledger stores numbers with sometimes up to 255 significant digits.
 This is too many digits for most JSON consumers,
 so in JSON output we round numbers to at most 10 decimal places.
 (We don't limit the number of integer digits.)
 If you find this causing problems, please let us know.
-Related: [#1195](https://github.com/simonmichael/hledger/issues/1195)
+Related: [#1195](https://github.com/plaintextaccounting/hledger/issues/1195)
 
 This is not yet much used; feedback is welcome.
 
@@ -2246,7 +2246,7 @@ Eg, to have `alias` directives affect all of your files, put them at the start o
 | **[`tag`]**               | Declares a tag name, for checking all entries in all files.                                                                                                                                                                                                                                     | N                   |
 | **[`P`]**                 | Declares a commodity's market price on some date, for [value](#value-reporting) and [gain](#lot-reporting) reports.                                                                                                                                                                             |                     |
 |                           | <br>**Generates data:**                                                                                                                                                                                                                                                                         |                     |
-| **[`=`]**                 | Declares an auto posting rule that generates extra postings with [`--auto`](#auto-postings), in current/parent/subfiles (but not sibling files, see [#1212](https://github.com/simonmichael/hledger/issues/1212)).                                                                              | partly              |
+| **[`=`]**                 | Declares an auto posting rule that generates extra postings with [`--auto`](#auto-postings), in current/parent/subfiles (but not sibling files, see [#1212](https://github.com/plaintextaccounting/hledger/issues/1212)).                                                                              | partly              |
 | **[`~`]**                 | Declares a periodic transaction rule that generates <br>1. future transactions with [`--forecast`](#--forecast), and <br>2. budget goals with [`balance --budget`](#budget-report).                                                                                                             | N                   |
 |                           | <br>**File reading (legacy/deprecated):**                                                                                                                                                                                                                                                       |                     |
 | [`apply account`]         | Prepends a common parent account to all account names, in following entries until `end apply account` or file end.                                                                                                                                                                              | Y                   |
@@ -2435,7 +2435,7 @@ Tips:
 
 - The rules for inferring types from account names are as follows (using [Regular expressions](#regular-expressions)). \
   If they don't work for you, just ignore them and declare your types with `type:` tags.
-  <!-- monospace to work around https://github.com/simonmichael/hledger/issues/1573 -->
+  <!-- monospace to work around https://github.com/plaintextaccounting/hledger/issues/1573 -->
   ```
   If account's name contains this case insensitive regular expression | its type is
   --------------------------------------------------------------------|-------------
@@ -3089,7 +3089,7 @@ and then copy that output into the journal file to make it permanent.
 An auto posting rule can affect any transaction in the current file,
 or in any parent file or child file. Note, currently it will not
 affect sibling files (when multiple `-f`/`--file` are used - see
-[#1212](https://github.com/simonmichael/hledger/issues/1212)).
+[#1212](https://github.com/plaintextaccounting/hledger/issues/1212)).
 
 ### Auto postings and dates
 
@@ -3106,7 +3106,7 @@ Currently, auto postings are added:
 
 Note this means that journal entries must be balanced both before and
 after auto postings are added. This changed in hledger 1.12+; see
-[#893](https://github.com/simonmichael/hledger/issues/893) for
+[#893](https://github.com/plaintextaccounting/hledger/issues/893) for
 background.
 
 This also means that you cannot have more than one auto-posting with a missing
@@ -3508,7 +3508,7 @@ $ hledger print -f basic.csv
 
 There's an introductory [Tutorial: Import CSV data](/import-csv.html) on hledger.org,
 and more [CSV rules examples](#csv-rules-examples) below,
-and a larger collection at <https://github.com/simonmichael/hledger/tree/main/examples/csv>.
+and a larger collection at <https://github.com/plaintextaccounting/hledger/tree/main/examples/csv>.
 
 ## CSV rules cheatsheet
 
@@ -3623,7 +3623,7 @@ source | simplefinjson >data/simplefin.json && simplefincsv data/simplefin.json 
 source | simplefincsv data/simplefin.json 'unify.*checking'
 ```
 
-(`paypal*` and `simplefin*` scripts are in [bin/](https://github.com/simonmichael/hledger/tree/main/bin#readme))
+(`paypal*` and `simplefin*` scripts are in [bin/](https://github.com/plaintextaccounting/hledger/tree/main/bin#readme))
 
 Whenever hledger runs one of these commands, it will echo the command on stderr.
 If the command produces error output, but exits successfully, hledger will show the error output as a warning.
@@ -3983,7 +3983,7 @@ Tips:
 
 - Interpolation strips outer whitespace (so a CSV value like `" 1 "`
 becomes `1` when interpolated)
-([#1051](https://github.com/simonmichael/hledger/issues/1051)).
+([#1051](https://github.com/plaintextaccounting/hledger/issues/1051)).
 - Interpolations always refer to a CSV field -
   you can't interpolate a hledger field.
   (See [Referencing other fields](#referencing-other-fields) below).
@@ -5141,7 +5141,7 @@ $ hledger -f t.timeclock print
 ```
 
 Here is a
-[sample.timeclock](https://raw.github.com/simonmichael/hledger/main/examples/sample.timeclock) to
+[sample.timeclock](https://raw.github.com/plaintextaccounting/hledger/main/examples/sample.timeclock) to
 download and some queries to try:
 
 ```cli
@@ -5665,7 +5665,7 @@ Also, `weekday` and `weekendday` are shorthand for `mon,tue,wed,thu,fri` and `sa
 This is mainly intended for use with `--forecast`, to generate 
 [periodic transactions](#periodic-transactions) on arbitrary days of the week.
 It may be less useful with `-p`, since it divides each week into subperiods  of unequal length, which is unusual.
-(Related: [#1632](https://github.com/simonmichael/hledger/pull/1632))
+(Related: [#1632](https://github.com/plaintextaccounting/hledger/pull/1632))
 
 Examples:
 
@@ -6014,7 +6014,7 @@ When account names are [rewritten](#alias-directive) with `--alias` or `alias`,
 
 When amounts are converted to other commodities in [cost](#cost-reporting) or [value](#value-reporting) reports,
 `cur:` and `amt:` match the old commodity symbol and the old amount quantity, not the new ones.
-(Except in hledger 1.22, [#1625](https://github.com/simonmichael/hledger/issues/1625).)
+(Except in hledger 1.22, [#1625](https://github.com/plaintextaccounting/hledger/issues/1625).)
 
 # Pivoting
 
@@ -6568,7 +6568,7 @@ Downsides:
 - The precise format of the journal entry becomes more important.
   If hledger can't detect and match up the cost and equity postings, it will give a transaction balancing error.
 
-- The [add](#add) command does not yet accept this kind of entry ([#2056](https://github.com/simonmichael/hledger/issues/2056)).
+- The [add](#add) command does not yet accept this kind of entry ([#2056](https://github.com/plaintextaccounting/hledger/issues/2056)).
 
 - This is the most verbose form.
 
@@ -6732,7 +6732,7 @@ To be safe, specify the valuation commmodity, eg:
 
 Signed costs and market prices can be confusing.
 For reference, here is the current behaviour (since 1.25).
-(If you think it should work differently, see [#1870](https://github.com/simonmichael/hledger/issues/1870).)
+(If you think it should work differently, see [#1870](https://github.com/plaintextaccounting/hledger/issues/1870).)
 
 ```journal
 2022-01-01 Positive Unit prices
@@ -6973,7 +6973,7 @@ When matching postings based on queries in the presence of valuation, the follow
 4. The postings are matched to the other parts of the query based on post-valued amounts.
 
 Related:
-[#1625](https://github.com/simonmichael/hledger/issues/1625)
+[#1625](https://github.com/plaintextaccounting/hledger/issues/1625)
 
 
 ## Effect of valuation on reports
@@ -6982,8 +6982,8 @@ Here is a reference for how valuation is supposed to affect each part of hledger
 It may be useful when troubleshooting.
 If you find problems, please report them, ideally with a reproducible example.
 Related:
-[#329](https://github.com/simonmichael/hledger/issues/329),
-[#1083](https://github.com/simonmichael/hledger/issues/1083).
+[#329](https://github.com/plaintextaccounting/hledger/issues/329),
+[#1083](https://github.com/plaintextaccounting/hledger/issues/1083).
 
 First, a quick glossary:
 

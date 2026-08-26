@@ -1,6 +1,6 @@
 # The main hledger continuous integration tests.
 # Code must pass this successfully before it can be merged or pushed to main.
-# https://github.com/simonmichael/hledger/settings/branch_protection_rules/17386787
+# https://github.com/plaintextaccounting/hledger/settings/branch_protection_rules/17386787
 # TRIGGER: Runs on any push to ci branch or any pull request against main.
 # ACTION: Builds, tests and saves linux x64 dynamic binaries with stack and the default ghc.
 
@@ -393,7 +393,7 @@ jobs:
 
     # inspect available context info, per
     # https://docs.github.com/en/free-pro-team@latest/actions/reference/context-and-expression-syntax-for-github-actions.
-    # sample output: https://github.com/simonmichael/hledger/runs/1619227104
+    # sample output: https://github.com/plaintextaccounting/hledger/runs/1619227104
     # - name: Dump GitHub context
     #   env:
     #     GITHUB_CONTEXT: ${{ toJson(github) }}

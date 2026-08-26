@@ -18,7 +18,7 @@ and innumerable other benefactors.
 
 196 people have contributed 15.5k commits over 19 years.
 
-[hledger repo > Insights > Contributors](https://github.com/simonmichael/hledger/graphs/contributors)
+[hledger repo > Insights > Contributors](https://github.com/plaintextaccounting/hledger/graphs/contributors)
 
 <style>
 table td:first-child, table th:first-child { white-space: nowrap; text-align:right; }

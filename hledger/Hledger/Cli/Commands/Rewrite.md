@@ -139,7 +139,7 @@ Be careful. Whole transaction being re-formatted in a style of output from
 
 See also: 
 
-https://github.com/simonmichael/hledger/issues/99
+https://github.com/plaintextaccounting/hledger/issues/99
 
 ### rewrite vs. print --auto
 

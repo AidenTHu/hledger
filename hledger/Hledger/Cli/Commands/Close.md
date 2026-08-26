@@ -113,7 +113,7 @@ Unlike balance assertions, assignments will post changes to balances as needed t
 This is another way to set starting balances when migrating to a new file,
 and it will set them correctly even in the presence of earlier files which do not have a closing balances transaction.
 However, it can hide errors, and disturb the accounting equation,
-so `--clopen` is usually [recommended](https://github.com/simonmichael/hledger/issues/2151).
+so `--clopen` is usually [recommended](https://github.com/plaintextaccounting/hledger/issues/2151).
 
 ### close --retain
 
@@ -248,4 +248,4 @@ $ hledger bs -Y -f 2023.j                     # unclosed file, no query needed
 
 #### More detailed close examples
 
-See [examples/multi-year](https://github.com/simonmichael/hledger/tree/main/examples/multi-year/).
+See [examples/multi-year](https://github.com/plaintextaccounting/hledger/tree/main/examples/multi-year/).

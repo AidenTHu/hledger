@@ -1149,11 +1149,11 @@ installrel VER:
     ARCH=$(ghc -ignore-dot-ghci -package-env - -e 'import System.Info' -e 'putStrLn $ case arch of "x86_64"->"x64"; "aarch64"->"arm64"; "arm"->"arm64"; _->"other"')
 
     # if [[ "$OS" == "windows" ]]; then
-    #   cd bin/old && curl -L https://github.com/simonmichael/hledger/releases/download/$VER/hledger-$OS-$ARCH.zip | funzip | `type -P gtar || echo tar` xf - --transform "s/$/-$VER/"
+    #   cd bin/old && curl -L https://github.com/plaintextaccounting/hledger/releases/download/$VER/hledger-$OS-$ARCH.zip | funzip | `type -P gtar || echo tar` xf - --transform "s/$/-$VER/"
     # else
     # fi
 
-    cd bin/old && curl -L https://github.com/simonmichael/hledger/releases/download/$VER/hledger-$OS-$ARCH.tar.gz | `type -P gtar || echo tar` xzf - --transform "s/\$/-$VER/"
+    cd bin/old && curl -L https://github.com/plaintextaccounting/hledger/releases/download/$VER/hledger-$OS-$ARCH.tar.gz | `type -P gtar || echo tar` xzf - --transform "s/\$/-$VER/"
 
 # # download recent versions of the hledger executables from github to bin/hledger*-VER
 # get-recent-binaries:
@@ -1555,7 +1555,7 @@ twih:  # *DATE:
     `just worklog $DATE`
 
     recent issue activity:
-    https://github.com/simonmichael/hledger/issues?q=sort:updated-desc
+    https://github.com/plaintextaccounting/hledger/issues?q=sort:updated-desc
 
 
     == TWIH draft (in clipboard) : ========================
