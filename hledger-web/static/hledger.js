@@ -72,18 +72,6 @@ function hledgerInitGlobal() {
     }
   });
 
-  // HTML escape function from validator.js library
-  // https://github.com/validatorjs/validator.js
-  function escape(str) {
-    return (str + '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;')
-      .replace(/\//g, '&#x2F;');
-  }
-
   // Client-side search form validation
   var searchform = document.getElementById('searchform');
   if (searchform) {
@@ -92,16 +80,18 @@ function hledgerInitGlobal() {
       if (searchInput) {
         var query = searchInput.value.trim();
         
-        var sanitized = escape(query);
-        
-        if (sanitized !== query) {
-          e.preventDefault();
-          alert('Invalid search query: HTML tags and special characters are not allowed.');
-          return false;
-        }
-        
+        // Allow empty queries
         if (query === '') {
           return true;
+        }
+        
+        // Check for potentially dangerous HTML tags (but allow hledger syntax like date:, desc:, etc.)
+        // Only block actual HTML tags like <script>, <img>, etc.
+        var dangerousHtmlPattern = /<\s*(script|iframe|object|embed|form|input|button|link|meta|style)[^>]*>/i;
+        if (dangerousHtmlPattern.test(query)) {
+          e.preventDefault();
+          alert('Invalid search query: HTML tags are not allowed.');
+          return false;
         }
       }
     });
@@ -187,7 +177,7 @@ function hledgerInitPage() {
       var acctLink = row.querySelector('.acct-name');
       if (acctLink) {
         e.preventDefault();
-        window.location.href = acctLink.href;
+        hledgerAjaxNavigate(acctLink.href, true);
       }
     });
 
@@ -446,19 +436,28 @@ function hledgerHighlightHash() {
 }
 
 function hledgerScrollToHashOrTop() {
+  var mainContent = document.getElementById('main-content');
   if (window.location.hash) {
     try {
-      var element = document.querySelector(window.location.hash);
+      var element = document.getElementById(window.location.hash.substring(1));
       if (element) {
-        var rect = element.getBoundingClientRect();
-        window.scrollTo(0, rect.top + window.scrollY);
+        if (mainContent) {
+          mainContent.scrollTop = element.offsetTop - mainContent.offsetTop;
+        } else {
+          var rect = element.getBoundingClientRect();
+          window.scrollTo(0, rect.top + window.scrollY);
+        }
         return;
       }
     } catch (e) {
       // Invalid hash selector, ignore
     }
   }
-  window.scrollTo(0, 0);
+  if (mainContent) {
+    mainContent.scrollTop = 0;
+  } else {
+    window.scrollTo(0, 0);
+  }
 }
 
 //----------------------------------------------------------------------

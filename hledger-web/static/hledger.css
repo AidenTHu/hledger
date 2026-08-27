@@ -294,7 +294,9 @@ body.sidebar-hidden #topbar h1 {
 }
 
 #registerChartCanvas {
-    margin-left: 0.5rem;
+    margin: 0.5rem auto;
+    width: 50rem;
+    height: 25rem;
 }
 
 .sticky-header h1 {
