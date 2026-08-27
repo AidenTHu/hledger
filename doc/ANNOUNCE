@@ -27,15 +27,19 @@ Adam Sardo,
 Rostislav Raykov.
 
 
-hledger (https://hledger.org) is:
+hledger is accounting software, for both beginners and experts,
+that uses human-readable, version-controllable, future-proof plain text files.
+It's free, fast, friendly, dependable, GPL-licensed, cross-platform,
+double-entry, multi-currency, multi-interface, and fun to use.
 
-- free, robust, friendly, fast, cross-platform, double-entry, multi-currency, multi-interface, GNU GPL accounting software
-- built around human-readable, version-controllable, future-proof plain text files
-- for both beginners and experts.
+It can help you learn bookkeeping.. untangle accounting messes..
+track your financial status and history.. run forecasts..
+set budgets and saving goals.. produce detailed time reports..
+convert/transform financial data.. validate other systems..
+and create more balance and calm in your life.
 
-It is a combination of accounting app, bookkeeping multitool, bootcamp/refresher course, and supportive community.
-The UIs may seem basic at first, but hledger is powerful, dependable, and fun to use.
-It can help you learn bookkeeping, untangle accounting messes, track your financial status and history, 
-run forecasts, set budgets and saving goals, produce detailed time reports, convert/transform financial data,
-check the correctness of other systems, and create more balance and calm in your life!
-If you find it valuable, consider becoming a sponsor (https://hledger.org/sponsor.html).
+For more info, see https://hledger.org. (And if it's providing value to
+you, consider becoming a https://hledger.org/sponsor.html !)
+
+
+(Latest source text for announcements & blurbs, truncate as needed.)
