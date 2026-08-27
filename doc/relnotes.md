@@ -92,9 +92,9 @@ Fixes
   expose system files readable by the hledger-web server. See also:
   GHSA-vq7r-8w52-jv84.  [#2704]
 
-  Note: as with #2698 in 1.52.2, these fixes were backported from
+  Note: as in 1.52.2, these fixes were backported from
   AI-assisted fixes in hledger 2, under the security exception in
-  https://hledger.org/AI.html; they have been reviewed and tested.
+  <https://hledger.org/AI.html>; they have been reviewed and tested.
 
 - hledger-web's official binaries, and builds from the hledger source
   tree, now use aeson 2.3, avoiding a denial of service bug.
