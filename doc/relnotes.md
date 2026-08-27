@@ -134,7 +134,7 @@ Fixes
   could execute javascript when shown as a completion suggestion. All
   hledger-web users are encouraged to upgrade. Full technical details:
   GHSA-538p-cvc4-4qjm.
-  (Arthur Cinader, Simon Michael, #2698)
+  (Arthur Cinader, Simon Michael, [#2698])
   
   Note: this bug was detected, and the original patch was generated, by
   Arthur Cinader with AI assistance, for hledger 2.x.  Because the
@@ -152,6 +152,7 @@ Fixes
 Simon Michael,
 Arthur Cinader.
 
+[#2698]: https://github.com/plaintextaccounting/hledger/pull/2698
 
 
 ## 2026-06-24 hledger-1.99.3
