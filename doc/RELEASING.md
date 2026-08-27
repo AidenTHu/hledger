@@ -68,9 +68,9 @@ Steps marked ⚠ push/upload/publish/announce to somewhere shared and are hard o
 always get explicit go-ahead for that specific step, even mid-release, even if earlier steps were approved.
 Steps without ⚠ are safe to just do once they're clearly next.\
 The actual commands referred to above live in `Justfile`, `Shake.hs`, `tools/`.
-`doc/.RELEASING.md`, if present, is the maintainer's working copy of this file, edited live during a
-release to avoid interfering with branch switching; it may be temporarily ahead of this file, in which
-case this file should be updated from it after the release.
+This file (`doc/.RELEASING.md`) is the maintainer's working copy of `doc/RELEASING.md`, edited live during
+a release to avoid interfering with branch switching; it may be temporarily ahead of `doc/RELEASING.md`,
+which should be updated from it after the release.
 
 0. **before any step: confirm the current branch** (`git branch --show-current`) matches that step's `main:`/`rel:`/`site:` label.
    The branch can change between your checks (e.g. the maintainer switching branches outside your tool calls),
@@ -108,6 +108,15 @@ case this file should be updated from it after the release.
 1. **publish on github:** manually make new github release (latest or prerelease) from VER tag; `just ghrel-notes`;
    `just ghbin-download ghrel-upload` (re-upload via `--clobber` is safe/reversible; drafting the release is fine,
    but making it public/published is ⚠ - confirm first)
+   - create it as a *non-draft* release, named after the tag (as usual): a draft has no stable url, which
+     `just ghrel-notes` and `ghrel-upload` need. So the release goes public before its notes/binaries are
+     attached - keep this window short.
+   - `ghbin-download` takes the *latest* run of each binaries workflow; check those runs are the ones built
+     from the tagged commit (`just _ghrun-id binaries-linux-x64` etc), especially if anything was pushed
+     to the `binaries` branch since.
+   - a good final check before uploading: unpack the archive for your own platform and run
+     `./hledger --version` etc - it should show `VER-gHASH` matching the release tag's commit.
+     (Use `--conf=/dev/null` if your personal config uses newer syntax than the release understands.)
 1. **(major release) main: activate website scripts/redirects:** `just site-restart`
 1. **(major release) main: update dev version:** `just devver`
 1. **main: update manuals:** `just manuals`
@@ -198,7 +207,7 @@ Last updated: 2025-11
         `just completions`, commit any changes
   - changelogs x 5 (*/CHANGES.md)  
         `just changelogs [-c]`  
-        group the new/unreleased entries by topic -
+        group the new/unreleased entries by topic, not by change type (Fixes/Features/Improvements) -
         choose topics appropriate to this release's actual changes, using the previous major release's
         topic headings as a starting point (not a fixed list); keep `## Breaking changes` and the
         trailing `## Docs`/`## Examples`/`## Scripts/addons`/`## API` sections as-is  
@@ -507,4 +516,5 @@ The branch named `main` in the hledger repo; the main line of hledger developmen
 
 **release&nbsp;branch**\
 Branches named `MA.JOR-branch` in the hledger repo, eg `1.25-branch`. Releases and release previews are always made from a release branch.
+
 
