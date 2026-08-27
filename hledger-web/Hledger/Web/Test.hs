@@ -41,6 +41,7 @@ module Hledger.Web.Test (
   hledgerWebTest
 ) where
 
+import Data.Aeson (encode)
 import Data.String (fromString)
 import Data.Function ((&))
 import Data.Text qualified as T
@@ -304,6 +305,44 @@ hledgerWebTest = do
       txt <- liftIO $ TIO.readFile jfile
       assertEq "journal should contain the added transaction"
         (T.isInfixOf "CsrfGoodToken" txt) True
+
+    -- A newline in a field which is written verbatim (description, code,
+    -- account name) would split the entry across lines in the journal file,
+    -- injecting whatever follows as a directive - eg an include, which would
+    -- make hledger read another file. Newlines must be collapsed on the way
+    -- in, by both the add form and the JSON API.
+
+    yit "does not let the add form write a newline into the journal" $ do
+      get JournalR
+      statusIs 200
+      request $ do
+        postTransaction "AddFormNewline\ninclude /etc/passwd"
+        addToken  -- from the page just fetched
+      journalFileLacks jfile "\ninclude /etc/passwd"
+      txt <- liftIO $ TIO.readFile jfile
+      assertEq "the description should be written on one line"
+        (T.isInfixOf "AddFormNewline include /etc/passwd" txt) True
+
+    -- The JSON API does not go through the form, so it needs the same
+    -- treatment - and it has no CSRF token to stop a direct client.
+    yit "does not let the JSON API write a newline into the journal" $ do
+      let t = nulltransaction
+            { tdate = fromGregorian 2025 4 4
+            , tdescription = "JsonNewline\ninclude /etc/passwd"
+            , tpostings =
+              [ nullposting{paccount = "assets:bank:checking", pamount = mixedAmount (num 1)}
+              , nullposting{paccount = "income:gifts",         pamount = mixedAmount (num (-1))}
+              ]
+            }
+      request $ do
+        setMethod "PUT"
+        setUrl AddR
+        addRequestHeader ("Content-Type", "application/json")
+        setRequestBody $ encode t
+      journalFileLacks jfile "\ninclude /etc/passwd"
+      txt <- liftIO $ TIO.readFile jfile
+      assertEq "the description should be written on one line"
+        (T.isInfixOf "JsonNewline include /etc/passwd" txt) True
 
     -- Likewise for the edit form: the same save, with and without the token.
     let editJournal fld desc = do
