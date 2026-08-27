@@ -177,7 +177,9 @@ hledgerWebTest = do
 
   -- Submitting an unbalanced transaction produces an error message that
   -- echoes the entry (account names, amounts). Those values must be rendered
-  -- as text, not raw html.
+  -- as text, not raw html. Note this echo happens on the FormFailure path,
+  -- which yesod does not gate with the CSRF token, so no token is sent here -
+  -- the vector is reachable cross-origin.
   aj <- fmap (either error' id) . runExceptT . journalFinalise iopts "add.journal" "" =<<
           readJournal'' (T.pack $ unlines  -- PARTIAL: readJournal'' should not fail
             ["2025-01-01 opening"
@@ -188,20 +190,24 @@ hledgerWebTest = do
     yit "escapes submitted values in an add-form error message" $ do
       get JournalR
       statusIs 200
-      -- an account name that parses but leaves the transaction unbalanced
+      -- Payloads in the two fields that reach the excerpt: the account name,
+      -- and the (unvalidated) description. Distinct payloads so that escaping
+      -- one field but not the other is caught. The entry parses but does not
+      -- balance, so its excerpt - which includes both fields - is echoed.
+      -- (Date and amount are validated and cannot carry raw html into it.)
       request $ do
         setMethod "POST"
         setUrl AddR
-        addToken  -- from the add form on the page just fetched
         addPostParam "_formid" "identify-add"
         addPostParam "date" "2025-02-02"
-        addPostParam "description" "xsstest"
-        addPostParam "account" "x<img src=x onerror=alert(1)>"
+        addPostParam "description" "d<img src=x onerror=alert(1)>"
+        addPostParam "account" "a<img src=x onerror=alert(2)>"
         addPostParam "amount" "5"
         addPostParam "account" "equity:opening"
         addPostParam "amount" "-3"
-      bodyContains "&lt;img src=x onerror"       -- the value, escaped
-      bodyNotContains "<img src=x onerror"       -- and never as raw html
+      bodyContains "d&lt;img src=x onerror=alert(1)&gt;"   -- description, escaped
+      bodyContains "a&lt;img src=x onerror=alert(2)&gt;"   -- account, escaped
+      bodyNotContains "<img src=x onerror"                 -- neither as raw html
 
   -- #2127
   -- XXX I'm pretty sure this test lies, ie does not match production behaviour.
