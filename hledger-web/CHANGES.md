@@ -33,6 +33,19 @@ Fixes
   hledger-web users should upgrade.
   (Arthur Cinader, Simon Michael, [#2698], advisory GHSA-538p-cvc4-4qjm)
 
+- Another XSS vulnerability has been fixed in the add transaction
+  form's error message. Any web page visited while hledger-web was
+  running could use it to run javascript in hledger-web's origin, and
+  from there read the whole journal, or alter it. All hledger-web
+  users should upgrade.  (Arthur Cinader, Simon Michael, [#2700],
+  advisory GHSA-vq7r-8w52-jv84)
+
+- A newline submitted in a transaction's description, code or account
+  name is no longer written into the journal file. This removes the
+  possibility of the user inserting an include directive, which could
+  expose system files readable by the hledger-web server.  ([#2704],
+  advisory GHSA-vq7r-8w52-jv84)
+
 Improvements
 
 - Keep the account sidebar's scroll position when switching accounts
@@ -52,6 +65,8 @@ Improvements
 [#2559]: https://github.com/plaintextaccounting/hledger/issues/2559
 [#2679]: https://github.com/plaintextaccounting/hledger/issues/2679
 [#2698]: https://github.com/plaintextaccounting/hledger/issues/2698
+[#2700]: https://github.com/plaintextaccounting/hledger/issues/2700
+[#2704]: https://github.com/plaintextaccounting/hledger/issues/2704
 
 
 # 1.52.2 2026-08-24
