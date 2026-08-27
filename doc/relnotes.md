@@ -144,8 +144,7 @@ Fixes
   discussion in the chat and mail list (see today's thread), and careful
   human review and testing - I manually backported the same fix to
   hledger 1. And, updated the project's https://hledger.org/AI.html
-  policy to allow this for needed security-related fixes like this one
-  (which I expect to be very rare).
+  policy to allow this for needed security-related fixes like this one.
 
 
 ### credits 1.52.2
