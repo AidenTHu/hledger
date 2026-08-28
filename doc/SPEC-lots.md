@@ -5,9 +5,9 @@ Here is the current specification for lots functionality, most of which has been
 See also 
 - hledger manual: Cost basis
 - hledger manual: Lot reporting
-- <https://github.com/simonmichael/hledger/blob/main/examples/lots/lot-entries.journal>
+- <https://github.com/plaintextaccounting/hledger/blob/main/examples/lots/lots.journal>
 - <https://joyful.com/hledger+lot+tracking>
-- <https://github.com/simonmichael/hledger/issues/1015>
+- <https://github.com/plaintextaccounting/hledger/issues/1015>
 
 ## Background
 
@@ -32,7 +32,7 @@ A lot's acquisition price and date are preserved, to
 
 By default, lot inference, tracking, and error checking are performed when loading a
 journal, as part of journal finalising (see SPEC-finalising.md). Any journal with
-lot-related content (lotful commodities/accounts, cost basis annotations, or
+lot-related content (lotful commodities, cost basis annotations, or
 disposals) is validated up front. Journals with no lot activity pay near-zero cost
 via an internal fast path.
 
@@ -176,6 +176,55 @@ So in this case we call it a "lot selector".
 The terms "hledger lot syntax", "cost basis", "lot name", "lot selector" can sometimes be a bit interchangeable;
 they all involve the same notation, which has different meanings depending on context.
 
+A selector's cost is compared with a lot's stored cost by commodity and quantity,
+accepting either an exact match or the stored cost's display-rounded value
+(`lotCostsMatch` in Lots.hs). The latter is needed because an inferred cost can
+have more decimal digits than are displayed (eg $10/3 renders as $3.33333333 in
+the lot name): displayed lot names can thus always be written back in a journal
+and still identify their lot, while stored costs keep full internal precision
+for gain calculation (#2689). The same comparison is used when checking a
+written lot subaccount or transfer destination annotation against the resolved
+lot.
+
+Because of the rounded-value acceptance, a cost-only selector (eg `{$3.33333333}`)
+can in principle match two distinct lots whose costs differ only beyond the
+displayed digits (they render identically). Date and label selectors remain
+unambiguous - same-date lots always get distinct labels - so cost-only selectors
+are the least robust form, and the manual recommends selecting by date (and
+label) instead. Under SPECID a multi-match is an explicit ambiguity error;
+under FIFO/LIFO/HIFO it silently consumes from the matching lots in method order.
+
+## Cost basis precision
+
+An inferred unit cost (eg from `3 ABC @@ $10`) is computed by Decimal division
+and can carry up to 255 internal decimal places; the lot name displays at most
+`defaultMaxDisplayPrecision` (8) digits, or more if the commodity's declared
+style is wider (`widenLotCbCost`). Consequences:
+
+- Within one journal, gains are computed from the full-precision stored cost:
+  buy 3 ABC for $10, sell all at $4/unit, gain is $2 (to internal precision).
+
+- Across a file boundary, only the displayed digits survive: `close --lots`
+  (or copying `print --lots` output) serializes the basis as its rendered lot
+  name, so re-reading creates a lot whose basis is exactly the displayed value.
+  A 10/3 basis becomes exactly $3.33333333, and the same sale in the new file
+  yields $2.00000001. This quantization is bounded (at most half an ULP of the
+  displayed precision, per unit) and one-time: the requantized basis is a
+  finite decimal and round-trips losslessly thereafter. Carrying the basis as
+  an exact total cost (`{{...}}`) could avoid this for intact lots, but the
+  `{{...}}` form currently has known bugs (see lots-dispose.test test 35) and
+  cannot help partially-consumed lots (a slice of a repeating basis is again
+  non-terminating).
+
+- Changing a commodity's declared display precision changes how inferred costs
+  render in lot names (widening beyond, or narrowing back across, the digits
+  previously rendered). Since matching accepts only the exact stored value or
+  the *current* rendering, lot names and selectors recorded under the old
+  precision stop matching, producing "no lots matching" errors that list the
+  account's actual lots. Recovery is mechanical: update the recorded names and
+  selectors to the new rendering, taken from the error message or `print
+  --lots`. Date/label selectors don't embed a cost and are unaffected.
+
 ## Data types
 
 All fields are Maybe, so the same types serve for both definite and partial values:
@@ -188,17 +237,43 @@ data LotId = LotId { lotDate :: Day, lotLabel :: Maybe Text }
 A definite cost basis (used for a fully resolved lot) has all fields present except cbLabel which is only present when needed for uniqueness.
 A partial cost basis (used as a lot selector or during inference) may have any fields missing.
 
-## Lotful commodities and accounts
+## Lotful commodities
 
-Commodities and/or accounts can be declared as lotful, by adding a "lots" tag to their declaration.
+Commodities can be declared as lotful, by adding a "lots" tag to their declaration.
 This signifies that their postings always involve a cost basis and lots, 
 so these should be inferred if not written explicitly.
+
+Lotfulness is a property of commodities only, not accounts: an account
+"lots" tag cannot enable lot tracking. It can however *disable* it: the
+special value NONE (case insensitive) opts the account and its subaccounts
+out of lot tracking, eg for tax-sheltered accounts where cost basis is
+irrelevant. Any other value sets the account's reduction method (see
+below); a value is required (a valueless account lots: tag, or lots: NONE
+on a commodity declaration, is an error, reported by
+journalCheckLotsTagValues).
+
+Precedence is by specificity: a posting's explicit cost basis annotation
+beats the account opt-out (such postings are still lot-tracked), which
+beats the commodity's lots tag; and the nearest account declaration wins,
+so a subaccount can re-enable tracking with its own lots: method tag.
+Opted-out postings are invisible to lot classification and counterpart
+detection (`optedOut` in Lots.hs's classification, gain inference,
+auto-split, the unclassified-posting error, and the method coherence
+check all skip them). Consequences at the boundary: bare units moving
+from a tracked account into an opted-out one classify as a (priceless)
+disposal, leaving lot tracking like an in-kind donation; bare units
+moving the other way fail with the unclassified-posting error, since
+entering lot tracking requires a basis or price.
+
+For tracking a commodity's lots in only a few accounts (the inverse
+shape), the recommended style remains manual cost basis annotations with
+no lots tag.
 
 (In future, we may also recognise some common commodity symbols as lotful, even without the lots tag.)
 
 ## Inferring cost basis from transacted cost
 
-In postings with a positive amount, involving a lotful commodity or account,
+In postings with a positive amount, involving a lotful commodity,
 which have a transacted cost but no explicit cost basis annotation,
 or an empty cost basis annotation (`{}`),
 we infer a cost basis from the transacted cost.
@@ -249,29 +324,42 @@ unmatched and classified by the rules below.
 These are classified regardless of account type:
 
 - **Negative** → `dispose`, or `transfer-from` if a counterpart posting
-  (same commodity and quantity, different account) exists.
-- **Positive** → `acquire`, or `transfer-to` if a counterpart exists.
+  (same commodity and quantity, different account) exists, or if the
+  commodity's unpriced quantities sum-match (see below).
+- **Positive** → `acquire`, or `transfer-to` if a counterpart exists or
+  the commodity's unpriced quantities sum-match.
+- **Sum matching**: when transfer postings don't pair one to one (a split
+  or consolidating transfer, eg `-10` vs `+5`/`+5`), a counterpart is
+  recognised if the commodity's total unpriced outflow equals its total
+  unpriced inflow, with the opposite side in some other account (#2692).
+  This fallback applies only to unpriced postings (a priced posting is a
+  deliberate trade) and not to auto-split fee fragments (which must remain
+  disposals).
 - **Equity transfer override**: if the posting has no transacted price
   (`@ ...`) and an equity counterpart posting (no cost basis) exists in
   the transaction, it is classified as transfer-from/to instead of
   dispose/acquire. This handles `close --clopen --lots` style equity
   transfers where lots move to/from equity in separate transactions.
 
-**3. Bare postings on lotful asset accounts (no cost basis).**
-These require an asset account type and a lotful commodity or account
-(`lots:` tag). They are tried in this order:
+**3. Bare postings in lotful commodities on asset accounts (no cost basis).**
+These require an asset account type and a lotful commodity
+(commodity `lots:` tag), and the account must not have opted out of lot
+tracking with a `lots: NONE` tag. They are tried in this order:
 
 - **Negative lotful** →
   `transfer-from` if a counterpart (same commodity, exact quantity,
-  different account) exists, or if another asset account in the same
-  transaction receives a positive lotful amount of the same commodity
-  (transfer+fee pattern, where source qty > dest qty due to fees).
+  different account) exists, or if the posting has no transacted price
+  and another asset account in the same transaction receives a positive
+  lotful amount of the same commodity (transfer+fee pattern, where
+  source qty > dest qty due to fees; a transacted price signals dispose
+  intent, eg an explicit priced fee disposal written alongside a matched
+  transfer pair).
   Otherwise `dispose` if the posting has a transacted price.
 
 - **Positive lotful, no price, with transfer-from counterpart** →
   `transfer-to`. The counterpart can match by exact quantity or by
   commodity only (for transfer+fee patterns). This handles bare
-  transfer-to postings in lotful commodities/accounts that don't repeat
+  transfer-to postings in lotful commodities that don't repeat
   the `{...}` notation.
 
 - **Positive (any), no cost basis, with cost-basis transfer-from counterpart** →
@@ -327,6 +415,19 @@ ignoring quantity. This is used by `shouldClassifyLotful` and
 transfer+fee patterns where the destination receives less than the source
 sends.
 
+A sum-based fallback (`negSums`/`posSums`, `hasSumCounterpart`) handles
+transfers whose postings don't pair one to one (#2692): per commodity, the
+total unpriced negative quantity and total unpriced positive quantity are
+accumulated (with the contributing accounts), using the same side criteria
+as the maps above; a counterpart exists when the totals are equal and the
+opposite side includes another account. Priced amounts are excluded (a
+priced posting, eg a fee disposal `-0.02 A {$100} @ $100`, is a deliberate
+trade), and so are auto-split fee dispose fragments (feesplit tag), which
+would otherwise inflate the outflow total and defeat the match. This
+fallback is used by `shouldClassifyWithCostBasis` only, for unpriced
+non-feesplit postings; the bare paths already have the commodity-only
+fallback.
+
 ### Main functions
 
 - `journalClassifyLotPostings`: entry point, maps over transactions.
@@ -337,15 +438,27 @@ sends.
   - `classifyAt`: per-posting dispatch.
   - `shouldClassify` → `shouldClassifyWithCostBasis`, `shouldClassifyNegativeLotful`,
     `shouldClassifyLotful`, `shouldClassifyBareTransferTo`, `shouldClassifyPositiveLotful`.
-  - `postingIsLotful`: checks for `lots:` tag on commodity or account.
+  - `amountsAreLotful`: checks for a `lots:` tag on the amounts' commodities.
 
 ## Inferring transacted cost from cost basis
 
-After classifying lot postings,
-in acquire postings which have no transacted cost annotation,
-we infer a transacted cost from the cost basis.
+In positive cost-basis postings which have no transacted cost annotation,
+we infer a transacted cost from the cost basis (letting an acquire entry
+with an elided cash amount balance at cost). This runs before transaction
+balancing, so classification hasn't happened yet; transfer destinations -
+which must not get a transacted cost - are recognised by shape. Inference
+is skipped when:
 
-(journalInferPostingsTransactedCost)
+- another account has an explicit negative amount of the same commodity
+  and quantity (an exact transfer-from counterpart), or
+- the commodity's unpriced negative and positive quantities sum to matching
+  totals, with a negative in another account (a split or consolidating
+  transfer group, possibly minus a fee; priced amounts are excluded on both
+  sides) (#2692), or
+- the transaction has an equity posting with no cost-basis amounts (an
+  equity transfer, eg close --clopen --lots style opening balances).
+
+(journalInferPostingsTransactedCost in Journal.hs)
 
 ## Lot posting effects
 
@@ -364,11 +477,21 @@ we infer a transacted cost from the cost basis.
   (date, label, cost) must match the source lot.
   (Transfers must preserve the source lot's identity, and can't rename a lot.)
   Transfer postings (both from and to) must not have explicit transacted cost (@ or @@); this is an error.
-  When the transfer-to quantity is less than the transfer-from quantity (a transfer+fee pattern),
-  lots are selected for the full source quantity, then split: the transfer portion's lots are
-  recreated at the destination, and the fee portion's lots are consumed from source only
-  (generating from-postings on lot subaccounts with no corresponding to-postings, like a
-  silent disposal with no gain).
+  Transfer-from and transfer-to postings need not pair one to one: per commodity,
+  one source posting can feed several destinations or several sources one
+  destination, as long as the total from/to quantities are equal - a quantity
+  mismatch is a load-time error (#2692). Each source posting selects its lots
+  (from its own account, with its own selector), and the selected lots are
+  distributed across the destination postings in sorted group order, splitting
+  lots at destination boundaries; lot identity is preserved
+  (`processTransferGroup` in Lots.hs).
+  Formerly, a from>to quantity difference was consumed from the source silently (an
+  implicit fee disposal); that is now handled only by the explicit fee auto-split -
+  see "Auto-splitting lot transfer fees" below - which requires the fee recorded as
+  non-asset posting(s) in the same commodity adding up to the exact fee quantity,
+  and produces explicit dispose portion(s). Patterns auto-split doesn't detect
+  (eg fee postings not summing to the missing quantity) are errors suggesting
+  that form.
 
 - An equity transfer is a variant of a lot transfer that happens in two parts across
   separate transactions (e.g. a closing transaction transfers lots into equity, and an
@@ -380,7 +503,7 @@ we infer a transacted cost from the cost basis.
 - A dispose posting selects one more lots to be disposed (sold), like a transfer-from posting.
   It must also have a transacted cost, either explicit or inferred from transaction balancing
   (or from market price, in future).
-  When the dispose posting has no cost basis annotation but involves a lotful commodity or account,
+  When the dispose posting has no cost basis annotation but involves a lotful commodity,
   the cost basis is inferred from the selected lot, and the transacted cost
   (if inferred by the balancer as @@) is normalized to unit cost (@).
 
@@ -419,6 +542,17 @@ original acquisition dates).
 The scope of a pool is per-account for AVERAGE and global (across all
 accounts holding the commodity) for AVERAGEALL.
 
+The global (*ALL) methods are only coherent when every account holding the
+commodity uses them: a non-participating account's disposals would skip the
+global validation, and (for AVERAGEALL) its acquisitions would not update
+the global pool even as pool updates rewrite its lots' costs. So mixing a
+global method with any different method for one commodity is rejected at
+load time (`journalCheckLotsMethodCoherence`): for each lot-tracked
+commodity, the method is resolved for every base account holding it, and if
+any resolves to a *ALL method, all must resolve to the same method. Local
+methods (FIFO, LIFO, HIFO, SPECID, AVERAGE) may be mixed per account
+freely; an unused account's conflicting tag is harmless.
+
 Under AVERAGE methods the lot subaccount name omits the cost component
 (`{2026-01-15}` rather than `{2026-01-15, $50}`): the running cost would
 otherwise change on every acquisition, making the subaccount unstable
@@ -428,6 +562,26 @@ across acquisitions.
 The pool's running cost is surfaced on disposal postings (where the user
 wrote `{}` and the system fills in the lot's stored cost) and on
 realised-gain calculations (e.g. via `bal -B`).
+
+Transfers interact with AVERAGE pools like this:
+
+- A transfer out of a pool carries the pooled cost, and (like disposal)
+  does not change the remaining pool's running cost.
+- A transfer into a pool re-averages it, exactly like an acquisition at the
+  carried cost; all pool lots' stored costs, including the incoming lot's,
+  are rewritten to the new average (`addTransferredLot` calls
+  `updatePoolOnAcquire`). Under AVERAGEALL this is a no-op: the lot never
+  leaves the global pool, so the carried cost equals the pool cost.
+- Pooling is lossy: original lot identity (cost) cannot be reconstructed on
+  transfer back out; only the date and label survive.
+- The displayed transfer fragments keep the carried (source) cost on both
+  sides, matching each other (the same convention as acquisitions, which
+  display the user's literal cost); the destination's post-merge average
+  lives in lot state and appears on later disposals. Fragment lot
+  subaccount names follow each side's own method (costless under AVERAGE).
+- A cost written in a transfer-to annotation into an AVERAGE account is not
+  validated against the source lot's cost (the pool's running cost
+  legitimately differs); date and label are still validated.
 
 ## Lot transactions
 
@@ -440,6 +594,30 @@ So a lot transaction can be broadly classified as "acquire", "transfer", or "dis
 All transactions, including disposals, are balanced by the ordinary
 transaction-balancing rule — sum postings at transacted cost (ignoring cost
 basis), sum must be zero, infer at most one missing amount per commodity.
+
+When the balancer infers a conversion cost between two commodities, and
+exactly one of them has classified lot postings — or, failing that, is
+declared lotful (eg when its posting's amount comes from a balance
+assignment and so was unknown at classification time) — the cost is
+attached to that side, so lot postings get the transacted cost they need
+for lot tracking (`costInferrerFor` in Balancing.hs).
+
+However, when a lot-related commodity appears with both signs among the
+postings (a transfer-like shape), the residual is analysed further:
+
+- If the residual is exactly one posting's amount (a dispose posting
+  alongside a matched transfer pair, eg a fee disposal written as its
+  own posting with the fee paid in cash), the inferred cost is attached
+  to that posting only, as a total (@@) cost, leaving the others
+  unpriced - they form matched transfer pairs, which must stay unpriced
+  for lot classification; only the odd one out needs the cost.
+- Otherwise no cost is inferred: such a residual indicates a quantity
+  mismatch (eg a fee deducted in kind but not recorded), and inferring a
+  cost would attach it to both sides, mask the imbalance, and surface
+  later as a confusing lot error. The entry instead fails the more
+  fundamental balancedness check, which shows the residual along with a
+  note explaining why no cost was inferred (since a user unaware of lot
+  processing might expect this entry to balance).
 
 ## Disposal transactions
 
@@ -511,6 +689,11 @@ Styles are listed in the same order as the manual, from implicit to explicit.
   When the imbalance is multi-commodity (typically because the dispose posting lacks an `@`
   transacted price), the transaction balancer fills in a balancing `@` price from the
   non-gain postings; the gain check then proceeds as above.
+
+  Virtual (parenthesised) postings are ignored throughout this gain
+  inference, as they are by the transaction balancer and the lot
+  classifier: they neither make an entry look like a disposal nor
+  count in the residual sums.
 
 3. **Only rgain written, using a type:G account.**
   hledger identifies the rgain posting by the type:G account,
@@ -596,36 +779,84 @@ would be invalid when the output is re-read: balance assertions run before lot c
 so the lot subaccounts would not yet have their expected balances. Non-lot-subaccount
 postings (e.g. `assets:cash`) and opening transaction postings retain their assertions.
 
+Also, `close` excludes accounts whose balance is zero once costs are stripped
+(its normal non-`--show-costs` treatment), such as lot subaccounts emptied by
+transfers. Without this it would emit spurious zero postings for them, whose lot
+names duplicate the ids of the lots now held at the transfer destination,
+making the output unparseable (#2689).
+
 ## Processing pipeline
 
 Lot-related processing runs during journal finalising as a sequence of
 stages. Errors (missing lot cost, ambiguous selectors, dispose before
 acquire, invalid `lots:` tag values, etc.) are reported at load time.
+Their excerpts show the entry as the user wrote it - postings reverted to
+their original parse-time form, generated postings omitted - rather than
+the processed in-memory entry, mentioning the problem posting's inferred
+amount when it is not visible in the excerpt
+(`transactionAsWritten` in Lots.hs, #2686).
 See [SPEC-finalising.md](SPEC-finalising.md) for how this sits in the
 broader pipeline.
 
-**Always-on** (independent of `--ignore-lots`):
+All stages below are **gated by `checklots`** — they run when none of
+`--ignore-lots` or `-I` is set, or when `--strict`/`-s` or `hledger check lots`
+overrides them.
+
+Lot classification runs **once, after transaction balancing**, when every
+posting amount (including ones inferred from elided amounts or balance
+assignments) is known: every entry shape then classifies identically to its
+fully-explicit form (#2686, #2690, #2692). The few lot-related steps that must
+run before balancing use *shape* checks (cost basis annotations, lotful
+commodities, amount signs and prices) rather than classification tags.
+
+Pre-balancing:
 
 1. **journalInferBasisFromAccountNames** — parse cost basis from any lot subaccount
    names (`{...}` components) in posting account names.
-2. **journalClassifyLotPostings** — tag postings as acquire/dispose/transfer-from/transfer-to/gain.
-3. **journalInferPostingsTransactedCost** — infer `@` from `{}` on acquires (before balancing).
-
-**Gated by `checklots`** — runs when none of `--ignore-lots` or `-I` is set, or when
-`--strict`/`-s` or `hledger check lots` overrides them:
-
-4. **journalAddGainOrUGainPosting** — if the user has written an explicit rgain or ugain
+2. **journalInferPostingsTransactedCost** — infer `@` from `{}` on acquire-shaped
+   postings (positive, cost basis with a cost, no `@`), so eg an acquire with an
+   elided cash amount balances at cost. Transfer destinations are recognised by
+   shape and skipped: an explicit negative same-commodity same-quantity
+   counterpart, or an equity posting with no cost-basis amounts (equity transfer).
+3. **journalAddGainOrUGainPosting** — if the user has written an explicit rgain or ugain
    posting without its counterpart, add the matching balancing posting (pre-balancer,
-   so the ordinary balancer accepts the paired transaction).
-5. **journalCheckLotsTagValues** — validate `lots:` tag values on commodity/account declarations.
-6. **journalCalculateLots** — walk transactions in date order, evaluate lot selectors,
+   so the ordinary balancer accepts the paired transaction). Disposal transactions
+   are recognised by shape: a negative lotful or cost-basis amount.
+
+Balancing (`journalBalanceTransactions`): infers balance-assignment and elided
+amounts. For lots journals it uses `balanceTransactionHelperMaybeSplittingLotFees`:
+a transfer with a priced fee only balances at cost in split form, so the fee
+auto-split is tried first, falling back to the unsplit form. Note the balancer
+mechanically copies amounts (annotations included) into elided postings; a
+posting whose amount was wholly inferred yet carries a cost basis annotation
+has a *balancer-copied basis* — not user intent, so classification skips such
+postings and they don't act as transfer counterparts; but the copied
+annotation is deliberately kept until then, as the evidence distinguishing an
+artifact pairing (eg a sale missing its price) from a genuine elided transfer
+counterpart (`hasBalancerCopiedBasis` in Lots.hs). After lot processing,
+`journalStripBalancerCopiedBases` removes these annotations, so downstream
+code sees only user-written or lot-machinery-derived cost bases. Bare
+inferred amounts classify normally (eg an elided transfer destination).
+
+Post-balancing:
+
+4. **journalClassifyLotPostings** — auto-split remaining (unpriced) transfer fees
+   (`transactionAutoSplitFeeOutflows`), then tag postings as
+   acquire/dispose/transfer-from/transfer-to/gain.
+5. **journalCheckLotsTagValues** — validate `lots:` tag values on commodity/account
+   declarations. On commodities an empty value is valid (lotful, default FIFO);
+   on accounts a reduction method value or NONE is required.
+6. **journalCheckLotsMethodCoherence** — reject a global (*ALL) reduction
+   method mixed with any different method among the accounts holding a
+   commodity (see Reduction methods).
+7. **journalCalculateLots** — walk transactions in date order, evaluate lot selectors,
    apply reduction methods, add explicit lot subaccounts, infer cost basis for bare
    disposals, normalise transacted cost.
-7. **journalCheckAcquireBasis** — *gated separately on `hledger check basis`*,
+8. **journalCheckAcquireBasis** — *gated separately on `hledger check basis`*,
    not on `checklots`. Errors if any acquire posting has cost basis differing
    from its transacted cost (per-unit). Default mode skips this check; see
    [DECISIONS.md](DECISIONS.md) for the rationale.
-8. **journalAddOrCheckGainPostings** — for disposals with no gain postings yet, add
+9. **journalAddOrCheckGainPostings** — for disposals with no gain postings yet, add
    the rgain + ugain pair sized at the disposal gain. Also validates that any
    user-written gain amount matches the disposal gain.
 
@@ -647,16 +878,43 @@ See SPEC-finalising for more details of the implementation.
 
 ### Auto-splitting lot transfer fees
 
-Before classification, hledger detects a common "transfer with priced fee"
+Before classification, hledger detects a common "transfer with fee"
 pattern and rewrites it into explicit transfer + disposal postings.
 
-If a transaction has a bare negative lotful asset posting whose absolute
-quantity exceeds the matching positive quantity by some amount, and a priced
-non-asset posting (typically an expense with `@` price) in the same commodity
-matches that excess, the negative posting is split into two:
+If a transaction has an unpriced negative lotful asset posting (bare in a
+lotful commodity, or carrying a cost basis annotation) whose absolute
+quantity exceeds the unpriced positive quantity received by asset accounts
+by some amount, and non-asset posting(s) (typically expenses) in the same
+commodity account for that excess - either a single posting matching it
+exactly, or otherwise all of the positive ones summing to it exactly -
+the negative posting is split:
 
 - a transfer portion with the matching positive quantity, and
-- a dispose portion with the excess quantity and the counterpart's transacted price.
+- a dispose portion per fee counterpart, with that counterpart's quantity.
+  If the fee counterpart has a transacted price (`@`/`@@`), its dispose
+  portion carries it and a gain is calculated; otherwise the dispose portion
+  is priceless - lots are still reduced, but no gain is calculated (as with
+  any priceless bare disposal).
+
+Any balance assertion on the original posting is kept only on the dispose
+portion posted last, so it is still checked after the full original
+quantity.
+
+During lot calculation, the fee's dispose portion selects lots *before* the
+transfer pair does (`processTransaction` handles fee-split disposes first):
+the disposal method in effect thus applies to the full pre-transfer lot set -
+under default FIFO the fee consumes the oldest lot - and the transfer carries
+the remainder (#2692). Other disposes still run after transfers, so a lot
+transferred in can be disposed in the same transaction.
+
+Auto-splitting also works when the outflow amount is inferred by balancing
+(eg from a balance assignment): after resolving a transaction's balance
+assignments, the balancer applies the fee auto-split before checking
+balancedness - a priced fee's split changes the transaction's at-cost value
+sum (the dispose portion's cost is what makes the entry balance), and any
+elided posting must infer the post-split residual. If the split form does
+not balance, the unsplit form is used as before
+(`balanceTransactionAndCheckAssertionsB` in Balancing.hs, #2686).
 
 This lets natural journal entries like:
 
@@ -665,7 +923,6 @@ This lets natural journal entries like:
     assets:custodial        -1 ETH
     assets:cold wallet   0.999601 ETH
     expenses:fees       0.000399 ETH @ $1,992.36
-    income:gains
 ```
 
 classify and balance as if the user had written:
@@ -676,26 +933,41 @@ classify and balance as if the user had written:
     assets:custodial  -0.000399 ETH @ $1,992.36
     assets:cold wallet                0.999601 ETH
     expenses:fees     0.000399 ETH @ $1,992.36
-    income:gains
 ```
+
+(with the rgain and ugain postings then generated as usual; note an
+elided gain posting must not be written - disposals reject amountless
+gain postings with an error, whether their amounts are explicit or
+inferred by balancing).
 
 The original user posting is preserved via `poriginal` on the transfer portion
 (p1), and the dispose portion (p2) is tagged `_feesplit-posting`. As a result:
 
-- Plain `print` shows the user's original entry (the `_feesplit-posting`-tagged
-  portion is hidden, and the remaining portion displays at the original
-  quantity via `poriginal`).
+- With an unpriced fee, plain `print` shows the user's original entry (the
+  `_feesplit-posting`-tagged portion is hidden, and the remaining portion
+  displays at the original quantity via `poriginal`).
+- With a priced fee, plain `print` shows the split form: reverting would drop
+  the priced dispose portion while keeping its generated gain postings,
+  leaving an unbalanced entry.
 - `print -x` shows the split form explicitly (both portions visible at their
   post-split quantities).
 - `print --lots` also shows the split form for auto-split transactions, so
   that the output round-trips correctly (preserving the capital gain that
   would otherwise be lost if the dispose portion were hidden). Other
   transactions still display in their mostly-original form.
+  For an *unpriced* fee, the printed dispose fragment carries an explicit lot
+  reference and no price; on re-read, `processDisposePosting` accepts such a
+  priceless disposal when the entry's non-asset postings receive the same
+  commodity in the same total quantity as its priceless disposals (an in-kind
+  outflow: a fee, a donation, etc - possibly split across several postings),
+  so this form round-trips too (#2692). Priceless disposals whose units are
+  not received by non-asset postings (eg a sale missing its price) are still
+  errors.
 
 ### Per-lot disposal/transfer splits
 
 A separate internal split happens when a single dispose or transfer posting
-spans multiple lots: `processDisposePosting` / `processTransferPair` emit one
+spans multiple lots: `processDisposePosting` / `processTransferGroup` emit one
 fragment per matched lot, each carrying its lot subaccount. Multi-fragment
 results are tagged `_lotsplit-posting` (single-lot results need no tag), and
 each fragment's `poriginal` points at the user's unmodified original posting.
@@ -714,7 +986,39 @@ Display behaviour:
 
 For end-to-end walkthroughs, see the user manual's "First lots example" and "Lot reporting example" sections.
 
-A larger collection of example entries: <https://github.com/simonmichael/hledger/blob/main/examples/lots/lot-entries.journal>
+A larger collection of example entries: <https://github.com/plaintextaccounting/hledger/blob/main/examples/lots/lots.journal>
+
+## Roadmap
+
+Possible future work, from design discussions (2026-08):
+
+- **Per-account lot tracking opt-out.** Implemented 2026-08: an account
+  `lots: NONE` tag opts the account and its subaccounts out of lot
+  tracking, with precedence by specificity (see Lotful commodities).
+
+- **Tax boundary declarations and checks.** Users could tag accounts as
+  tax-sheltered (a jurisdiction-neutral, user-declared boundary, in the same
+  spirit as account types). Then an opt-in check could flag identity-preserving
+  lot transfers crossing the boundary, which usually should be recorded as a
+  disposal at fair market value plus a new acquisition (write a transacted
+  price on the outgoing posting to get that today). The same declaration could
+  drive the lot-tracking opt-out above, and scope pooling (below).
+
+- **AVERAGE round trip.** `print --lots` output for AVERAGE accounts is not
+  re-readable: the costless lot subaccount names it emits (`{2026-01-15}`)
+  are rejected on re-read ("lot subaccount name must contain a date and
+  cost"). Either accept date-only lot subaccount names when the account's
+  method is AVERAGE, or omit lot subaccounts from AVERAGE print output.
+  (The AVERAGE-vs-transfers item previously here was implemented 2026-08:
+  transfers in re-average the pool, transfers out carry the pooled cost;
+  see "Reduction methods".)
+
+- **Method coherence checks.** Implemented 2026-08 for the global (*ALL)
+  methods: mixing one with a different method among the accounts holding a
+  commodity is rejected at load time (see Reduction methods). Plain
+  per-account AVERAGE mixed with other methods remains legal by design
+  (independent pools); whether that is appropriate for the user's tax
+  jurisdiction is, as elsewhere, the user's responsibility.
 
 ### Disposal
 

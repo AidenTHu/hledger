@@ -24,7 +24,7 @@ Project documentation lives in a number of places:
 - short blurbs: cabal files, module headers, HCAR, GSOC project, ..
 - `doc/notes.org` has some old developer notes
 - developer reports (profiles, benchmarks, coverage..) in doc/profs, sometimes published at hledger.org/profs
-- https://github.com/simonmichael/hledger/tree/main/doc
+- https://github.com/plaintextaccounting/hledger/tree/main/doc
 
 
 site/ is now a symlink to the separate hledger_site repo.
@@ -289,7 +289,7 @@ https://groups.google.com/forum/#!topic/hledger/t2nVr3zER8Q/discussion
 > 	me (Simon Michael (sm) change) 	
 > 10/27/18
 > Still plenty of time to discuss and reconsider, but see also
-> https://github.com/simonmichael/hledger/issues/920
-> https://github.com/simonmichael/hledger/issues/921
+> https://github.com/plaintextaccounting/hledger/issues/920
+> https://github.com/plaintextaccounting/hledger/issues/921
 > 
 > I'll probably make a start on the first one (consolidating dev docs in main repo).

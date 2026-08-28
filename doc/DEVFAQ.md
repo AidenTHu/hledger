@@ -9,7 +9,7 @@ This is just getting started. It will absorb some of the other [Developer docs](
 ## How do I get/build the hledger source ?
 
 ```cli
-$ git clone https://github.com/simonmichael/hledger
+$ git clone https://github.com/plaintextaccounting/hledger
 $ stack build
 ```
 You can specify `hledger`, `hledger-ui` or `hledger-web` as an argument to build just that executable.
@@ -18,7 +18,7 @@ Please see [Install > Build from source](install.md#build-from-source) for more 
 ## What other repos are there ?
 
 There are three official repos:
-- <https://github.com/simonmichael/hledger> - the main hledger repo, for hledger, hledger-ui and hledger-web. Shortcut url: <https://code.hledger.org>
+- <https://github.com/plaintextaccounting/hledger> - the main hledger repo, for hledger, hledger-ui and hledger-web. Shortcut url: <https://code.hledger.org>
 - <https://github.com/simonmichael/hledger_site> - the hledger.org website
 - <https://github.com/simonmichael/hledger_finance> - the hledger project's financial ledger
 

@@ -33,7 +33,7 @@
 
         ;; Generate link reference definitions, with urls aligned
         (goto-char (point-max))
-        (let ((fmt (concat "%-" (number-to-string (+ 4 max-length)) "s https://github.com/simonmichael/hledger/issues/%s\n")))
+        (let ((fmt (concat "%-" (number-to-string (+ 4 max-length)) "s https://github.com/plaintextaccounting/hledger/issues/%s\n")))
           (dolist (num nums)
             (insert
              (format fmt (format "[#%s]:" num) num))))

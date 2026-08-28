@@ -35,8 +35,6 @@ $ hledger -f- bal assets:broker --lots -N
 # ** 3. Wildcard multi-lot transfer with {}.
 <
 commodity AAPL  ; lots:
-account assets:broker1  ; lots:
-account assets:broker2  ; lots:
 
 2026-01-15 buy cheap
     assets:broker1    10 AAPL {$50}
@@ -77,10 +75,9 @@ $ hledger -f- print --verbose-tags
 
 >=
 
-# ** 5. Transfer-to posting without {} is classified when account has lots: tag.
+# ** 5. Transfer-to posting without {} is classified via its cost-basis-annotated
+# counterpart, with no commodity or account declarations needed.
 <
-account assets:broker2  ; lots:
-
 2026-01-15 buy
     assets:broker1    10 AAPL {$50}
     assets:checking
@@ -155,9 +152,8 @@ $ hledger -f- bal assets:broker --lots
 >2 /no lots available/
 >=1
 
-# ** 10. Split transfers (1 from at qty 10, 2 to at qty 5) are not detected as transfers
-# because transfer detection requires exact quantity matching. The postings are classified
-# as dispose + acquire + acquire, and the transaction is unbalanced.
+# ** 10. Split transfers with cost basis notation (1 from at qty 10, 2 to at qty 5)
+# are detected as transfers by commodity-sum matching, and preserve lot identity. #2692
 <
 2026-01-15 buy
     assets:broker1    10 AAPL {$50}
@@ -168,9 +164,13 @@ $ hledger -f- bal assets:broker --lots
     assets:broker2     5 AAPL {$50}
     assets:broker3     5 AAPL {$50}
 
-$ hledger -f- bal assets:broker --lots
->2 /unbalanced/
->=1
+$ hledger -f- print --lots -x date:2026-02
+2026-02-01 split transfer
+    assets:broker1:{2026-01-15, $50}             -10 AAPL {2026-01-15, $50}
+    assets:broker2:{2026-01-15, $50}               5 AAPL {2026-01-15, $50}
+    assets:broker3:{2026-01-15, $50}               5 AAPL {2026-01-15, $50}
+
+>=
 
 # ** 11. Cross-account transfer with fee: only matching-quantity postings are transfers.
 <
@@ -548,3 +548,549 @@ $ hledger -f- print -x --lots desc:transfer
     equity:unrealised-gain                        $2.50
 
 >=
+
+# ** 26. Transfer+fee with unpriced expense: also auto-split, into a
+# transfer portion and a priceless dispose portion. Lots are reduced
+# correctly, but no gain is calculated (no selling price is known).
+<
+commodity A  ; lots:
+2026-01-15 buy
+    assets:x1    1 A {$100}
+    assets:cash
+
+2026-02-17 transfer with fee
+    assets:x1     -1 A
+    expenses:fees  0.05 A
+    assets:x2      0.95 A
+
+$ hledger -f- print --lots -x desc:transfer
+2026-02-17 transfer with fee
+    assets:x1:{2026-01-15, $100}                  -0.95 A {2026-01-15, $100}
+    assets:x1:{2026-01-15, $100}                  -0.05 A {2026-01-15, $100}
+    expenses:fees                                  0.05 A
+    assets:x2:{2026-01-15, $100}                   0.95 A {2026-01-15, $100}
+
+>=
+
+# ** 27. Same entry: unlike the priced case (test 23), plain print shows
+# the user's original entry. There are no generated gain postings, so
+# reverting the auto-split leaves a balanced entry.
+<
+commodity A  ; lots:
+2026-01-15 buy
+    assets:x1    1 A {$100}
+    assets:cash
+
+2026-02-17 transfer with fee
+    assets:x1     -1 A
+    expenses:fees  0.05 A
+    assets:x2      0.95 A
+
+$ hledger -f- print desc:transfer
+2026-02-17 transfer with fee
+    assets:x1                                     -1 A
+    expenses:fees                                  0.05 A
+    assets:x2                                      0.95 A
+
+>=
+
+# ** 28. A balance assertion on the auto-split outflow posting is checked
+# after the full original quantity, via the generated =* parent assertion,
+# and passes.
+<
+commodity A  ; lots:
+2026-01-15 buy
+    assets:x1    1 A {$100}
+    assets:cash
+
+2026-02-17 transfer with priced fee
+    assets:x1     -1 A = 0 A
+    expenses:fees  0.05 A @ $150
+    assets:x2      0.95 A
+
+$ hledger -f- print --lots -x desc:transfer
+2026-02-17 transfer with priced fee
+    assets:x1:{2026-01-15, $100}                  -0.95 A {2026-01-15, $100}
+    assets:x1:{2026-01-15, $100}                  -0.05 A {2026-01-15, $100} @ $150
+    assets:x1                                      0 A                              =* 0 A
+    expenses:fees                                  0.05 A @ $150
+    assets:x2:{2026-01-15, $100}                   0.95 A {2026-01-15, $100}
+    revenues:gain                                $-2.50
+    equity:unrealised-gain                        $2.50
+
+>=
+
+# ** 29. A transfer+fee entry using a balance assignment and an elided
+# amount is classified in a second pass after balancing, once the
+# inferred amounts are known; the fee is auto-split and disposed (#2686).
+<
+commodity ABC ; lots:
+
+2026-01-01 buy
+    equity:open-close   -$10
+    assets:broker1      2.3 ABC
+
+2026-02-01 transfer with fee
+    assets:broker1      = 0 ABC
+    assets:broker2      2 ABC
+    expenses:fees
+
+$ hledger -f- print -a date:2026-02
+2026-02-01 transfer with fee
+    assets:broker1:{2026-01-01, $4.34782609}      -2.0 ABC {2026-01-01, $4.34782609}  ; ptype: transfer-from
+    assets:broker1:{2026-01-01, $4.34782609}      -0.3 ABC {2026-01-01, $4.34782609}  ; ptype: dispose, generated-posting:, feesplit-posting:
+    assets:broker1                                 0 ABC                             =* 0 ABC  ; generated-posting:, lot-parent-assertion:
+    assets:broker2:{2026-01-01, $4.34782609}       2.0 ABC {2026-01-01, $4.34782609}  ; ptype: transfer-to
+    expenses:fees                                  0.3 ABC
+
+>=
+
+# ** 30. A transfer with a priced fee also works when the outflow amount is
+# inferred from a balance assignment: balancing retries with the fee
+# auto-split applied (which is what makes the entry balance), and the gain
+# is calculated (#2686).
+<
+commodity A  ; lots:
+2026-01-15 buy
+    assets:x1    1 A {$100}
+    assets:cash
+
+2026-02-17 transfer with priced fee
+    assets:x1     = 0 A
+    assets:x2      0.95 A
+    expenses:fees  0.05 A @ $150
+
+$ hledger -f- print --lots -x desc:transfer
+2026-02-17 transfer with priced fee
+    assets:x1:{2026-01-15, $100}                  -0.95 A {2026-01-15, $100}
+    assets:x1:{2026-01-15, $100}                  -0.05 A {2026-01-15, $100} @ $150
+    assets:x1                                      0 A                              =* 0 A
+    assets:x2:{2026-01-15, $100}                   0.95 A {2026-01-15, $100}
+    expenses:fees                                  0.05 A @ $150
+    revenues:gain                                $-2.50
+    equity:unrealised-gain                        $2.50
+
+>=
+
+# ** 31. A transfer whose destination amount is elided classifies as a
+# transfer pair, not as a disposal: the source posting's classification
+# is finalised only after balancing infers the missing amount. #2690
+<
+commodity ABC ; lots:
+
+2021-03-08 stake
+     income:staking      -$10
+     assets:broker1      2.3 ABC
+
+2021-03-09 move
+     assets:broker1      -2.3 ABC = 0 ABC
+     assets:broker2
+$ hledger -f- print --lots
+2021-03-08 stake
+    income:staking                              $-10
+    assets:broker1:{2021-03-08, $4.34782609}       2.3 ABC
+
+2021-03-09 move
+    assets:broker1:{2021-03-08, $4.34782609}      -2.3 ABC
+    assets:broker1                                 0 ABC   =* 0 ABC
+    assets:broker2:{2021-03-08, $4.34782609}
+
+>=
+
+# ** 32. The mirror case: explicit destination amount, source amount
+# inferred from a balance assignment. Also a transfer pair. #2690
+<
+commodity ABC ; lots:
+
+2021-03-08 stake
+     income:staking      -$10
+     assets:broker1      2.3 ABC
+
+2021-03-09 move
+     assets:broker2      2.3 ABC
+     assets:broker1      = 0 ABC
+$ hledger -f- bal --lots
+             2.3 ABC  assets:broker2:{2021-03-08, $4.34782609}
+                $-10  income:staking
+--------------------
+                $-10
+             2.3 ABC  
+
+# ** 33. Transfers whose amounts come from balance assignments still show
+# correct balances in the collapsed (non---lots) view: the merged postings
+# keep their inferred amounts, and the fee portion is not double-counted.
+# This matches the same journal's balances with lots disabled. #2692
+<
+commodity ABC ; lots:
+
+2020-03-08 one
+     assets:cash         -$10
+     assets:broker1      2 ABC
+
+2020-03-08 two
+     assets:cash         -$10
+     assets:broker1      3 ABC
+
+2020-04-04 three
+     assets:broker1      = 0 ABC
+     assets:transfers      5 ABC
+
+2020-04-05 four
+     assets:transfers    = 0 ABC
+     assets:broker2      4.9 ABC
+     expenses:fees
+$ hledger -f- bal
+             4.9 ABC  assets:broker2
+                $-20  assets:cash
+             0.1 ABC  expenses:fees
+--------------------
+                $-20
+               5 ABC  
+
+# ** 34. The same journal with explicit amounts gives identical balances
+# (entry shapes converge). #2692
+<
+commodity ABC ; lots:
+
+2020-03-08 one
+     assets:cash         -$10
+     assets:broker1      2 ABC
+
+2020-03-08 two
+     assets:cash         -$10
+     assets:broker1      3 ABC
+
+2020-04-04 three
+     assets:broker1       -5 ABC = 0 ABC
+     assets:transfers      5 ABC
+
+2020-04-05 four
+     assets:transfers   -5 ABC = 0 ABC
+     assets:broker2      4.9 ABC
+     expenses:fees
+$ hledger -f- bal
+             4.9 ABC  assets:broker2
+                $-20  assets:cash
+             0.1 ABC  expenses:fees
+--------------------
+                $-20
+               5 ABC  
+
+# ** 35. print -x on the balance-assignment version shows all amounts
+# explicitly, including the inferred transfer amounts and the fee split. #2692
+<
+commodity ABC ; lots:
+
+2020-03-08 one
+     assets:cash         -$10
+     assets:broker1      2 ABC
+
+2020-03-08 two
+     assets:cash         -$10
+     assets:broker1      3 ABC
+
+2020-04-04 three
+     assets:broker1      = 0 ABC
+     assets:transfers      5 ABC
+
+2020-04-05 four
+     assets:transfers    = 0 ABC
+     assets:broker2      4.9 ABC
+     expenses:fees
+$ hledger -f- print -x
+2020-03-08 one
+    assets:cash                                 $-10
+    assets:broker1                                 2 ABC @@ $10
+
+2020-03-08 two
+    assets:cash                                 $-10
+    assets:broker1                                 3 ABC @@ $10
+
+2020-04-04 three
+    assets:broker1                                -5 ABC
+    assets:transfers                               5 ABC
+
+2020-04-05 four
+    assets:transfers                              -4.9 ABC
+    assets:transfers                              -0.1 ABC
+    assets:broker2                                 4.9 ABC
+    expenses:fees                                  0.1 ABC
+
+>=
+
+# ** 36. A transfer fee's dispose portion selects lots before the transfer
+# does, using the disposal method in effect: under default FIFO the fee
+# consumes the oldest lot, and the transfer carries the remainder. #2692
+<
+commodity ABC ; lots:
+
+2020-03-08 one
+     assets:cash         -$10
+     assets:broker1      2 ABC
+
+2020-03-08 two
+     assets:cash         -$10
+     assets:broker1      3 ABC
+
+2020-04-05 transfer with fee
+     assets:broker1     -5 ABC = 0 ABC
+     assets:broker2      4.9 ABC
+     expenses:fees
+$ hledger -f- print --lots -x date:2020-04
+2020-04-05 transfer with fee
+    assets:broker1:{2020-03-08, "0001", $5}           -1.9 ABC {2020-03-08, "0001", $5}
+    assets:broker1:{2020-03-08, "0002", $3.33333333}  -3 ABC {2020-03-08, "0002", $3.33333333}
+    assets:broker1:{2020-03-08, "0001", $5}           -0.1 ABC {2020-03-08, "0001", $5}
+    assets:broker1                                     0 ABC                                   =* 0 ABC
+    assets:broker2:{2020-03-08, "0001", $5}            1.9 ABC {2020-03-08, "0001", $5}
+    assets:broker2:{2020-03-08, "0002", $3.33333333}   3 ABC {2020-03-08, "0002", $3.33333333}
+    expenses:fees                                      0.1 ABC
+
+>=
+
+# ** 37. Transfer postings need not pair one to one: one source posting can
+# feed several destinations (and vice versa), as long as the total from/to
+# quantities match. Lot identity is preserved across the split. #2692
+<
+commodity ABC ; lots:
+
+2020-03-08 buy
+     assets:cash        -$10
+     assets:broker1      5 ABC
+
+2020-04-04 split transfer
+     assets:broker1     -5 ABC
+     assets:broker2      2 ABC
+     assets:broker3      3 ABC
+$ hledger -f- print --lots -x date:2020-04
+2020-04-04 split transfer
+    assets:broker1:{2020-03-08, $2}               -5 ABC {2020-03-08, $2}
+    assets:broker2:{2020-03-08, $2}                2 ABC {2020-03-08, $2}
+    assets:broker3:{2020-03-08, $2}                3 ABC {2020-03-08, $2}
+
+>=
+
+# ** 38. A transfer fee split across several fee postings also auto-splits,
+# when together they add up to the missing quantity. #2692
+<
+commodity ABC ; lots:
+
+2020-03-08 buy
+     assets:cash        -$10
+     assets:broker1      5 ABC
+
+2020-04-05 transfer, fee recorded as two postings
+     assets:broker1     -5 ABC
+     assets:broker2      4.9 ABC
+     expenses:fees       0.05 ABC
+     expenses:fees2      0.05 ABC
+$ hledger -f- bal --lots
+            4.90 ABC  assets:broker2:{2020-03-08, $2}
+                $-10  assets:cash
+            0.05 ABC  expenses:fees
+            0.05 ABC  expenses:fees2
+--------------------
+                $-10
+               5 ABC  
+
+# ** 39. Several source postings can also feed one destination posting
+# (consolidation), preserving each lot's identity. #2692
+<
+commodity ABC ; lots:
+
+2020-03-08 buy1
+     assets:cash        -$10
+     assets:broker1      2 ABC
+
+2020-03-09 buy2
+     assets:cash        -$10
+     assets:broker2      3 ABC
+
+2020-04-04 consolidate
+     assets:broker1     -2 ABC
+     assets:broker2     -3 ABC
+     assets:broker3      5 ABC
+$ hledger -f- bal --lots -N
+               2 ABC  assets:broker3:{2020-03-08, $5}
+               3 ABC  assets:broker3:{2020-03-09, $3.33333333}
+                $-20  assets:cash
+
+# ** 40. print --lots output of an unpriced-fee transfer round-trips: the fee
+# dispose fragment carries an explicit lot reference and no price, which is
+# accepted (as a priceless fee disposal) because a non-asset posting receives
+# the same commodity and quantity. #2692
+<
+commodity ABC ; lots:
+
+2020-03-08 one
+    assets:cash                                 $-10
+    assets:broker1:{2020-03-08, "0001", $5}        2 ABC
+
+2020-03-08 two
+    assets:cash                                       $-10
+    assets:broker1:{2020-03-08, "0002", $3.33333333}     3 ABC
+
+2020-04-05 transfer with fee
+    assets:broker1:{2020-03-08, "0001", $5}           -1.9 ABC {2020-03-08, "0001", $5}
+    assets:broker1:{2020-03-08, "0002", $3.33333333}  -3 ABC {2020-03-08, "0002", $3.33333333}
+    assets:broker1:{2020-03-08, "0001", $5}           -0.1 ABC {2020-03-08, "0001", $5}
+    assets:broker1                                     0 ABC                                   =* 0 ABC
+    assets:broker2:{2020-03-08, "0001", $5}            1.9 ABC {2020-03-08, "0001", $5}
+    assets:broker2:{2020-03-08, "0002", $3.33333333}   3 ABC {2020-03-08, "0002", $3.33333333}
+    expenses:fees                                      0.1 ABC
+$ hledger -f- bal --lots -N
+             1.9 ABC  assets:broker2:{2020-03-08, "0001", $5}
+             3.0 ABC  assets:broker2:{2020-03-08, "0002", $3.33333333}
+                $-20  assets:cash
+             0.1 ABC  expenses:fees
+
+# ** 41. A transfer+fee written with cost basis notation also auto-splits,
+# like the bare form: the fee dispose fragment carries the lot basis and no
+# price, lots are reduced, and no gain is calculated. #2692
+<
+2020-03-08 buy
+     assets:cash        -$10
+     assets:broker1      5 ABC {$2}
+
+2020-04-04 transfer with fee
+     assets:broker1     -5 ABC {$2}
+     assets:broker2      4.9 ABC {$2}
+     expenses:fees       0.1 ABC
+$ hledger -f- print --lots -x date:2020-04
+2020-04-04 transfer with fee
+    assets:broker1:{2020-03-08, $2}               -4.9 ABC {2020-03-08, $2}
+    assets:broker1:{2020-03-08, $2}               -0.1 ABC {2020-03-08, $2}
+    assets:broker2:{2020-03-08, $2}                4.9 ABC {2020-03-08, $2}
+    expenses:fees                                  0.1 ABC
+
+>=
+
+# ** 42. A consolidating transfer with cost basis notation: sources with
+# different lot bases feed one bare destination posting, preserving each
+# lot's identity. #2692
+<
+2026-01-15 buy at 50
+    assets:checking
+    assets:broker1     5 AAPL {$50}
+
+2026-01-20 buy at 60
+    assets:checking
+    assets:broker2     5 AAPL {$60}
+
+2026-02-01 consolidate
+    assets:broker1    -5 AAPL {$50}
+    assets:broker2    -5 AAPL {$60}
+    assets:broker3    10 AAPL
+$ hledger -f- print --lots -x date:2026-02
+2026-02-01 consolidate
+    assets:broker1:{2026-01-15, $50}              -5 AAPL {2026-01-15, $50}
+    assets:broker2:{2026-01-20, $60}              -5 AAPL {2026-01-20, $60}
+    assets:broker3:{2026-01-15, $50}               5 AAPL {2026-01-15, $50}
+    assets:broker3:{2026-01-20, $60}               5 AAPL {2026-01-20, $60}
+
+>=
+
+# ** 43. A split-destination transfer with a priced fee posting: sum-based
+# transfer detection ignores priced amounts, so the transfer postings are
+# detected and the priced fee portion still disposes. #2692
+<
+commodity A  ; lots:
+
+2026-01-15 buy
+    assets:a    1.02 A {$100} @ $100
+    assets:cash
+
+2026-02-17 transfer with fee, split destinations
+    assets:a       -1 A {$100}
+    assets:b      0.6 A {$100}
+    assets:c      0.4 A {$100}
+    assets:a    -0.02 A {$100} @ $100
+    expenses:fees   $2
+$ hledger -f- print --verbose-tags date:2026-02
+2026-02-17 transfer with fee, split destinations
+    assets:a                                      -1 A {$100}  ; ptype: transfer-from
+    assets:b                                       0.6 A {$100}  ; ptype: transfer-to
+    assets:c                                       0.4 A {$100}  ; ptype: transfer-to
+    assets:a                                      -0.02 A {$100} @ $100  ; ptype: dispose
+    expenses:fees                                 $2
+
+>=
+
+# ** 44. An explicit priced fee disposal written alongside a matched
+# transfer pair (fee paid in cash) classifies as a dispose, not as part of
+# the transfer: the transacted price signals dispose intent, so the
+# other-asset-receives transfer+fee heuristic does not apply. #2692
+<
+commodity ABC ; lots:
+
+2020-03-08 buy
+     assets:cash        -$10
+     assets:broker1      5 ABC @ $2
+
+2020-04-05 transfer, with fee disposed at a price
+     assets:broker1     -4.9 ABC
+     assets:broker2      4.9 ABC
+     assets:broker1      -0.1 ABC @@ $1
+     expenses:fees       $1
+$ hledger -f- print -a date:2020-04
+2020-04-05 transfer, with fee disposed at a price
+    assets:broker1:{2020-03-08, $2}               -4.9 ABC {2020-03-08, $2}  ; ptype: transfer-from
+    assets:broker2:{2020-03-08, $2}                4.9 ABC {2020-03-08, $2}  ; ptype: transfer-to
+    assets:broker1:{2020-03-08, $2}               -0.1 ABC {2020-03-08, $2} @@ $1  ; ptype: dispose
+    expenses:fees                                 $1
+    revenues:gain                                $-0.80  ; ptype: rgain, generated-posting:
+    equity:unrealised-gain                        $0.80  ; ptype: ugain, generated-posting:
+
+>=
+
+# ** 45. The same entry with the fee disposal's price elided: the balancer
+# attaches the inferred cost to that posting only (the one whose amount is
+# the whole residual), leaving the transfer pair unpriced, so this works
+# like the explicitly priced form above. #2692
+<
+commodity ABC ; lots:
+
+2020-03-08 buy
+     assets:cash        -$10
+     assets:broker1      5 ABC @ $2
+
+2020-04-05 transfer, with fee disposed at an inferred price
+     assets:broker1     -4.9 ABC
+     assets:broker2      4.9 ABC
+     assets:broker1      -0.1 ABC
+     expenses:fees       $1
+$ hledger -f- print -a date:2020-04
+2020-04-05 transfer, with fee disposed at an inferred price
+    assets:broker1:{2020-03-08, $2}               -4.9 ABC {2020-03-08, $2}  ; ptype: transfer-from
+    assets:broker2:{2020-03-08, $2}                4.9 ABC {2020-03-08, $2}  ; ptype: transfer-to
+    assets:broker1:{2020-03-08, $2}               -0.1 ABC {2020-03-08, $2} @@ $1  ; ptype: dispose
+    expenses:fees                                 $1
+    revenues:gain                                $-0.80  ; ptype: rgain, generated-posting:
+    equity:unrealised-gain                        $0.80  ; ptype: ugain, generated-posting:
+
+>=
+
+# ** 46. A zero-amount posting beside a transfer (eg a balance assertion
+# carrier) is ignored by lot classification: it must not become a transfer-to
+# via commodity matching, which would fail lot processing.
+<
+commodity A  ; lots:
+
+2021-09-01 buy
+    assets:cash    $-200
+    assets:a        A 100
+
+2021-09-02 transfer with in-kind fee and a zero posting
+    assets:a         A -50.176105
+    expenses:fees      A 0.176105
+    assets:b          A 50.000000
+    assets:b           A 0 = A 50.000000
+
+$ hledger -f- bal --lots 2>&1
+         A 49.823895  assets:a:{2021-09-01, $2}
+         A 50.000000  assets:b:{2021-09-01, $2}
+               $-200  assets:cash
+          A 0.176105  expenses:fees
+--------------------
+               $-200
+               A 100  

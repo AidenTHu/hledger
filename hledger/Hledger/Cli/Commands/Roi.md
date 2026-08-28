@@ -1,6 +1,6 @@
 ## roi
 
-Shows the money-weighted (IRR) and time-weighted (TWR) rate of return
+Show the money-weighted (IRR) and time-weighted (TWR) rate of return
 on your investments.
 
 ```flags
@@ -9,17 +9,18 @@ Flags:
                                 returns
      --investment=QUERY         query to select your investment transactions
      --profit-loss=QUERY --pnl  query to select profit-and-loss or
-                                appreciation/valuation transactions
+                                appreciation/valuation transactions (optional)
 ```
 
 At a minimum, you need to supply a query (which could be just an
-account name) to select your investment(s) with `--inv`, and another
-query to identify your profit and loss transactions with `--pnl`.
+account name) to select your investment(s) with `--inv`.
 
-If your investment's value changes are captured solely through price
-directives (rather than manual P&L journal entries), or if you do not
-need TWR, `--pnl` can be an empty query (`--pnl ""` or `--pnl STR`
-where `STR` does not match any of your accounts).
+An optional second query to identify your profit and loss transactions
+could be given with `--pnl`. If your investment's value changes are
+captured solely through price directives (rather than manual P&L
+journal entries), or if you do not need TWR, you can simply omit
+`--pnl`, and no transactions will be classed as profit and loss in
+this case.
 
 This command will compute and display the internal rate of return
 (IRR, also known as money-weighted rate of return) and time-weighted
@@ -44,7 +45,7 @@ Note, in some cases this report can fail, for these reasons:
 Examples:
 
 - Using roi to compute total return of investment in stocks:
-  <https://github.com/simonmichael/hledger/blob/main/examples/investing/roi-unrealised.ledger>
+  <https://github.com/plaintextaccounting/hledger/blob/main/examples/investing/roi-unrealised.ledger>
 
 - Cookbook > Return on Investment: 
   <https://hledger.org/roi.html>
@@ -123,6 +124,15 @@ postings in the example below would be classifed as:
   snake oil     $50            ; investment posting
 ```
 
+### Using roi with lots
+
+If your journal records [lots](#lots), each disposal transaction has a
+balanced pair of gain postings, by default to `revenues:gain` (the
+realised gain) and `equity:unrealised-gain` (reclassifying the
+accumulated unrealised gain). Make sure `--pnl` matches both accounts, eg
+`--pnl 'revenues:gain|equity:unrealised-gain'`; otherwise the
+unrealised-gain postings are counted as cash flows in and out of the
+investment, distorting the report.
 
 ### IRR and TWR explained
 

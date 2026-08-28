@@ -23,6 +23,75 @@ User-visible changes in hledger-web.
 See also the hledger changelog.
 
 
+# f0229d4b
+
+Fixes
+
+- An XSS (cross-site scripting) vulnerability has been fixed in the
+  add form's autocomplete. Journal data from an untrusted source could
+  execute javascript when shown as a completion suggestion. All
+  hledger-web users should upgrade.
+  (Arthur Cinader, Simon Michael, [#2698], advisory GHSA-538p-cvc4-4qjm)
+
+- Another XSS vulnerability has been fixed in the add transaction
+  form's error message. Any web page visited while hledger-web was
+  running could use it to run javascript in hledger-web's origin, and
+  from there read the whole journal, or alter it. All hledger-web
+  users should upgrade.  (Arthur Cinader, Simon Michael, [#2700],
+  advisory GHSA-vq7r-8w52-jv84)
+
+- A newline submitted in a transaction's description, code or account
+  name is no longer written into the journal file. This removes the
+  possibility of the user inserting an include directive, which could
+  expose system files readable by the hledger-web server.  ([#2704],
+  advisory GHSA-vq7r-8w52-jv84)
+
+Improvements
+
+- Keep the account sidebar's scroll position when switching accounts
+  [#2679] (Arthur Cinader).  The sidebar and the main content now
+  scroll independently (on wider screens), so you don't lose your
+  place when clicking an account - the account stays exactly where it
+  was.  doesn't scroll. And, the sidebar's scroll position is
+  remembered across navigations.
+
+- --port 0 lets the OS choose a free port [#2559] (Arthur Cinader).
+  The chosen port is reported in the startup message and used in the
+  default base url, so scripts can discover it. Supported with --serve
+  and --serve-api.
+
+- Add the -? and --webman flags; rename --tldr to --examples (see hledger changelog).
+
+[#2559]: https://github.com/plaintextaccounting/hledger/issues/2559
+[#2679]: https://github.com/plaintextaccounting/hledger/issues/2679
+[#2698]: https://github.com/plaintextaccounting/hledger/issues/2698
+[#2700]: https://github.com/plaintextaccounting/hledger/issues/2700
+[#2704]: https://github.com/plaintextaccounting/hledger/issues/2704
+
+
+# 1.52.2 2026-08-24
+
+Fixes
+
+- An XSS (cross-site scripting) vulnerability has been fixed in the add
+  transaction form's autocomplete. Journal data from an untrusted source
+  could execute javascript when shown as a completion suggestion. All
+  hledger-web users are encouraged to upgrade. Full technical details:
+  GHSA-538p-cvc4-4qjm.
+  (Arthur Cinader, Simon Michael, #2698)
+  
+  Note: this bug was detected, and the original patch was generated, by
+  Arthur Cinader with AI assistance, for hledger 2.x.  Because the
+  vulnerability is in theory quite severe, and the fix is small and
+  obvious, and I don't want to add risk by redoing it from memory, and
+  no-one else volunteered promptly to do that work - and after
+  discussion in the chat and mail list (see today's thread), and careful
+  human review and testing - I manually backported the same fix to
+  hledger 1. And, updated the project's https://hledger.org/AI.html
+  policy to allow this for needed security-related fixes like this one
+  (which I expect to be very rare).
+
+
 # 1.99.3 2026-06-24
 
 Breaking changes
@@ -105,7 +174,7 @@ Docs
 - openapi.yaml (the OpenAPI spec for hledger-web's JSON API) has been updated.
   (n0vdd)
 
-[#2544]: https://github.com/simonmichael/hledger/issues/2544
+[#2544]: https://github.com/plaintextaccounting/hledger/issues/2544
 
 
 # 1.51.2 2026-01-08
@@ -114,7 +183,7 @@ Docs
 
 - Allow base 4.22 / ghc 9.14.
 
-[#2520]: https://github.com/simonmichael/hledger/issues/2520
+[#2520]: https://github.com/plaintextaccounting/hledger/issues/2520
 
 
 # 1.51.1 2025-12-08
@@ -314,7 +383,7 @@ Docs
   This is also applicable to `hledger print`'s JSON output format.
 
 [ghc-debug]: https://gitlab.haskell.org/ghc/ghc-debug
-[openapi.yaml]: https://github.com/simonmichael/hledger/blob/master/hledger-web/config/openapi.yaml
+[openapi.yaml]: https://github.com/plaintextaccounting/hledger/blob/master/hledger-web/config/openapi.yaml
 [tldr]: https://tldr.sh
 
 
@@ -350,9 +419,9 @@ Docs
   the non-display of costs,
   and non-zeros that look like zero because of hidden costs.
 
-[#2140]: https://github.com/simonmichael/hledger/issues/2140
-[#2163]: https://github.com/simonmichael/hledger/issues/2163
-[#2166]: https://github.com/simonmichael/hledger/issues/2166
+[#2140]: https://github.com/plaintextaccounting/hledger/issues/2140
+[#2163]: https://github.com/plaintextaccounting/hledger/issues/2163
+[#2166]: https://github.com/plaintextaccounting/hledger/issues/2166
 
 # 1.32.3 2024-01-28
 
@@ -530,20 +599,20 @@ Improvements
 Fixes
 
 - Toggle showing zero items properly even when called with --empty. 
-  ([#1237](https://github.com/simonmichael/hledger/issues/1237), Stephen Morgan)
+  ([#1237](https://github.com/plaintextaccounting/hledger/issues/1237), Stephen Morgan)
 
 - Do not hide empty accounts if they have non-empty subaccounts. 
-  ([#1237](https://github.com/simonmichael/hledger/issues/1237), Stephen Morgan)
+  ([#1237](https://github.com/plaintextaccounting/hledger/issues/1237), Stephen Morgan)
 
 - Allow unbalanced postings (parenthesised account name) in the add transaction form. 
-  ([#1058](https://github.com/simonmichael/hledger/issues/1058), Stephen Morgan)
+  ([#1058](https://github.com/plaintextaccounting/hledger/issues/1058), Stephen Morgan)
 
 - An XSS (cross-site scripting) vulnerability has been fixed.
   Previously (since hledger-web 0.24), javascript code could be added 
   to any autocompleteable field and could be executed automatically 
   by subsequent visitors viewing the journal.
   Thanks to Gaspard Baye and Hamidullah Muslih for reporting this vulnerability.
-  ([#1525](https://github.com/simonmichael/hledger/issues/1525), Arsen Arsenović)
+  ([#1525](https://github.com/plaintextaccounting/hledger/issues/1525), Arsen Arsenović)
 
 API changes
 

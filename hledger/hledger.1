@@ -1,6 +1,6 @@
 .\"t
 
-.TH "HLEDGER" "1" "June 2026" "hledger-1.99 " "hledger User Manuals"
+.TH "HLEDGER" "1" "August 2026" "hledger-1.99 " "hledger User Manuals"
 
 
 
@@ -38,10 +38,7 @@ You can also open a built\-in copy, at a point of interest, by running
 .PD 0
 .P
 .PD
-\f[CR]hledger \-\-man [CMD]\f[R], \f[CR]hledger \-\-info [CMD]\f[R] or
 \f[CR]hledger help [TOPIC]\f[R].
-.PP
-(And for shorter help, try \f[CR]hledger \-\-tldr [CMD]\f[R].)
 .PP
 The main function of the hledger CLI is to read plain text files
 describing financial transactions, crunch the numbers, and print a
@@ -286,8 +283,7 @@ Some often\-used commands are \f[CR]add\f[R], \f[CR]print\f[R],
 \f[CR]incomestatement\f[R].
 .PP
 To show a summary of commands, run \f[CR]hledger\f[R] with no arguments.
-You can see the same commands summary at the start of PART 4: COMMANDS
-below.
+See also PART 4: COMMANDS below.
 .PP
 To use a particular command, run
 \f[CR]hledger CMD [CMDOPTS] [CMDARGS]\f[R],
@@ -444,8 +440,7 @@ General help flags:
 .EE
 .PP
 Usually hledger accepts any unambiguous flag prefix, eg you can write
-\f[CR]\-\-tl\f[R] instead of \f[CR]\-\-tldr\f[R] or \f[CR]\-\-dry\f[R]
-instead of \f[CR]\-\-dry\-run\f[R].
+\f[CR]\-\-dry\f[R] instead of \f[CR]\-\-dry\-run\f[R].
 .PP
 You can combine short flags which don\(aqt take arguments, eg you can
 write \f[CR]\-MAST\f[R] instead of \f[CR]\-M \-A \-S \-T\f[R].
@@ -874,8 +869,8 @@ rev10 = balance type\f[B]:\f[R]R \-2 \-X\f[B]$\f[R] \-p \(aqevery 10 years from 
 .EE
 .PP
 With this in your config file, you\(aqll see a \f[CR]rev10\f[R] command
-in the \f[CR]hledger commands\f[R] list, and \f[CR]hledger rev10\f[R]
-will run the balance command above.
+in the \f[CR]hledger help commands\f[R] list, and
+\f[CR]hledger rev10\f[R] will run the balance command above.
 Options or arguments written at the command line will be added at the
 end, usually overriding those in the alias; eg
 \f[CR]hledger rev10 \-X €\f[R] will convert to \f[CR]€\f[R] instead of
@@ -980,7 +975,7 @@ hledger commands) or \f[CR]hledger reg acct:<TAB><TAB>\f[R] (should list
 your top\-level account names).
 If completions aren\(aqt working, or for more details, see Install >
 Shell completions.
-˜ # Output
+.SH Output
 .SS Output destination
 hledger commands send their output to the terminal by default.
 You can of course redirect this, eg into a file, using standard shell
@@ -1108,6 +1103,22 @@ T}@T{
 Y
 T}
 T{
+holdings
+T}@T{
+Y
+T}@T{
+Y
+T}@T{
+Y
+T}@T{
+Y
+T}@T{
+T}@T{
+T}@T{
+T}@T{
+Y
+T}
+T{
 incomestatement
 T}@T{
 Y
@@ -1220,12 +1231,15 @@ hledger tries to automatically detect ANSI colour and text styling
 support and use it when appropriate.
 (Currently, it is used rather minimally: some reports show negative
 numbers in red, and help output uses bold text for emphasis.)
+Colour is not used when the \f[CR]TERM\f[R] environment variable is
+\f[CR]dumb\f[R], or \f[CR]NO_COLOR\f[R] is set, or output is not going
+to a colour\-capable terminal.
 .PP
 You can override this by setting the \f[CR]NO_COLOR\f[R] environment
 variable to disable it, or by using the \f[CR]\-\-color/\-\-colour\f[R]
 option, perhaps in your config file, with a \f[CR]y\f[R]/\f[CR]yes\f[R]
 or \f[CR]n\f[R]/\f[CR]no\f[R] value to force it on or off.
-.SS Paging˜
+.SS Paging
 In unix\-like environments, when displaying large output (in any output
 format) in the terminal, hledger tries to use a pager when appropriate.
 (You can disable this with the \f[CR]\-\-pager=no\f[R] option, perhaps
@@ -1265,11 +1279,9 @@ and when colour output is enabled:
 You can prevent this by setting your preferred options in the
 \f[CR]HLEDGER_LESS\f[R] variable, which will be used instead of
 \f[CR]LESS\f[R].
-.PP
-˜ ### HTML output˜˜
-.PP
+.SS HTML output
 HTML output can be styled by an optional \f[CR]hledger.css\f[R] file in
-the same directory.
+the same directory (there is a sample in the hledger source repository).
 .PP
 HTML output will be a HTML fragment, not a complete HTML document.
 Like other hledger output, for non\-ascii characters it will use the
@@ -1994,38 +2006,44 @@ In english they are:
 These will be discussed more in Account types below.
 In hledger docs you may see them referred to as A, L, E, R, X for short.
 .SS Two space delimiter
-Note the \f[B]two or more spaces\f[R] delimiter that\(aqs sometimes
-required after account names.
-\ hledger\(aqs account names, inherited from Ledger, are very
-permissive; they may contain pretty much any kind of text, including
-single spaces and semicolons.
-Because of this, they must be terminated by \f[B]two or more spaces\f[R]
-if there is anything following them on the same line.
-For example, if an amount, balance assignment, or same\-line comment
-follows an account name, they must be preceded by two or more spaces,
-else they would be considered part of the account name:
+Note that hledger\(aqs account names, like Ledger\(aqs, may contain
+single spaces.
+Because of this, they must be separated from anything following them on
+the same line by \f[B]two or more spaces\f[R].
+(One or more tabs also work, for Ledger compatibility; but spaces are
+preferred.)
+.PP
+This lets us use expressive account names, while still keeping the
+syntax light.
+Here are some examples:
 .IP
 .EX
-bad:     assets:accounts receivable $10        ; <\- too close!
-good:    assets:accounts receivable  $10
+  assets:accounts receivable ; bad, only one space before the comment
+  assets:accounts receivable  ; good
 .EE
 .IP
 .EX
-bad:     assets:accounts receivable =$1000     ; <\- too close!
-good:    assets:accounts receivable  =$1000
+  assets:accounts receivable $10    ; bad, one space before the amount
+  assets:accounts receivable  $10   ; good
 .EE
 .IP
 .EX
-bad:     assets:accounts receivable ; comment.   <\- too close!
-good:    assets:accounts receivable  ; comment
+  assets:accounts receivable = $1000   ; bad, one space before the balance assignment
+  assets:accounts receivable  = $1000  ; good
 .EE
 .PP
-This two\-space delimiter appears in a few places in hledger, such as
-after account names in postings or account directives; also after the
-period expression in periodic transaction rules.
-When you are starting out, expect it to catch you out at least once.
-It\(aqs annoying sometimes, but it lets us use expressive account names
-while still keeping the syntax light.
+The two\-space delimiter is also required in periodic transaction rules,
+between period expression and description:
+.IP
+.EX
+\(ti every 5th day YouTube Premium     ; bad, one space before the description
+\(ti every 5th day  YouTube Premium    ; good
+.EE
+.PP
+When you are starting out, you can expect this delimiter will trip you
+up once or twice.
+(If it happens too much, you can check account names strictly to prevent
+it.)
 .SS Account hierarchy
 For more precise reporting, we usually divide accounts into more
 detailed subaccounts, subsubaccounts, and so on, by writing a full colon
@@ -2141,15 +2159,17 @@ disambiguate them \- see Trailing decimal marks).
 In the integer part of the amount quantity (left of the decimal mark),
 groups of digits can optionally be separated by a \f[I]digit group
 mark\f[R] \- a comma or period (whichever is not used as decimal mark),
-or a space (several Unicode space variants, like no\-break space, are
-also accepted).
+an underscore, an apostrophe, or a space (several Unicode space
+variants, like no\-break space, are also accepted).
 \ So these are all valid amounts in a journal file:
 .IP
 .EX
      $1,000,000.00
   EUR 2.000.000,00
 INR 9,99,99,999.00
-      1 000 000.00   ; <\- ordinary space  
+  CHF 1\(aq000\(aq000.00
+      1_000_000.00
+      1 000 000.00   ; <\- ordinary space
       1\ 000\ 000.00   ; <\- no\-break space
 .EE
 .SS Commodity
@@ -9288,6 +9308,22 @@ $ hledger bal assets:stocks \-\-lots \-N
               5 AAPL  assets:stocks:{2026\-01\-15, $50}
 .EE
 .PP
+And if you also record a market price, eg with a
+\f[CR]P 2026\-03\-31 AAPL $72\f[R] directive, the holdings command shows
+an overview of your investment holdings \- units held, cost basis,
+current value and unrealised gain:
+.IP
+.EX
+$ hledger holdings \-e 2026\-04\-01
+Holdings on 2026\-03\-31
+
+               ||       Date  Age   Units  Avg cost  Price  Cost  Value  Weight  UGain  UGain%  RGain     XIRR
+===============++==============================================================================================
+ assets:stocks || 2026\-01\-15  75d  5 AAPL       $50    $72  $250   $360  100.0%   $110   44.0%   $100  1865.3%
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+               ||                                           $250   $360  100.0%   $110   44.0%   $100  1865.3%
+.EE
+.PP
 Or use \f[CR]print \-a\f[R] to see maximum detail on how hledger has
 analysed your entries \- lot subaccounts, inferred annotations, and
 posting types:
@@ -9361,7 +9397,8 @@ basis.
 You don\(aqt need to write these subaccounts in the journal; hledger
 infers them automatically.
 They are hidden from reports by default, since there can be many lots.
-To show them, just add the \f[CR]\-\-lots\f[R] flag to any report.
+To show them, just add the \f[CR]\-\-lots\f[R] flag to any report (the
+holdings command is designed for viewing them).
 Eg:
 .IP
 .EX
@@ -9471,6 +9508,38 @@ separate income, equity, or asset posting \- rather than expressing the
 difference as \f[CR]{B} \(at T\f[R] with \f[CR]B ≠ T\f[R] on the asset
 itself.
 The Acquire section below shows an example.
+.SS Cost basis precision
+An inferred cost basis can be a non\-terminating decimal (eg
+\f[CR]3 ABC \(at\(at $10\f[R] gives a $10/3 unit cost).
+Internally hledger keeps such costs at high precision, and calculates
+gains from the unrounded value; but in lot names it displays at most 8
+decimal digits (eg \f[CR]{2021\-03\-08, $3.33333333}\f[R]), or more if
+the commodity\(aqs declared display style has more (eg
+\f[CR]commodity $0.0000000000\f[R]).
+A lot\(aqs displayed name always works as a selector, even when it is a
+rounded display of a longer inferred cost.
+.PP
+Two precision\-related cautions:
+.IP \(bu 2
+When lots migrate to a new journal file as text (eg with
+\f[CR]close \-\-lots\f[R]), only the displayed digits survive: the new
+file\(aqs cost basis is exactly the displayed value, so subsequent gains
+can differ from the old file\(aqs by a tiny amount (up to half of the
+last displayed digit, per unit, once).
+If you track commodities needing finer cost precision (eg micro\-priced
+tokens, or costs denominated in a cryptocurrency), declare a wider
+display style for the cost commodity up front.
+.IP \(bu 2
+Changing a commodity\(aqs declared display precision can change how
+inferred costs render in lot names.
+Any lot names or selectors recorded in the journal with the old
+rendering will then stop matching: hledger reports \(dqno lots matching
+\&...\(dq, listing the account\(aqs actual lots.
+Recovery is simple but manual: update the recorded names/selectors to
+the new rendering, which is shown in the error message (or by
+\f[CR]print \-\-lots\f[R]).
+Selectors using just the date (and label) don\(aqt embed a cost and are
+unaffected \- one more reason to prefer them.
 .SS Lot movements
 hledger understands three kinds of event involving lots.
 Other real\-world lot events can usually be modelled using combinations
@@ -9527,11 +9596,13 @@ Transfer postings should not have a transacted price.
 If the destination receives less than the source sends (eg due to a fee
 deducted by an exchange), the fee portion of lots is consumed from the
 source without being recreated at the destination.
-If that fee also appears as a priced non\-asset posting in the same
-commodity (eg \f[CR]expenses:fees 0.001 ETH \(at $3000\f[R]), hledger
+If that fee also appears as a non\-asset posting in the same commodity
+(eg \f[CR]expenses:fees 0.001 ETH \(at $3000\f[R]), hledger
 automatically splits the source posting into a transfer portion and a
-priced disposal portion, so that the disposal is detected correctly.
-Plain \f[CR]print\f[R] shows the user\(aqs original entry;
+disposal portion, so that the disposal is detected correctly.
+If the fee posting has a transacted price, the disposal portion carries
+it and a gain is calculated; otherwise the disposal is priceless and no
+gain is calculated.
 \f[CR]print \-\-lots\f[R] (or \f[CR]print \-a\f[R]) shows the split form
 explicitly, so the output round\-trips correctly.
 .SS Dispose
@@ -9673,6 +9744,13 @@ T}
 the journal entry contains explicit lot selectors like
 \f[CR]{2026\-01\-15, $50}\f[R] or \f[CR]{$50}\f[R], or an explicit lot
 subaccount like \f[CR]assets:broker:{2026\-01\-15, $50}\f[R].
+Selecting by date (and label, if any) is recommended.
+Cost\-only selectors like \f[CR]{$50}\f[R] are less robust: since costs
+displayed in lot names may be rounded (see Cost basis precision),
+distinct lots can display the same cost, and a cost\-only selector could
+then match more lots than intended.
+(With SPECID this is reported as an ambiguity error; with other methods
+the lots are consumed in the method\(aqs order.)
 .PP
 \f[B]FIFO\f[R] (first in first out).
 Dispose of the oldest lot first.
@@ -9864,6 +9942,17 @@ account equity:unrealised\-gain  ; type:U
     revenues:gain           $\-10
     equity:unrealised\-gain   $10
 .EE
+.SS Gain postings and the roi command
+When using the roi command with a journal that records lots, make sure
+\f[CR]\-\-pnl\f[R] matches both gain accounts, eg:
+.IP
+.EX
+$ hledger roi \-\-inv assets:stocks \-\-pnl \(aqrevenues:gain|equity:unrealised\-gain\(aq
+.EE
+.PP
+Otherwise the unrealised\-gain postings added to each disposal (see
+above) are counted as cash flows in and out of the investment,
+distorting the report.
 .SS Lot postings and balance assertions
 On a dispose or transfer posting without an explicit lot subaccount, a
 balance assertion always refers to the parent account\(aqs balance.
@@ -9948,6 +10037,22 @@ $ hledger bal assets:stocks \-\-lots \-N
              10 AAPL  assets:stocks:{2026\-02\-01, $60}
 .EE
 .PP
+holdings shows a fuller overview of them, with acquisition dates and
+cost basis (and, when market prices are recorded, current value and
+unrealised gain):
+.IP
+.EX
+$ hledger holdings \-e 2026\-04\-01 \-\-lots
+Holdings on 2026\-03\-31
+
+                                 ||       Date  Age    Units  Unit cost  Price  Cost  Value  Weight  UGain  UGain%  RGain  XIRR
+=================================++=============================================================================================
+ assets:stocks:{2026\-01\-15, $50} || 2026\-01\-15  75d   5 AAPL        $50         $250                                 $100
+ assets:stocks:{2026\-02\-01, $60} || 2026\-02\-01  58d  10 AAPL        $60         $600
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+                                 ||                                             $850                                 $100
+.EE
+.PP
 and \f[CR]print \-x \-\-lots\f[R] shows the inferred lot subaccounts and
 gain postings.
 5 shares were acquired at $50 and sold at $70 = 5 × ($70 \- $50) = $100
@@ -9977,7 +10082,7 @@ $ hledger print desc:sell \-a
 .SH PART 4: COMMANDS
 .PP
 Here are hledger\(aqs standard subcommands.
-You can list these by running \f[CR]hledger\f[R].
+You can list these by running \f[CR]hledger help commands\f[R].
 If you have installed more add\-on commands, they also will be listed.
 .PP
 In the following command docs, each command\(aqs specific options are
@@ -9991,17 +10096,13 @@ You can list all of a command\(aqs options by running
 .PP
 \f[B]Help commands\f[R]
 .IP \(bu 2
-commands \- show the hledger commands list (default)
-.IP \(bu 2
-demo \- show small hledger demos in the terminal
-.IP \(bu 2
-help \- show the hledger manual with info, man, or pager
+help \- show documentation
 .PP
 \f[B]User interface commands\f[R]
 .IP \(bu 2
-repl \- run commands from an interactive prompt
+repl \- run multiple commands from an interactive prompt
 .IP \(bu 2
-run \- run commands from a script
+run \- run multiple commands from a file or command line
 .IP \(bu 2
 ui \- (if installed) run hledger\(aqs terminal UI
 .IP \(bu 2
@@ -10015,19 +10116,19 @@ import \- add new transactions from other files, eg CSV files
 .PP
 \f[B]Basic report commands\f[R]
 .IP \(bu 2
-accounts \- show account names
+accounts (acc) \- show account names
 .IP \(bu 2
 codes \- show transaction codes
 .IP \(bu 2
-commodities \- show commodity/currency symbols
+commodities (comm) \- show commodity/currency symbols
 .IP \(bu 2
-descriptions \- show transaction descriptions
+descriptions (desc) \- show transaction descriptions
 .IP \(bu 2
-files \- show input file paths
+files \- show input files in use
 .IP \(bu 2
-notes \- show note parts of transaction descriptions
+notes \- show note part of transaction descriptions
 .IP \(bu 2
-payees \- show payee parts of transaction descriptions
+payees \- show payee part of transaction descriptions
 .IP \(bu 2
 prices \- show market prices
 .IP \(bu 2
@@ -10037,11 +10138,11 @@ tags \- show tag names
 .PP
 \f[B]Standard report commands\f[R]
 .IP \(bu 2
-print \- show transactions or export journal data
+print \- show journal entries, or export journal data
 .IP \(bu 2
-aregister (areg) \- show transactions in a particular account
+aregister (areg) \- show transactions & running balance in one account
 .IP \(bu 2
-register (reg) \- show postings in one or more accounts & running total
+register (reg) \- show postings & running total across accounts
 .IP \(bu 2
 balancesheet (bs) \- show assets, liabilities and net worth
 .IP \(bu 2
@@ -10053,17 +10154,19 @@ incomestatement (is) \- show revenues and expenses
 .PP
 \f[B]Advanced report commands\f[R]
 .IP \(bu 2
-balance (bal) \- show balance changes, end balances, budgets, gains..
+balance (bal) \- show balance changes, end balances, gains, budgets..
+.IP \(bu 2
+holdings \- show investment holdings
 .IP \(bu 2
 roi \- show return on investments
 .PP
 \f[B]Chart commands\f[R]
 .IP \(bu 2
-activity \- show bar charts of posting counts per period
+activity \- show posting counts as a bar chart
 .PP
 \f[B]Data generation commands\f[R]
 .IP \(bu 2
-close \- generate balance\-zeroing/restoring transactions
+close \- generate transactions to zero/restore/assert balances
 .IP \(bu 2
 get \- fetch new transactions and market price data
 .IP \(bu 2
@@ -10073,7 +10176,7 @@ rewrite \- generate auto postings, like print \-\-auto
 .IP \(bu 2
 check \- check for various kinds of error in the data
 .IP \(bu 2
-diff \- compare account transactions in two journal files
+diff \- compare an account\(aqs transactions in two journals
 .IP \(bu 2
 setup \- check and show the status of the hledger installation
 .IP \(bu 2
@@ -10081,64 +10184,47 @@ test \- run self tests
 .PP
 Next, these commands are described in detail.
 .SH Help commands
-.SS commands
-Show the hledger commands list.
-.IP
-.EX
-Flags:
-     \-\-builtin             show only builtin commands, not addons
-.EE
-.SS demo
-Play demos of hledger usage in the terminal, if asciinema is installed.
-.IP
-.EX
-Flags:
-  \-s \-\-speed=SPEED         playback speed (1 is original speed, .5 is half, 2
-                           is double, etc (default: 2))
-.EE
-.PP
-Run this command with no argument to list the demos.
-To play a demo, write its number or a prefix or substring of its title.
-Tips:
-.PP
-Make your terminal window large enough to see the demo clearly.
-.PP
-Use the \-s/\-\-speed SPEED option to set your preferred playback speed,
-eg \f[CR]\-s4\f[R] to play at 4x original speed or \f[CR]\-s.5\f[R] to
-play at half speed.
-The default speed is 2x.
-.PP
-During playback, several keys are available: SPACE to pause/unpause, .
-to step forward (while paused), CTRL\-c quit.
-.PP
-Examples:
-.IP
-.EX
-$ hledger demo               # list available demos
-$ hledger demo 1             # play the first demo at default speed (2x)
-$ hledger demo install \-s4   # play the \(dqinstall\(dq demo at 4x speed
-.EE
-.PP
-This command is experimental: there aren\(aqt many useful demos yet.
 .SS help
-Show the hledger user manual with \f[CR]info\f[R], \f[CR]man\f[R], or a
-pager.
-With a (case insensitive) TOPIC argument, try to open it at that section
-heading.
+Show some part of hledger\(aqs documentation, selected by arguments:
+.IP \(bu 2
+\f[CR]quickref\f[R] (or no args): a quick reference / overview
+.IP \(bu 2
+\f[CR]commands\f[R]: all commands, including addons and aliases
+.IP \(bu 2
+\f[CR]usage [CMD]\f[R]: command line options help (like \-h/\-\-help)
+.IP \(bu 2
+\f[CR]examples [CMD]\f[R]: command line examples
+.IP \(bu 2
+\f[CR]manual [TOPIC]\f[R]: view a topic in the manual, or list them all
+.IP \(bu 2
+\f[CR]TOPIC\f[R]: (like \f[CR]manual TOPIC\f[R])
+.IP \(bu 2
+\f[CR]home|install|relnotes|docs|support|sponsor\f[R]: browse
+hledger.org pages
+.PP
+TOPIC is a section heading in the hledger, hledger\-ui or hledger\-web
+manual, or part of one, matched case insensitively.
+Enclose it in quotes if it contains spaces.
+With no TOPIC (\f[CR]hledger help manual\f[R]), all manual topics are
+listed, indented to show (most of) their hierarchy.
+.PP
+The manual will be shown in a default viewer (info, man, pager, web
+browser), or you can choose with \-i/\-m/\-p/\-w.
 .IP
 .EX
 Flags:
-  \-i                       show the manual with info
-  \-m                       show the manual with man
-  \-p                       show the manual with $PAGER or less
-                           (less is always used if TOPIC is specified)
+  \-i                       use info when showing the manual
+  \-m                       use man when showing the manual
+  \-p                       use less (or $PAGER) when showing the manual
+  \-w                       use a web browser when showing the manual
+  \-l                       just list the manual topics matching TOPIC
+     \-\-builtin             with commands: show only built\-in commands
 .EE
 .PP
-This command shows the hledger manual built in to your hledger
-executable.
-It can be useful when offline, or when you prefer the terminal to a web
-browser, or when the appropriate hledger manual or viewers are not
-installed properly on your system.
+The manual is built in to your hledger executable, so it can be useful
+when offline, or when you prefer the terminal to a web browser, or when
+the appropriate hledger manual or viewers are not installed properly on
+your system.
 .PP
 By default it chooses the best viewer found in $PATH, trying in this
 order: \f[CR]info\f[R], \f[CR]man\f[R], \f[CR]$PAGER\f[R],
@@ -10150,32 +10236,27 @@ You can force the use of info, man, or a pager with the \f[CR]\-i\f[R],
 If no viewer can be found, or if running non\-interactively, it just
 prints the manual to stdout.
 .PP
-When using \f[CR]info\f[R], TOPIC can match either the full heading or a
-prefix.
-If your \f[CR]info \-\-version\f[R] is < 6, you\(aqll need to upgrade
-it, eg with \(aq\f[CR]brew install texinfo\f[R]\(aq on mac.
-.PP
-When using \f[CR]man\f[R] or \f[CR]less\f[R], TOPIC must match the full
-heading.
-For a prefix match, you can write \(aq\f[CR]TOPIC.*\f[R]\(aq.
-.PP
 Examples
 .IP
 .EX
-$ hledger help \-h                 # show the help command\(aqs usage
-$ hledger help                    # show the manual with info, man or $PAGER
-$ hledger help \(aqtime periods\(aq     # show the manual\(aqs \(dqTime periods\(dq topic
-$ hledger help \(aqtime periods\(aq \-m  # use man, even if info is installed
+$ hledger help                    # show the quick reference
+$ hledger help \-h                 # show the help command\(aqs options
+$ hledger help commands           # list all commands
+$ hledger help \(aqtime periods\(aq     # show the \(dqTime periods\(dq section in the manual
+$ hledger help keys               # show the \(dqKEYS\(dq section in the hledger\-ui manual
+$ hledger help \-l                 # list the manual\(aqs topics
+$ hledger help \-l journal         # list the manual topics matching \(dqjournal\(dq
+$ hledger help examples add       # show examples for the add command
 .EE
 .SH User interface commands
 .SS repl
-Start an interactive prompt, where you can run any of hledger\(aqs
-commands.
-Data files are parsed just once, so the commands run faster.
+Start an interactive prompt for running hledger commands.
+Input files are reloaded only when they change, so commands run faster.
 .IP
 .EX
 Flags:
-no command\-specific flags
+     \-\-no\-watch             disable automatic reloading of changed input
+                            files, config aliases and addon commands
 .EE
 .PP
 This command is experimental and could change in the future.
@@ -10186,13 +10267,17 @@ As with the \f[CR]run\f[R] command, each input file (or each input
 file/input options combination) is parsed just once, so commands will
 run more quickly than if you ran them individually at the command line.
 .PP
-Also like \f[CR]run\f[R], the input file(s) specified for the
-\f[CR]repl\f[R] command will be the default input for all interactive
-commands.
-You can override this temporarily by specifying an \f[CR]\-f\f[R] option
-in particular commands.
-But note that commands will not see any changes made to input files (eg
-by \f[CR]add\f[R]) until you exit and restart the REPL.
+The input file(s) specified for the \f[CR]repl\f[R] command will be used
+throughout the session; but you can override this temporarily by
+specifying new \f[CR]\-f\f[R] options for a command.
+.PP
+Before running a command, any input files which have changed on disk are
+automatically reloaded.
+Also command aliases are reloaded if the config file has changed, and
+addon commands are re\-detected if PATH\(aqs contents have changed.
+The \f[CR]\-\-no\-watch\f[R] flag disables all of this reloading, so as
+to work with a stable snapshot of the data, or to avoid file/directory
+polling on a slow network drive.
 .PP
 Any other general flags given to \f[CR]repl\f[R] \- input, reporting, or
 display flags such as \f[CR]\-I\f[R], \f[CR]\-\-strict\f[R],
@@ -10209,9 +10294,19 @@ enter one hledger command at a time, without the usual
 empty lines and comment text from \f[CR]#\f[R] to end of line are
 ignored
 .IP \(bu 2
-use single or double quotes to quote arguments when needed
-.IP \(bu 2
-type \f[CR]exit\f[R] or \f[CR]quit\f[R] or control\-D to exit the REPL.
+enclose arguments in quotes if they contain spaces.
+.PP
+Use \f[CR]help\f[R] (or \f[CR]h\f[R]) to show the quick reference, or
+\f[CR]help commands\f[R] to list commands.
+Addons in PATH and command aliases defined in a config file can also be
+used.
+Generally \f[CR]repl\f[R] should feel much like using hledger at the
+command line.
+But \f[CR]repl\f[R] requires full command names or official
+abbreviations (it does not recognise ad hoc abbreviations).
+.PP
+To run a single shell command, type \f[CR]! SHELLCMD\f[R] (eg
+\f[CR]! ls\f[R] or \f[CR]! git status\f[R]).
 .PP
 While it is running, the REPL remembers your command history, and you
 can navigate in the usual ways:
@@ -10224,34 +10319,28 @@ control\-R to search for a past command
 .IP \(bu 2
 TAB to complete file paths.
 .PP
-Generally \f[CR]repl\f[R] command lines should feel much like the normal
-hledger CLI, but you may find differences.
-\f[CR]repl\f[R] is a little stricter; eg it requires full command names
-or official abbreviations (as seen in the commands list).
-Command aliases defined in a config file can also be used.
-.PP
-The \f[CR]commands\f[R] and \f[CR]help\f[R] commands, and the command
-help flags (\f[CR]CMD \-\-tldr\f[R], \f[CR]CMD \-h/\-\-help\f[R],
-\f[CR]CMD \-\-info\f[R], \f[CR]CMD \-\-man\f[R]), can be useful.
-.PP
 You can type control\-C to cancel a long\-running command (but only
 once; typing it a second time will exit the REPL).
 .PP
-And in most shells you can type control\-Z to temporarily exit to the
-shell (and then \f[CR]fg\f[R] to return to the REPL).
+In most shells you can type control\-Z to temporarily exit to the shell
+(and then \f[CR]fg\f[R] to return to the REPL).
+.PP
+To exit the REPL, use control\-D or \f[CR]q\f[R] or \f[CR]quit\f[R] or
+\f[CR]exit\f[R].
 .SS Examples
 Start the REPL and enter some commands:
 .IP
 .EX
 $ hledger repl 
-Enter hledger commands. To exit, enter \(aqquit\(aq or \(aqexit\(aq, or send EOF.
-% stats
+hledger 1.52
+Enter hledger commands. To exit, enter \(aqquit\(aq or \(aqexit\(aq, or send EOF / control\-d.
+2025> stats
 Main file           : .../2025.journal
 \&...
-% stats \-f 2024/2024.journal 
+2025> stats \-f 2024/2024.journal 
 Main file           : .../2024.journal
 \&...
-% stats
+2025> stats
 Main file           : .../2025.journal
 \&...
 .EE
@@ -10260,18 +10349,19 @@ or:
 .IP
 .EX
 $ hledger repl \-f some.journal
-Enter hledger commands. To exit, enter \(aqquit\(aq or \(aqexit\(aq, or send EOF.
-% bs
+hledger 1.52
+Enter hledger commands. To exit, enter \(aqquit\(aq or \(aqexit\(aq, or send EOF / control\-d.
+some> bs
 \&...
-% print \-b \(aqlast week\(aq
+some> print \-b \(aqlast week\(aq
 \&...
-% bs \-f other.journal
+some> bs \-f other.journal
 \&...
 .EE
 .SS run
 Run a sequence of hledger commands, provided as files or command line
 arguments.
-Data files are parsed just once, so the commands run faster.
+Input files are parsed just once, so the commands run faster.
 .IP
 .EX
 Flags:
@@ -10389,9 +10479,9 @@ List of accounts in some.journal
 \&...
 .EE
 .SS ui
-Runs hledger\-ui (if installed).
+Runs hledger\-ui, a terminal UI (if installed).
 .SS web
-Runs hledger\-web (if installed).
+Runs hledger\-web, a web UI (if installed).
 .SH Data entry commands
 .SS add
 Add new transactions to a journal file, with interactive prompting.
@@ -10847,6 +10937,8 @@ will import and archive first \f[CR]bank.csv\f[R], then
 \f[CR]bank (2).csv\f[R].
 .SH Basic report commands
 .SS accounts
+(acc)
+.PP
 List the account names used or declared in the journal.
 .IP
 .EX
@@ -10973,6 +11065,8 @@ $ hledger codes \-E
 126
 .EE
 .SS commodities
+(comm)
+.PP
 List the commodity symbols used or declared in the journal.
 .IP
 .EX
@@ -11056,6 +11150,8 @@ same
 T}
 .TE
 .SS descriptions
+(desc)
+.PP
 List the unique descriptions used in transactions.
 .IP
 .EX
@@ -11076,7 +11172,7 @@ Gas Station | Petrol
 Person A
 .EE
 .SS files
-List all files included in the journal.
+List all input files used by the journal(s).
 With a REGEX argument, only file names matching the regular expression
 (case sensitive) are shown.
 .IP
@@ -11302,7 +11398,8 @@ also acquire tags from their account and transaction; and transactions
 also acquire tags from their postings.
 .SH Standard report commands
 .SS print
-Show full journal entries, representing transactions.
+Show transactions\(aq journal entries, or export journal data to another
+format.
 .IP
 .EX
 Flags:
@@ -11722,7 +11819,7 @@ This too can cause an inaccurate running balance.
 .SS register
 (reg)
 .PP
-Show postings and their running total.
+Show postings & running total across accounts.
 .IP
 .EX
 Flags:
@@ -11959,7 +12056,11 @@ Flags:
      \-\-summary\-only         display only row summaries (e.g. row total,
                             average) (in multicolumn reports)
   \-N \-\-no\-total             omit the final total row
-     \-\-no\-elide             in tree mode, don\(aqt squash boring parent accounts
+     \-\-no\-elide             in tree mode, don\(aqt squash boring parent
+                            accounts; in list mode, also show parent accounts
+                            (usually zero, hidden without \-E)
+     \-\-full\-names           in tree mode, show full account names instead of
+                            indented leaf names
      \-\-format=FORMATSTR     use this custom line format (in simple reports)
   \-S \-\-sort\-amount          sort by amount instead of account code/name
   \-% \-\-percent              express values in percentage of each column\(aqs
@@ -12025,8 +12126,8 @@ options The output formats supported are \f[CR]txt\f[R], \f[CR]csv\f[R],
 .SS balancesheetequity
 (bse)
 .PP
-This command displays a balance sheet, showing historical ending
-balances of asset, liability and equity accounts.
+Show a balance sheet, with historical ending balances of asset,
+liability and equity accounts.
 Amounts are shown with normal positive sign, as in conventional
 financial statements.
 .IP
@@ -12062,7 +12163,11 @@ Flags:
      \-\-summary\-only         display only row summaries (e.g. row total,
                             average) (in multicolumn reports)
   \-N \-\-no\-total             omit the final total row
-     \-\-no\-elide             in tree mode, don\(aqt squash boring parent accounts
+     \-\-no\-elide             in tree mode, don\(aqt squash boring parent
+                            accounts; in list mode, also show parent accounts
+                            (usually zero, hidden without \-E)
+     \-\-full\-names           in tree mode, show full account names instead of
+                            indented leaf names
      \-\-format=FORMATSTR     use this custom line format (in simple reports)
   \-S \-\-sort\-amount          sort by amount instead of account code/name
   \-% \-\-percent              express values in percentage of each column\(aqs
@@ -12135,9 +12240,8 @@ options The output formats supported are \f[CR]txt\f[R], \f[CR]csv\f[R],
 .SS cashflow
 (cf)
 .PP
-This command displays a (simple) cashflow statement, showing the inflows
-and outflows affecting \(dqcash\(dq (ie, liquid, easily convertible)
-assets.
+Show a (simple) cashflow statement, with the inflows and outflows
+affecting \(dqcash\(dq (ie, liquid, easily convertible) assets.
 Amounts are shown with normal positive sign, as in conventional
 financial statements.
 .IP
@@ -12174,7 +12278,11 @@ Flags:
      \-\-summary\-only         display only row summaries (e.g. row total,
                             average) (in multicolumn reports)
   \-N \-\-no\-total             omit the final total row
-     \-\-no\-elide             in tree mode, don\(aqt squash boring parent accounts
+     \-\-no\-elide             in tree mode, don\(aqt squash boring parent
+                            accounts; in list mode, also show parent accounts
+                            (usually zero, hidden without \-E)
+     \-\-full\-names           in tree mode, show full account names instead of
+                            indented leaf names
      \-\-format=FORMATSTR     use this custom line format (in simple reports)
   \-S \-\-sort\-amount          sort by amount instead of account code/name
   \-% \-\-percent              express values in percentage of each column\(aqs
@@ -12276,7 +12384,11 @@ Flags:
      \-\-summary\-only         display only row summaries (e.g. row total,
                             average) (in multicolumn reports)
   \-N \-\-no\-total             omit the final total row
-     \-\-no\-elide             in tree mode, don\(aqt squash boring parent accounts
+     \-\-no\-elide             in tree mode, don\(aqt squash boring parent
+                            accounts; in list mode, also show parent accounts
+                            (usually zero, hidden without \-E)
+     \-\-full\-names           in tree mode, show full account names instead of
+                            indented leaf names
      \-\-format=FORMATSTR     use this custom line format (in simple reports)
   \-S \-\-sort\-amount          sort by amount instead of account code/name
   \-% \-\-percent              express values in percentage of each column\(aqs
@@ -12344,10 +12456,9 @@ options The output formats supported are \f[CR]txt\f[R], \f[CR]csv\f[R],
 .SS balance
 (bal)
 .PP
-A flexible, general purpose \(dqsumming\(dq report that shows accounts
-with some kind of numeric data.
-This can be balance changes per period, end balances, budget
-performance, capital gains, etc.
+Show accounts with some kind of summed numeric data: balance changes per
+period, end balances on period end dates, simple capital gains, budget
+goal performance, etc.
 .IP
 .EX
 Flags:
@@ -12390,7 +12501,11 @@ Flags:
      \-\-summary\-only         display only row summaries (e.g. row total,
                             average) (in multicolumn reports)
   \-N \-\-no\-total             omit the final total row
-     \-\-no\-elide             in tree mode, don\(aqt squash boring parent accounts
+     \-\-no\-elide             in tree mode, don\(aqt squash boring parent
+                            accounts; in list mode, also show parent accounts
+                            (usually zero, hidden without \-E)
+     \-\-full\-names           in tree mode, show full account names instead of
+                            indented leaf names
      \-\-format=FORMATSTR     use this custom line format (in simple reports)
   \-S \-\-sort\-amount          sort by amount instead of account code/name (in
                             flat mode). With multiple columns, sorts by the row
@@ -12399,7 +12514,8 @@ Flags:
                             total
   \-r \-\-related              show the other accounts transacted with, instead
      \-\-invert               display all amounts with reversed sign
-     \-\-transpose            switch rows and columns (use vertical time axis)
+     \-\-transpose            switch rows and columns (use vertical time axis);
+                            repeat to cancel
      \-\-layout=ARG           how to lay out multi\-commodity amounts and the
                             overall table:
                             \(aqwide[,W]\(aq: commodities on same line, up to W wide
@@ -12680,6 +12796,63 @@ balances shown, not of all the balances shown.
 .IP \(bu 2
 Each group of sibling accounts (ie, under a common parent) is sorted
 separately.
+.PP
+In list mode, \f[CR]\-\-no\-elide\f[R] shows parent accounts as well,
+with their exclusive balances.
+These are zero unless the parent has postings of its own, so
+\f[CR]\-E/\-\-empty\f[R] is usually also needed to make them visible.
+Together, these flags guarantee a complete table of all posted\-to
+accounts and their parents, with full names:
+.IP
+.EX
+$ hledger \-f examples/sample.journal balance \-\-no\-elide \-E
+                   0  assets
+                   0  assets:bank
+                   0  assets:bank:checking
+                  $1  assets:bank:saving
+                 $\-2  assets:cash
+                   0  expenses
+                  $1  expenses:food
+                  $1  expenses:supplies
+                   0  income
+                 $\-1  income:gifts
+                 $\-1  income:salary
+                   0  liabilities
+                  $1  liabilities:debts
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+                   0
+.EE
+.PP
+This can be useful eg when exporting to a spreadsheet which will look up
+balances by account name.
+.PP
+In tree mode, \f[CR]\-\-full\-names\f[R] writes each account\(aqs full
+name instead of indenting leaf names, while keeping tree mode\(aqs
+inclusive balances.
+So \f[CR]\-\-tree \-\-no\-elide \-\-full\-names \-E\f[R] shows the same
+complete table as above, but with inclusive balances:
+.IP
+.EX
+$ hledger \-f examples/sample.journal balance \-\-tree \-\-no\-elide \-\-full\-names \-E
+                 $\-1  assets
+                  $1  assets:bank
+                   0  assets:bank:checking
+                  $1  assets:bank:saving
+                 $\-2  assets:cash
+                  $2  expenses
+                  $1  expenses:food
+                  $1  expenses:supplies
+                 $\-2  income
+                 $\-1  income:gifts
+                 $\-1  income:salary
+                  $1  liabilities
+                  $1  liabilities:debts
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+                   0
+.EE
+.PP
+Note that in this variant, parent and subaccount balances overlap, so
+(as in any tree mode report) the rows sum to more than the final total.
 .SS Depth limiting
 With a \f[CR]depth:NUM\f[R] query, or \f[CR]\-\-depth NUM\f[R] option,
 or just \f[CR]\-NUM\f[R] (eg: \f[CR]\-3\f[R]) balance reports will show
@@ -12805,6 +12978,8 @@ Average and/or total columns can be added with the
 .IP \(bu 2
 The \f[CR]\-\-transpose\f[R] flag can be used to exchange rows and
 columns.
+Repeating it reverses its effect (an even number of
+\f[CR]\-\-transpose\f[R] flags has no effect).
 .IP \(bu 2
 The \f[CR]\-\-pivot FIELD\f[R] option causes a different transaction
 field to be used as \(dqaccount name\(dq.
@@ -13536,8 +13711,115 @@ Show monthly change in market value of investment assets.
 .P
 .PD
 Show top gainers [or losers] last week
+.SS holdings
+Show a report of investment holdings (lot\-tracked assets).
+.IP
+.EX
+Flags:
+  \-l \-\-flat                 list/tree mode: show accounts as a flat list
+                            (default). Amounts exclude subaccount amounts,
+                            except where the account is depth\-clipped.
+  \-t \-\-tree                 list/tree mode: show accounts as a tree. Amounts
+                            include subaccount amounts.
+     \-\-no\-elide             in tree mode, don\(aqt squash boring parent
+                            accounts; in list mode, also show parent accounts
+                            (usually zero, hidden without \-E)
+     \-\-full\-names           in tree mode, show full account names instead of
+                            indented leaf names
+     \-\-drop=N               in list mode, omit N leading account name parts
+  \-S \-\-sort\-amount          sort by value (or cost) instead of account name,
+                            largest first
+  \-N \-\-no\-total             omit the final total row
+     \-\-round=TYPE           how much rounding or padding should be done when
+                            displaying amounts ?
+                            none \- show original decimal digits
+                            soft \- just add or remove decimal zeros
+                                   to match precision
+                            hard \- round amounts to precision (default)
+                            all  \- also round cost amounts to precision
+  \-O \-\-output\-format=FMT    select the output format. Supported formats:
+                            txt, csv, tsv, html, fods, json.
+  \-o \-\-output\-file=FILE     write output to FILE. A file extension matching
+                            one of the above formats selects that format.
+.EE
+.PP
+This command is a work in progress.
+.PP
+It shows the assets held in lot\-tracked accounts (see Lots) as of the
+report end date: one row per account, or one row per lot with
+\f[CR]\-\-lots\f[R].
+With \f[CR]\-\-tree\f[R], accounts are shown as a tree, with parent rows
+aggregating the lots beneath them; \f[CR]\-\-depth\f[R] limits and
+aggregates the displayed rows as usual.
+With \f[CR]\-S/\-\-sort\-amount\f[R], rows are sorted by market value
+(or by cost, when unpriced), largest first.
+The report title (\(dqHoldings on DATE\(dq) can be customised with
+\f[CR]\-\-title=TEXT\f[R], or suppressed with
+\f[CR]\-\-title=\(dq\(dq\f[R].
+Columns show each holding\(aqs acquisition date and age (when the
+row\(aqs lots share a single date; ages are shown in days, or from one
+year in years with one decimal digit, eg \f[CR]44d\f[R] or
+\f[CR]1.1y\f[R], approximating years as 365 days), the units held, the
+unit cost (or average cost, on rows aggregating multiple lots), the
+current market price, the total cost basis, the market value, the
+percentage of the portfolio\(aqs total value (Weight), the unrealised
+gain and gain percent (UGain, UGain%), the realised gain from disposals
+so far (RGain), and the annualised internal rate of return (XIRR,
+calculated from the account\(aqs dated cashflows and current value, like
+roi\(aqs IRR; it includes realised gains).
+In the totals row, RGain and XIRR are account\-level: they also include
+fully disposed lots, which have no row of their own (eg with
+\f[CR]\-\-lots\f[R]).
+.PP
+Market prices at the report date come from P directives, and from
+transaction costs with \f[CR]\-\-infer\-market\-prices\f[R], as usual;
+holdings are valued in their cost commodity when possible.
+When a holding has no market price, its Price, Value and gain columns
+are left blank.
+.PP
+With \f[CR]\-V\f[R], \f[CR]\-X COMM\f[R] or \f[CR]\-\-value\f[R]
+(Valuation), holdings are valued in the default or given valuation
+commodity instead, and the cost columns are also converted to it (at the
+valuation date, so percent gain is unaffected).
+\f[CR]\-\-value=then\f[R] is not supported, and \f[CR]\-B/\-\-cost\f[R]
+has no effect.
+Amounts are displayed with their commodity\(aqs display precision
+(unlike lot names, which can show more precision); \f[CR]\-\-round\f[R]
+can select another rounding strategy.
+The percent columns (Weight, UGain%, XIRR) are shown with one decimal
+digit, or with the display style configured for the \f[CR]%\f[R]
+commodity (eg by \f[CR]\-c \(aq0.00 %\(aq\f[R]).
+.PP
+With \f[CR]\-O csv\f[R] or \f[CR]\-O tsv\f[R], machine\-readable output
+is produced instead: one record per row and commodity, with full account
+names, age in days, bare units and gain percent numbers, gain and gain
+percent as separate fields, and no totals records.
+Amounts are shown without digit group marks; as in other commands\(aq
+CSV output, the decimal mark follows the commodity\(aqs display style.
+(Note in tree mode, parent account records repeat the data of their
+subaccounts.)
+.PP
+With \f[CR]\-O html\f[R], an HTML table is produced: like the text
+table, but with single\-line cells.
+For styling, each cell has a css class naming its column
+(\f[CR]account\f[R], \f[CR]date\f[R], \f[CR]age\f[R], \f[CR]units\f[R],
+\f[CR]unitcost\f[R], \f[CR]price\f[R], \f[CR]cost\f[R],
+\f[CR]value\f[R], \f[CR]weight\f[R], \f[CR]ugain\f[R],
+\f[CR]ugainpct\f[R], \f[CR]rgain\f[R], \f[CR]xirr\f[R]; totals row cells
+also have \f[CR]coltotal\f[R]), and each commodity amount is enclosed in
+a span with class \f[CR]amount\f[R] (eg allowing wrapping within amounts
+to be prevented).
+.PP
+With \f[CR]\-O fods\f[R], a spreadsheet document readable by LibreOffice
+etc.
+is produced, with the same single\-line cells as the html output.
+.PP
+With \f[CR]\-O json\f[R], a JSON array of holding objects is produced,
+with the same fields as the CSV output; units and gain percents are JSON
+number objects as in other commands\(aq JSON output, and missing values
+are null.
 .SS roi
-Shows the money\-weighted (IRR) and time\-weighted (TWR) rate of return
+Show the money\-weighted (IRR) and time\-weighted (TWR) rate of return
 on your investments.
 .IP
 .EX
@@ -13546,19 +13828,18 @@ Flags:
                                 returns
      \-\-investment=QUERY         query to select your investment transactions
      \-\-profit\-loss=QUERY \-\-pnl  query to select profit\-and\-loss or
-                                appreciation/valuation transactions
+                                appreciation/valuation transactions (optional)
 .EE
 .PP
 At a minimum, you need to supply a query (which could be just an account
-name) to select your investment(s) with \f[CR]\-\-inv\f[R], and another
-query to identify your profit and loss transactions with
-\f[CR]\-\-pnl\f[R].
+name) to select your investment(s) with \f[CR]\-\-inv\f[R].
 .PP
+An optional second query to identify your profit and loss transactions
+could be given with \f[CR]\-\-pnl\f[R].
 If your investment\(aqs value changes are captured solely through price
 directives (rather than manual P&L journal entries), or if you do not
-need TWR, \f[CR]\-\-pnl\f[R] can be an empty query
-(\f[CR]\-\-pnl \(dq\(dq\f[R] or \f[CR]\-\-pnl STR\f[R] where
-\f[CR]STR\f[R] does not match any of your accounts).
+need TWR, you can simply omit \f[CR]\-\-pnl\f[R], and no transactions
+will be classed as profit and loss in this case.
 .PP
 This command will compute and display the internal rate of return (IRR,
 also known as money\-weighted rate of return) and time\-weighted rate of
@@ -13670,6 +13951,15 @@ then postings in the example below would be classifed as:
   cash          \-$100          ; cash flow posting
   snake oil     $50            ; investment posting
 .EE
+.SS Using roi with lots
+If your journal records lots, each disposal transaction has a balanced
+pair of gain postings, by default to \f[CR]revenues:gain\f[R] (the
+realised gain) and \f[CR]equity:unrealised\-gain\f[R] (reclassifying the
+accumulated unrealised gain).
+Make sure \f[CR]\-\-pnl\f[R] matches both accounts, eg
+\f[CR]\-\-pnl \(aqrevenues:gain|equity:unrealised\-gain\(aq\f[R];
+otherwise the unrealised\-gain postings are counted as cash flows in and
+out of the investment, distorting the report.
 .SS IRR and TWR explained
 \(dqROI\(dq stands for \(dqreturn on investment\(dq.
 Traditionally this was computed as a difference between current value of
@@ -13781,10 +14071,10 @@ $ hledger activity \-\-quarterly
 .SS close
 (equity)
 .PP
-\f[CR]close\f[R] prints several kinds of \(dqclosing\(dq and/or
-\(dqopening\(dq transactions, useful in various situations: migrating
-balances to a new journal file, retaining earnings into equity,
-consolidating balances, viewing lot costs..
+Print several kinds of \(dqclosing\(dq and/or \(dqopening\(dq
+transactions, useful eg when migrating balances to a new journal file,
+retaining earnings into equity, consolidating balances, or viewing lot
+costs.
 Like \f[CR]print\f[R], it prints valid journal entries.
 You can copy these into your journal file(s) when you are happy with how
 they look.
@@ -13968,6 +14258,10 @@ conversions or investment transactions.
 investment lots with hledger.
 (To move or dispose of lots, see the more capable
 \f[CR]hledger\-move\f[R] script.)
+With \f[CR]\-\-lots\f[R], lot subaccount balances are always shown
+without costs, even under \f[CR]\-\-show\-costs\f[R]: their cost
+information is carried by the lot name itself, and transacted costs on
+lot postings would prevent the output from being read back.
 .SS close and balance assertions
 \f[CR]close\f[R] adds balance assertions verifying that the accounts
 have been reset to zero in a closing transaction or restored to their
@@ -14060,9 +14354,10 @@ $ hledger bs \-Y \-f 2023.j                     # unclosed file, no query needed
 .SS More detailed close examples
 See examples/multi\-year.
 .SS get
-Fetch data for the journal: transactions and market prices, by running
-helper scripts in journal\-relative \f[CR]data/\f[R] and
-\f[CR]prices/\f[R] directories.
+Fetch new transactions and market prices for the journal, by running
+\f[CR]getdata\f[R] and \f[CR]getprices\f[R] helper scripts.
+New prices are merged into prices files automatically; new transaction
+data is just saved, for later conversion & import by \f[CR]import\f[R].
 .IP
 .EX
 Flags:
@@ -14155,7 +14450,7 @@ ISO start date
 .IP \(bu 2
 optional ISO end date (default: today)
 .SS rewrite
-Print all transactions, rewriting the postings of matched transactions.
+Print all transactions, adding auto postings to some of them.
 For now the only rewrite available is adding new postings, like print
 \-\-auto.
 .IP
@@ -14404,15 +14699,6 @@ Also, strict mode ensures that the \f[CR]assertions\f[R] and
 These are not wanted by everyone, but can be run using the
 \f[CR]check\f[R] command:
 .IP \(bu 2
-\f[B]basis\f[R] \- all lot acquisitions set a per\-unit basis equal to
-the per\-unit transacted cost.
-This guards against typos in cost basis amounts causing wrong capital
-gain calculation at disposal time.
-It also enforces hledger\(aqs preferred style of \(dqbasis cost =
-transacted cost, with any real difference (as in gifts, NSO, RSU, etc)
-funded by a separate posting\(dq, rather than expressing the difference
-as a {B} \(at T mismatch.
-.IP \(bu 2
 \f[B]tags\f[R] \- all tags used must be declared.
 This prevents mis\-spelled tag names.
 Note hledger fairly often finds unintended tags in comments.
@@ -14444,6 +14730,15 @@ account name part (eg the \f[CR]checking\f[R] in
 \f[CR]assets:bank:checking\f[R]).
 This ensures each account can be matched by a unique short name, easier
 to remember and to type.
+.IP \(bu 2
+\f[B]basis\f[R] \- all lot acquisitions set a per\-unit basis equal to
+the per\-unit transacted cost.
+This guards against typos in cost basis amounts causing wrong capital
+gain calculation at disposal time.
+It also enforces hledger\(aqs preferred style of \(dqbasis cost =
+transacted cost, with any real difference (as in gifts, NSO, RSU, etc)
+funded by a separate posting\(dq, rather than expressing the difference
+as a {B} \(at T mismatch.
 .SS Custom checks
 You can build your own custom checks with add\-on command scripts.
 See also Cookbook > Scripting.
@@ -14455,7 +14750,7 @@ Here are some examples from hledger/bin/:
 \f[B]hledger\-check\-fancyassertions\f[R] \- more complex balance
 assertions are passing
 .SS diff
-Compares a particular account\(aqs transactions in two input files.
+Compare a particular account\(aqs transactions in two input files.
 It shows any transactions to this account which are in one file but not
 in the other.
 .IP
@@ -14589,22 +14884,26 @@ $ hledger test \-\- \-h         # show tasty\(aqs options
 .PP
 .SH PART 5: COMMON TASKS
 Here are some quick examples of how to do some basic tasks with hledger.
-.SS Getting help
-Here\(aqs how to list commands and view options and command docs:
+.SH Getting help
+Here\(aqs how to get a quick overview, list commands, and view options
+and command docs:
 .IP
 .EX
-$ hledger                # show available commands
+$ hledger                # show a quick reference card (also: hledger \-?)
+$ hledger help commands  # show available commands
 $ hledger \-\-help         # show common options
 $ hledger CMD \-\-help     # show CMD\(aqs options, common options and CMD\(aqs documentation
 .EE
 .PP
-You can also view your hledger version\(aqs manual in several formats by
-using the help command.
+The help command is a documentation hub; its first argument selects what
+to show.
 Eg:
 .IP
 .EX
-$ hledger help           # show the hledger manual with info, man or $PAGER (best available)
+$ hledger help           # show the quick reference card
+$ hledger help manual    # show the hledger manual with info, man or $PAGER (best available)
 $ hledger help journal   # show the journal topic in the hledger manual
+$ hledger help examples print   # show brief examples for the print command
 $ hledger help \-\-help    # find out more about the help command
 .EE
 .PP
@@ -14612,7 +14911,7 @@ To view manuals and introductory docs on the web, visit
 https://hledger.org.
 Chat and mail list support and discussion archives can be found at
 https://hledger.org/support.
-.SS Constructing command lines
+.SH Constructing command lines
 hledger has a flexible command line interface.
 We strive to keep it simple and ergonomic, but if you run into one of
 the sharp edges described in OPTIONS, here are some tips that might
@@ -14631,7 +14930,7 @@ metacharacters from the shell
 .IP \(bu 2
 to see how a misbehaving command line is being parsed, add
 \f[CR]\-\-debug=2\f[R].
-.SS Starting a journal file
+.SH Starting a journal file
 hledger looks for your accounting data in a journal file,
 \f[CR]$HOME/.hledger.journal\f[R] by default:
 .IP
@@ -14669,7 +14968,7 @@ Accounts                 : 0 (depth 0)
 Commodities              : 0 ()
 Market prices            : 0 ()
 .EE
-.SS Setting LEDGER_FILE
+.SH Setting LEDGER_FILE
 .SS Set LEDGER_FILE on unix
 It depends on your shell, but running these commands in the terminal
 will work for many people; adapt if needed:
@@ -14763,7 +15062,7 @@ new setting
 .IP \(bu 2
 and so should \f[CR]hledger setup\f[R] and (once the file exists)
 \f[CR]hledger files\f[R].
-.SS Setting opening balances
+.SH Setting opening balances
 Pick a starting date for which you can look up the balances of some
 real\-world assets (bank accounts, wallet..)
 and liabilities (credit cards..).
@@ -14852,7 +15151,7 @@ Eg:
 .EX
 $ git commit \-m \(aqinitial balances\(aq 2023.journal
 .EE
-.SS Recording transactions
+.SH Recording transactions
 As you spend or receive money, you can record these transactions using
 one of the methods above (text editor, hledger add) or by using the
 hledger\-iadd or hledger\-web add\-ons, or by using the import command
@@ -14874,7 +15173,7 @@ hledger.org for more ideas:
   income:salary
   assets:bank:checking    $1000
 .EE
-.SS Reconciling
+.SH Reconciling
 Periodically you should reconcile \- compare your hledger\-reported
 balances against external sources of truth, like bank statements or your
 bank\(aqs website \- to be sure that your ledger accurately represents
@@ -14935,7 +15234,7 @@ commit:
 .EX
 $ git commit \-m \(aqtxns\(aq 2023.journal
 .EE
-.SS Reporting
+.SH Reporting
 Here are some basic reports.
 .PP
 Show all transactions:
@@ -15093,7 +15392,7 @@ $ hledger activity \-W
 2023\-01\-06 ****
 2023\-01\-13 ****
 .EE
-.SS Migrating to a new file
+.SH Migrating to a new file
 At the end of the year, you may want to continue your journal in a new
 file, so that old transactions don\(aqt slow down or clutter your
 reports, and to help ensure the integrity of your accounting history.

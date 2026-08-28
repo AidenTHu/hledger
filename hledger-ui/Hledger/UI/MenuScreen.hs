@@ -52,13 +52,13 @@ msDraw sst UIState{aopts=_uopts@UIOpts{uoCliOpts=copts@CliOpts{reportspec_=_rspe
       render $ defaultLayout toplabel bottomlabel $ renderList msDrawItem True (sst ^. mssList)
       where
         toplabel =
-              withAttr (attrName "border" <> attrName "filename") files
+              withAttr (attrName "border" <> attrName "filename") fs
           <+> borderPeriodStr "" (period_ ropts)
           <+> (if ignore_assertions_ . balancingopts_ $ inputopts_ copts
                then withAttr (attrName "border" <> attrName "query") (str " ignoring balance assertions")
                else str "")
           where
-            files = case journalFilePaths j of
+            fs = case journalFilePaths j of
                            [] -> str ""
                            f:_ -> str $ takeFileName f
                            -- [f,_:[]] -> (withAttr ("border" <> "bold") $ str $ takeFileName f) <+> str " (& 1 included file)"
@@ -195,7 +195,7 @@ msHandle sst ev = do
             VtyEvent (EvKey (KChar '/') []) -> put' $ regenerateScreens d $ showMinibuffer "filter" Nothing ui
             VtyEvent (EvKey k           []) | k `elem` [KBS, KDel] -> (put' $ regenerateScreens d $ resetFilter ui)
 
-            VtyEvent (EvKey (KChar 'l') [MCtrl]) -> scrollSelectionToMiddle (_mssList sst) >> redraw
+            VtyEvent (EvKey (KChar 'l') [MCtrl]) -> scrollSelectionToMiddle (msListSize $ _mssList sst) (_mssList sst) >> redraw
             VtyEvent (EvKey (KChar 'z') [MCtrl]) -> suspend ui
 
             -- RIGHT enters selected screen if there is one
@@ -221,9 +221,8 @@ msHandle sst ev = do
                 -- clickedname = maybe "" msItemScreenName item
                 mclickedscr  = msItemScreen <$> item
 
-            -- when selection is at the last item, DOWN scrolls instead of moving, until maximally scrolled
-            VtyEvent e | e `elem` moveDownEvents, isBlankElement mnextelement -> do
-              vScrollBy (viewportScroll $ (_mssList sst)^.listNameL) 1
+            -- when selection is at the last item, do nothing
+            VtyEvent e | e `elem` moveDownEvents, isBlankElement mnextelement -> return ()
               where mnextelement = listSelectedElement $ listMoveDown (_mssList sst)
 
             -- mouse scroll wheel scrolls the viewport up or down to its maximum extent,
@@ -239,7 +238,7 @@ msHandle sst ev = do
               if isBlankElement $ listSelectedElement l
               then do
                 let l' = listMoveTo lastnonblankidx l
-                scrollSelectionToMiddle l'
+                scrollSelectionToMiddle (msListSize l') l'
                 put' ui{aScreen=MS sst{_mssList=l'}}
               else
                 put' ui{aScreen=MS sst{_mssList=l}}

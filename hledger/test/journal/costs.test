@@ -240,7 +240,7 @@ $ hledger -f - balance --no-total -B
 >= 0
 
 # In fact, here is how sign works with costs currently.
-# See discussion at https://github.com/simonmichael/hledger/issues/1870
+# See discussion at https://github.com/plaintextaccounting/hledger/issues/1870
 <
 2022-01-01 Positive Unit cost
     a        A 1

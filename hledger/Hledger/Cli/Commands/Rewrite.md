@@ -1,6 +1,6 @@
 ## rewrite
 
-Print all transactions, rewriting the postings of matched transactions.
+Print all transactions, adding auto postings to some of them.
 For now the only rewrite available is adding new postings, like print --auto.
 
 ```flags
@@ -139,7 +139,7 @@ Be careful. Whole transaction being re-formatted in a style of output from
 
 See also: 
 
-https://github.com/simonmichael/hledger/issues/99
+https://github.com/plaintextaccounting/hledger/issues/99
 
 ### rewrite vs. print --auto
 

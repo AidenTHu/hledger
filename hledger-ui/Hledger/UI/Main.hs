@@ -50,6 +50,7 @@ import Brick.BChan qualified as BC
 
 import Hledger
 import Hledger.Cli hiding (progname,prognameandversion)
+import Hledger.Cli.Commands.Quickref (showQuickref)
 import Hledger.UI.Theme
 import Hledger.UI.UIOptions
 import Hledger.UI.UITypes
@@ -111,10 +112,12 @@ hledgerUiMain = handleExit $ withGhcDebug' $ withProgName "hledger-ui.log" $ do 
   let loadcopts = copts'{rawopts_ = setboolopt "lots" (rawopts_ copts')}
 
   case True of
+    _ | boolopt "quickref" rawopts -> showQuickref
     _ | boolopt "help"    rawopts -> runPager $ showModeUsage uimode ++ "\n"
-    _ | boolopt "tldr"    rawopts -> runTldrForPage "hledger-ui"
+    _ | boolopt "examples" rawopts -> runTldrForPage "hledger-ui"
     _ | boolopt "info"    rawopts -> runInfoForTopic "hledger-ui" Nothing
     _ | boolopt "man"     rawopts -> runManForTopic  "hledger-ui" Nothing
+    _ | boolopt "webman"  rawopts -> void $ openBrowserOn $ webManualUrl "hledger-ui" Nothing
     _ | boolopt "version" rawopts -> putStrLn prognameandversion
     -- _ | boolopt "binary-filename" rawopts -> putStrLn (binaryfilename progname)
     _                                         -> withJournal loadcopts $ \j ->
@@ -181,7 +184,7 @@ uiInitialState uopts0@UIOpts{uoCliOpts=copts@CliOpts{reportspec_=rspec@ReportSpe
             _rsReportOpts=ropts{
                depth_    = queryDepth $ _rsQuery rspec,  -- query's depth part
                period_   = periodfromoptsandargs,       -- query's date part
-               no_elide_ = True,  -- avoid squashing boring account names, for a more regular tree (unlike hledger)
+               no_elide_ = accountlistmode_ ropts == ALTree,   -- avoid squashing boring account names, for a more regular tree (unlike hledger)
                empty_    = not $ empty_ ropts,  -- show zero items by default, hide them with -E (unlike hledger)
                declared_ = True  -- always show declared accounts even if unused
                }
@@ -317,9 +320,9 @@ runBrickUi uopts0 j =
       -- with Debounce at the default 1ms it clears transient errors itself
       -- but gets tied up for ages
       withManager $ \mgr -> do
-        files <- mapM (canonicalizePath . fst) $ jfiles j
-        let directories = nubSort $ map takeDirectory files
-        dbg1IO "files" files
+        fs <- mapM (canonicalizePath . fst) $ jfiles j
+        let directories = nubSort $ map takeDirectory fs
+        dbg1IO "files" fs
         dbg1IO "directories to watch" directories
 
         forM_ directories $ \d -> watchDir
@@ -327,8 +330,8 @@ runBrickUi uopts0 j =
           d
           -- predicate: ignore changes not involving our files
           (\case
-            Added f _ IsFile -> f `elem` files -- for editors which write the whole file from scratch on saves
-            Modified f _ IsFile -> f `elem` files -- for editors which modify existing files in place
+            Added f _ IsFile -> f `elem` fs -- for editors which write the whole file from scratch on saves
+            Modified f _ IsFile -> f `elem` fs -- for editors which modify existing files in place
             -- we don't handle adding/removing journal files right now
             -- and there might be some of those events from tmp files
             -- clogging things up so let's ignore them

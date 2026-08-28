@@ -1,7 +1,9 @@
 ## get
 
-Fetch data for the journal: transactions and market prices,
-by running helper scripts in journal-relative `data/` and `prices/` directories.
+Fetch new transactions and market prices for the journal,
+by running `getdata` and `getprices` helper scripts.
+New prices are merged into prices files automatically;
+new transaction data is just saved, for later conversion & import by `import`.
 
 ```flags
 Flags:
@@ -62,7 +64,7 @@ These are typically bank/brokerage CSV/TSV/SSV files, but could be anything that
 If you want `get` to download historical market prices (useful for currency conversions, and value or gains reports),
 install a `getprices` script in the `prices` directory next to your main journal file.
 
-You can get one from the [hledger repo's bin directory](https://github.com/simonmichael/hledger/tree/master/bin), and customise it if needed.
+You can get one from the [hledger repo's bin directory](https://github.com/plaintextaccounting/hledger/tree/master/bin), and customise it if needed.
 This script uses [pricehist](https://github.com/chrisberkhout/pricehist), so you will need to install that python tool also (eg with `uv tool install pricehist`).
 Some price providers limit the commodity pairs, history, or number of requests available for free; you can get better data by paying them and setting up their API keys as environment variables.
 

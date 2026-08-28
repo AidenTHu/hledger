@@ -1,6 +1,6 @@
 # AI policy
 
-Last updated: 2026-05-12
+Last updated: 2026-08-24
 
 The productivity benefits from AI-assisted software development are becoming obvious.
 And the disruptions, costs and risks of AI will keep becoming clearer.
@@ -48,7 +48,9 @@ Here are our current policies for AI use in hledger.
 1. hledger does not use AI at runtime.
 
 2. hledger 1.x (2007..2025) was developed without AI assistance.
-   New commits intended for the legacy hledger1 branch may not use AI.
+   New commits intended for the legacy hledger1 branch may not use AI,
+   except rarely, at maintainer's discretion, for security-related fixes
+   (disclosure is still required).
 
 3. hledger 2.x (2026..) is developed with careful AI assistance,
    in ways that increase quality and human maintainability.
@@ -63,7 +65,10 @@ Here are our current policies for AI use in hledger.
   such as local LLMs, Ecosia, Anthropic.
   We don't use OpenAI models (GPT series, o-series, etc).
 
-6. First-time hledger contributors may not use AI to generate PRs.
+6. First-time hledger contributors must not use any AI-generated code, tests or docs in their first merged pull request.
+   Human-generated commit messages and discussion are also encouraged.
+  (We understand that some contributors are non-english speakers, who may want to use AI tools for translation.
+   We are happy to see human communication, even with imperfections.)
 
 7. The human committer is responsible for everything in their commits.
    Review your work before submitting it.
@@ -166,7 +171,7 @@ because the cost of designing and building it outweighed the need and the availa
 
 ## Measuring usage
 
-The hledger project's estimated AI usage is tracked in [ai.journal](https://github.com/simonmichael/hledger/blob/main/doc/ai/ai.journal).
+The hledger project's estimated AI usage is tracked in [ai.journal](https://github.com/plaintextaccounting/hledger/blob/main/doc/ai/ai.journal).
 
 Some notes on tracking AI usage:
 
@@ -211,16 +216,17 @@ Other contributors' usage estimates can be added here too.
 - elsewhere
   - [The Closing of the Frontier](https://tanyaverma.sh/2026/04/10/closing-of-the-frontier.html) ([discussion](https://news.ycombinator.com/item?id=47742790))
   - [The Wonders of AI: We Are Retiring Our Bug Bounty Program](https://turso.tech/blog/the-wonders-of-ai) ([discussion](https://news.ycombinator.com/item?id=48148391))
-  - https://news.ycombinator.com/item?id=48142553 Have a Coherent AI Policy
-  - https://github.com/rust-lang/rust-forge/pull/1040 Add an LLM policy for rust-lang/rust
+  - <https://news.ycombinator.com/item?id=48142553> Have a Coherent AI Policy
+  - <https://github.com/rust-lang/rust-forge/pull/1040> Add an LLM policy for rust-lang/rust
   - [Pope Leo XIV: Magnifica Humanitas: On Safeguarding The Human Person In The Time Of Artificial Intelligence](https://www.vatican.va/content/leo-xiv/en/encyclicals/documents/20260515-magnifica-humanitas.html)
     ([summary](https://www.theregister.com/ai-ml/2026/05/26/pope-leo-warns-ai-boom-can-give-big-tech-and-the-people-who-run-it-too-much-power/5245883))
 
 ### Policies
 - <https://sfconservancy.org/llm-gen-ai/llm-backed-generative-ai-recommendations.html>
-- <https://docs.fedoraproject.org/en-US/council/policy/ai-contribution-policy/>
+- <https://docs.fedoraproject.org/en-US/council/policy/ai-contribution-policy>
 - <https://github.com/stanford-cs336/assignment1-basics/blob/main/CLAUDE.md>
 - <https://ladybird.org/posts/changing-how-we-develop-ladybird/> ([discussion](https://news.ycombinator.com/item?id=48409191))
+- <https://blog.rust-lang.org/inside-rust/2026/08/05/rust-langrust-is-adopting-an-llm-policy> ([discussion](https://news.ycombinator.com/item?id=49179039))
 
 ### Law
 - <https://www.congress.gov/crs-product/LSB10922>

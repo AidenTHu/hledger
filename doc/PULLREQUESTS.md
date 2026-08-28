@@ -5,10 +5,10 @@ Last updated: 2026-07
 ## Guidelines
 
 <!-- keep synced -->
-From <https://github.com/simonmichael/hledger/blob/main/.github/pull_request_template.md?plain=1>:
+From <https://github.com/plaintextaccounting/hledger/blob/main/.github/pull_request_template.md?plain=1>:
 
 We welcome help, but we must also balance the cost and benefit of pull requests,
-with available maintainer/reviewer time, and with our AI policy.
+with available maintainer/reviewer time, and with our [AI policy](https://hledger.org/AI.html).
 Thanks for your understanding! Here are the current hledger PR guidelines:
 
 1. PRs are processed only when a maintainer/reviewer has the time and motivation.
@@ -20,7 +20,7 @@ Thanks for your understanding! Here are the current hledger PR guidelines:
 
 3. You can have one hledger PR open at a time (unless you have collaborator access).
 
-4. First-time hledger contributors should not use AI to generate PRs.
+4. First-time hledger contributors must not use AI to generate PRs.
    New-contributor PRs that seem AI-generated will be closed.
 
 5. Code intended for the legacy hledger1 branch (hledger 1.x) must not use AI.

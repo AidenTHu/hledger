@@ -34,7 +34,7 @@ license:        GPL-3.0-or-later
 license-file:   LICENSE
 build-type:     Simple
 tested-with:
-    ghc==9.6.7, ghc==9.8.4, ghc==9.10.2, ghc==9.12.2
+    ghc==9.6.7, ghc==9.8.4, ghc==9.10.3, ghc==9.12.4, ghc==9.14.1
 extra-source-files:
     CHANGES.md
     README.md
@@ -132,7 +132,7 @@ library
   build-depends:
       Decimal >=0.5.1
     , Glob >=0.9
-    , aeson ==2.3.*
+    , aeson >=1 && <2.4
     , aeson-pretty
     , ansi-terminal >=0.9
     , array
@@ -193,7 +193,7 @@ test-suite doctest
   build-depends:
       Decimal >=0.5.1
     , Glob >=0.7
-    , aeson ==2.3.*
+    , aeson >=1 && <2.4
     , aeson-pretty
     , ansi-terminal >=0.9
     , array
@@ -255,7 +255,7 @@ test-suite unittest
   build-depends:
       Decimal >=0.5.1
     , Glob >=0.9
-    , aeson ==2.3.*
+    , aeson >=1 && <2.4
     , aeson-pretty
     , ansi-terminal >=0.9
     , array

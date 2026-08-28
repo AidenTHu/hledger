@@ -306,7 +306,7 @@ $ hledger -f- register --auto
                                 assets:bank:checking          $-20             0
 >=
 
-# #893b, https://github.com/simonmichael/hledger/issues/893#issuecomment-459125266
+# #893b, https://github.com/plaintextaccounting/hledger/issues/893#issuecomment-459125266
 <
 = tag:tax20
   taxes  *0.2

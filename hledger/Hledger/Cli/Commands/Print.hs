@@ -199,15 +199,21 @@ printEntries opts@CliOpts{rawopts_=rawopts, reportspec_=rspec} j =
           | opts ^. infer_costs = id
           -- with -B/-V/-X/--value ("because of #551, and because of print -V valuing only one posting when there's an implicit txn price.")
           | has (value . _Just) opts = id
-          -- For transactions containing auto-split postings (eg from lot transfer auto-split),
-          -- keep the explicit form. Reverting to the original would drop the split fragments
-          -- and leave an unbalanced entry.
+          -- For transactions containing priced auto-split postings (from lot transfer
+          -- auto-split), keep the explicit form: reverting to the original would drop
+          -- the priced dispose fragment while keeping its generated gain postings,
+          -- leaving an unbalanced entry. (Priceless fee fragments generate no gain
+          -- postings, so those transactions can safely revert to the user's original
+          -- entry - except with --lots, where fragments must be kept to round-trip.)
           -- Otherwise, keep the transaction's amounts close to how they were written in the journal.
           | otherwise = \t ->
-              if any (hasTag feesplitPostingTagName) (tpostings t)
+              if any keptFeesplit (tpostings t)
               then t
               else transactionWithMostlyOriginalPostings t
-          where hasTag name p = name `elem` map fst (ptags p)
+          where
+            hasTag name p = name `elem` map fst (ptags p)
+            keptFeesplit p = hasTag feesplitPostingTagName p
+              && (boolopt "lots" (rawopts_ opts) || any (isJust . acost) (amountsRaw (pamount p)))
 
         -- Like maybeoriginalamounts, but also keeps the inferred amount for
         -- balance assignment postings (which had no explicit amount).
@@ -237,6 +243,12 @@ transactionWithMostlyOriginalPostings t =
     postingMostlyOriginal p = orig
         { paccount = paccount p
         , pamount = newAmt
+        -- Keep the current comment and tags: journal processing only appends
+        -- to these (eg visible ptype tags added by lot classification, which
+        -- runs after the original was snapshotted), never rewrites the
+        -- user's text.
+        , pcomment = pcomment p
+        , ptags = ptags p
         -- When paccount equals the original (no collapse), trust the
         -- original's assertion. When paccount has been changed (eg a lot
         -- subaccount was collapsed away), use the current state's
@@ -253,7 +265,11 @@ transactionWithMostlyOriginalPostings t =
           -- For per-lot dispose/transfer fragments, use the user's original
           -- amount but with the fragment's quantity (so 'print --lots' shows
           -- e.g. "-1 A {} @ $60" rather than the full inferred form).
-          | hasTag lotsplitPostingTagName p  = scaleToFragment (pamount orig) (pamount p)
+          -- When the original was elided or a balance assignment (no amount),
+          -- show the fragment's current amount: several sibling fragments
+          -- can't re-infer their amounts on re-reading (#2692).
+          | hasTag lotsplitPostingTagName p  =
+              if hasAmount orig then scaleToFragment (pamount orig) (pamount p) else pamount p
           | otherwise                        = pamount orig
     scaleToFragment origAmt curAmt = case (amountsRaw origAmt, amountsRaw curAmt) of
       ([oa], [ca]) -> mixedAmount oa{aquantity = aquantity ca}

@@ -6,7 +6,7 @@ mostly using [Git](https://en.wikipedia.org/wiki/Git).
 The official repos:
 
 - The main repo: hledger, hledger-ui & hledger-web code, user manuals, developer docs.\
-  <https://github.com/simonmichael/hledger> (shortcut url: <http://code.hledger.org>)
+  <https://github.com/plaintextaccounting/hledger> (shortcut url: <http://code.hledger.org>)
   
 
 - The site repo: hledger.org website, additional hledger docs.\

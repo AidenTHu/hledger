@@ -25,7 +25,7 @@ Eg:
 
 ## Get the code
 
-    git clone https://github.com/simonmichael/hledger
+    git clone https://github.com/plaintextaccounting/hledger
     cd hledger
 
 ## Review code
@@ -116,7 +116,7 @@ useful for exploring and calling code interactively.
 
 If you try to run GHCI (or things based on it, like ghcid)
 right after cloning the hledger repo, you might see an error about CPP macros, eg like
-[on #961](https://github.com/simonmichael/hledger/issues/961#issuecomment-459283412).
+[on #961](https://github.com/plaintextaccounting/hledger/issues/961#issuecomment-459283412).
 To fix this, build the hledger packages once, eg `stack build`.
  (Or `stack build hledger` might be enough, depending what you are doing.)
 
@@ -140,7 +140,7 @@ enables a custom .ghci script which sets a more useful short prompt.
     cd hledger-web; stack ghci hledger-web
 
 hledger-web also needs to find some things in its current directory (like the static/ directory).
-This normally just works, if not please [send details](https://github.com/simonmichael/hledger/issues/274).
+This normally just works, if not please [send details](https://github.com/plaintextaccounting/hledger/issues/274).
 
 ## Add a test
 

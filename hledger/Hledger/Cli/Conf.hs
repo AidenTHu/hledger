@@ -5,6 +5,7 @@ Read extra CLI arguments from a hledger config file.
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE TupleSections #-}
 
 module Hledger.Cli.Conf (
    Conf
@@ -29,21 +30,21 @@ module Hledger.Cli.Conf (
 where
 
 import Control.Exception (handle)
-import Control.Monad (void, forM)
+import Control.Monad (void, forM, guard)
 import Control.Monad.Identity (Identity)
 import Data.Functor ((<&>))
-import Data.List (stripPrefix)
 import Data.Map qualified as M
 import Data.Maybe (catMaybes)
 import Data.Text (Text)
-import Data.Text qualified as T (pack)
-import Safe (headMay, lastDef)
+import Data.Text qualified as T (empty, lines, pack, unpack)
+import Safe (headDef, headMay, lastDef)
 import System.Directory (getHomeDirectory, getXdgDirectory, XdgDirectory (XdgConfig), doesFileExist, getCurrentDirectory)
 import System.FilePath ((</>), takeDirectory)
 import Text.Megaparsec as M
 import Text.Megaparsec.Char
+import Text.Printf (printf)
 
-import Hledger (error', strip, words', RawOpts, expandPath)
+import Hledger (decorateExcerpt, error', strip, words', wordsmay, RawOpts, expandPath)
 import Hledger.Read.Common
 import Hledger.Utils.Parse
 import Hledger.Utils.Debug
@@ -53,7 +54,7 @@ import Hledger.Data.RawOptions (collectopts)
 -- | A hledger config file.
 data Conf = Conf {
    confFile :: FilePath
-  -- ,confText :: String
+  ,confText :: Text
   ,confFormat :: Int
   ,confSections :: [ConfSection]
 } deriving (Eq,Show)
@@ -61,7 +62,7 @@ data Conf = Conf {
 -- | One section in a hledger config file.
 data ConfSection = ConfSection {
    csName :: SectionName
-  ,csArgs :: [Arg]
+  ,csArgs :: [(Int, Arg)]  -- ^ arguments, with the config file line number where each appeared
 } deriving (Eq,Show)
 
 -- | The name of a config file section, with surrounding brackets and whitespace removed.
@@ -81,6 +82,7 @@ type CommandLine = String
 
 nullconf = Conf {
    confFile = ""
+  ,confText = T.empty
   ,confFormat = 1
   ,confSections = []
 }
@@ -107,28 +109,53 @@ confFileSpecFromRawOpts = lastDef AutoConfFile . collectopts cfsFromRawOpt
 -- This should be "general" for the unnamed first section, or a hledger command name.
 confLookup :: SectionName -> Conf -> [Arg]
 confLookup cmd Conf{confSections} =
-  maybe [] (concatMap words') $  -- XXX PARTIAL
+  maybe [] (concatMap $ words' . snd) $  -- XXX PARTIAL
   M.lookup cmd $
   M.fromList [(csName,csArgs) | ConfSection{csName,csArgs} <- confSections]
 
 -- | Get the command aliases (custom commands) defined in this config file,
--- in order of definition. They are defined git-style by lines in an @[alias]@
--- section, like @NAME = CMDLINE@; or by @[alias NAME]@ sections, whose lines
--- are joined to form the command line. If a name is defined more than once,
--- the last definition should win (callers can rely on the ordering here).
--- An [alias] section line without an @=@ raises a usage error.
+-- in order of definition. They are defined git-style in an @[alias]@
+-- section, like @NAME = CMDLINE@; a value may continue on following, more-indented lines.
+-- If a name is defined more than once, the last definition should win (callers can rely
+-- on the ordering here). An [alias] section line without an @=@ raises a usage error.
+-- (In practice it won't, since readConfFile validates with confAliasesE first.)
 confAliases :: Conf -> [(CommandAlias, CommandLine)]
-confAliases Conf{confFile, confSections} = concatMap sectionaliases confSections
+confAliases = either error' id . confAliasesE
+
+-- | Like confAliases, but return a (pretty, multiline) error message
+-- if a bad alias definition is found.
+confAliasesE :: Conf -> Either String [(CommandAlias, CommandLine)]
+confAliasesE conf@Conf{confSections} = concat <$> mapM sectionaliases confSections
   where
     sectionaliases ConfSection{csName, csArgs}
-      | csName == "alias" = map aliasline csArgs
-      | Just name <- stripPrefix "alias " csName = [(strip name, unwords csArgs)]
-      | otherwise = []
-    aliasline l = case break (=='=') l of
-      (name, '=':cmdline) | not $ null $ strip name -> (strip name, strip cmdline)
-      _ -> error' $ "in config file " <> confFile
-           <> ",\nan [alias] section line should look like: NAME = COMMAND [ARGS..]"
-           <> "\nbut is: " <> l
+      | csName == "alias" = mapM aliasline csArgs
+      | otherwise = Right []
+    aliasline (lnum, l) = case break (=='=') l of
+      (name, '=':cmdline) | not $ null $ strip name -> Right (strip name, strip cmdline)
+      _ -> Left $ confErrorAt conf lnum l
+           "an [alias] section line should look like: NAME = COMMAND [ARGS..]"
+
+-- | Check that each argument line in this config file can be parsed as command line
+-- arguments (eg, quotes must be balanced); return a pretty, multiline error message if not.
+confArgsE :: Conf -> Either String ()
+confArgsE conf@Conf{confSections} =
+  mapM_ argline [lnuma | ConfSection{csArgs} <- confSections, lnuma <- csArgs]
+  where
+    argline (lnum, l) = case wordsmay l of
+      Just _  -> Right ()
+      Nothing -> Left $ confErrorAt conf lnum l $
+        "this config file line could not be parsed as command line arguments.\n"
+        <> "Is there an unclosed quote? (A # outside quotes starts a comment.)"
+
+-- | Make a pretty, multiline error message about a problem on the given line
+-- of this config file: file path and line number, an excerpt showing the line
+-- as written (or the given fallback text), and an explanation.
+confErrorAt :: Conf -> Int -> String -> String -> String
+confErrorAt Conf{confFile, confText} lnum fallbacktxt explanation =
+  printf "%s:%d:\n%s%s" confFile lnum (T.unpack excerpt) explanation
+  where
+    excerpt = decorateExcerpt lnum Nothing $ (<> T.pack "\n") $
+      headDef (T.pack fallbacktxt) $ drop (lnum-1) $ T.lines confText
 
 -- | The result of resolving a command name that may be a command alias.
 data ResolvedCommand
@@ -191,7 +218,7 @@ getConf rawopts = do
 
 -- | Like getConf but throws an error on failure.
 getConf' :: RawOpts -> IO (Conf, Maybe FilePath)
-getConf' rawopts = getConf rawopts >>= either (error' . show) return
+getConf' rawopts = getConf rawopts >>= either error' return
 
 -- | Read this config file and parse its contents, or return an error message.
 readConfFile :: FilePath -> IO (Either String (Conf, Maybe FilePath))
@@ -201,17 +228,20 @@ readConfFile f = handle (\(e::IOError) -> return $ Left $ show e) $ do
   case exists of
     False -> return $ Left $ f <> " does not exist"
     True -> do
-      ecs <- readFile f <&> parseConf f . T.pack
-      case ecs of
-        Left err -> return $ Left $ errorBundlePretty err -- customErrorBundlePretty err
+      txt <- readFile f <&> T.pack
+      case parseConf f txt of
+        Left err -> return $ Left $ customErrorBundlePretty err
         Right cs -> do
           let conf = nullconf{
                  confFile     = f
+                ,confText     = txt
                 ,confFormat   = 1
                 ,confSections = cs
                 }
-          -- validate any command alias definitions now, so a bad one is reported promptly
-          return $ foldr seq (Right (conf, Just f)) (confAliases conf)
+          -- validate the config now, so problems are reported promptly:
+          -- argument lines must be parseable as command line arguments,
+          -- and command alias definitions must be well formed
+          return $ (conf, Just f) <$ (confArgsE conf >> confAliasesE conf)
 
 -- -- | Like readConf, but throw an error on failure.
 -- readConfFile' :: FilePath -> IO (Conf, Maybe FilePath)
@@ -304,6 +334,10 @@ dp :: String -> TextParser m ()
 dp = const $ return ()  -- no-op
 -- dp = dbgparse 0  -- trace parse state at this --debug level
 
+-- get the config file line number at the current parse position
+sourceLineNumberp :: TextParser Identity Int
+sourceLineNumberp = unPos . sourceLine <$> getSourcePos
+
 whitespacep, commentlinesp, restoflinep :: TextParser Identity ()
 whitespacep   = void $ {- dp "whitespacep"   >> -} many spacenonewline
 -- Uses try so that a non-empty, non-comment line (possibly indented) is left for
@@ -319,14 +353,16 @@ confp = do
   let s = ConfSection "general" genas
   ss <- many $ do
     (n, ma) <- sectionstartp
-    as <- many arglinep
+    -- In an [alias] section, a NAME = ... value can span more-indented lines; parse each
+    -- alias as one logical (joined) line. Other sections keep one argument per line.
+    as <- if n == "alias" then many aliasdefp else many arglinep
     return $ ConfSection n (maybe as (:as) ma)
   whitespacep  -- tolerate trailing whitespace with no final newline (a blank last line)
   eof
   return $ s:ss
 
 -- parse a section name and possibly arguments written on the same line
-sectionstartp :: TextParser Identity (String, Maybe String)
+sectionstartp :: TextParser Identity (String, Maybe (Int, Arg))
 sectionstartp = do
   dp "sectionstartp"
   try (whitespacep <* lookAhead (char '['))  -- ignore any leading whitespace before the [
@@ -336,28 +372,74 @@ sectionstartp = do
   -- dp "sectionstartp2"
   whitespacep
   -- dp "sectionstartp3"
-  ma <- fmap (fmap strip) $ optional $ some $ noneOf "#\n"
+  lnum <- sourceLineNumberp
+  ma <- fmap (fmap strip) $ optional argtextp
   -- dp "sectionstartp4"
   restoflinep
   -- dp "sectionstartp5"
   commentlinesp
   -- dp "sectionstartp6"
-  return (n, ma)
+  return (n, (lnum,) <$> ma)
+
+-- | Parse config argument-line text up to an unquoted '#' (which starts a comment) or end of line,
+-- keeping any '#' that appears inside single or double quotes (so quoted arguments can contain '#').
+argtextp :: TextParser Identity String
+argtextp = fmap concat $ some $
+      quotedspanp '\'' <|> quotedspanp '"' <|> some (noneOf "'\"#\n")
+  where
+    quotedspanp q = do
+      _  <- char q
+      s  <- many (noneOf [q,'\n'])
+      qc <- optional (char q)
+      return $ q : s ++ maybe "" pure qc
 
 -- Uses try so that an indented section header ([..]) is left for sectionstartp
 -- rather than failing here after consuming its leading whitespace.
-arglinep :: TextParser Identity String
+arglinep :: TextParser Identity (Int, Arg)
 arglinep = try $ do
   dp "arglinep"
   whitespacep  -- ignore any leading whitespace
   -- dp "arglinep2"
   notFollowedBy $ char '['  -- an indented section header is not an argument line
   -- dp "arglinep3"
-  a <- some $ noneOf "#\n"
+  lnum <- sourceLineNumberp
+  a <- argtextp
   -- dp "arglinep4"
   restoflinep <|> whitespacep  -- whitespace / same-line comment, possibly with no newline
   commentlinesp
-  return $ strip a
+  return (lnum, strip a)
+
+-- | Parse one alias definition in an [alias] section: a "NAME = ..." line, plus any
+-- following lines indented more than it, joined (whitespace-normalised) into one logical line.
+-- Blank and comment lines are skipped; a line indented no more than the NAME line, a section
+-- header, or end of file ends the definition. This is what lets an alias's command line span
+-- several indented lines.
+aliasdefp :: TextParser Identity (Int, Arg)
+aliasdefp = try $ do
+  whitespacep  -- ignore any leading whitespace
+  notFollowedBy $ char '['  -- an indented section header is not an alias definition
+  lnum <- sourceLineNumberp
+  ref  <- indentcolp  -- the column of this alias's NAME
+  first <- argtextp
+  restoflinep <|> whitespacep
+  conts <- many (continuationp ref)
+  commentlinesp  -- consume trailing blank/comment lines before the next definition or header
+  return (lnum, strip $ unwords $ strip first : conts)
+  where
+    -- a line indented more than ref (the NAME column), continuing the alias's command line
+    continuationp ref = try $ do
+      commentlinesp  -- skip any blank/comment lines within the indented block
+      whitespacep
+      col <- indentcolp
+      guard $ col > ref
+      notFollowedBy $ char '['  -- a section header ends the definition even if indented
+      s <- argtextp
+      restoflinep <|> whitespacep
+      return $ strip s
+
+-- the column (1-based) at the current parse position, used to compare indentation
+indentcolp :: TextParser Identity Int
+indentcolp = unPos . sourceColumn <$> getSourcePos
 
 
 -- initialiseAndParseJournal :: ErroringJournalParser IO ParsedJournal -> InputOpts

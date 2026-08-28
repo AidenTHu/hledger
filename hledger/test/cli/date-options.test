@@ -57,7 +57,7 @@ $ hledger -f- register date:2019-02 date:2019-01-01-
 #$ hledger -f- register date:2019-02 -p 2019
 #> /2019-01-01/
 
-# ** 0. Smart dates https://github.com/simonmichael/hledger/issues/1079
+# ** 0. Smart dates https://github.com/plaintextaccounting/hledger/issues/1079
 $ hledger -f- activity -b 2019-02-01 -e 'next year'
 > /2019-02-01 \*/
 

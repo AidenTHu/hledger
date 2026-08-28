@@ -296,7 +296,7 @@ numDigitsInteger = length . dropWhile (=='-') . show
 --   enclosing field, and reserve the shorter name for manually define lenses
 --   (or at least something lens-like) which will update the ReportSpec.
 -- cf. the lengthy discussion here and in surrounding comments:
--- https://github.com/simonmichael/hledger/pull/1545#issuecomment-881974554
+-- https://github.com/plaintextaccounting/hledger/pull/1545#issuecomment-881974554
 makeHledgerClassyLenses :: Name -> DecsQ
 makeHledgerClassyLenses x = flip makeLensesWith x $ classyRules
     & lensField .~ (\_ _ n -> fieldName $ nameBase n)

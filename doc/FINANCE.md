@@ -27,7 +27,7 @@ You can earn [Regression bounties](REGRESSIONS.md) by reporting or fixing regres
 
 More generally, bounties are sometimes offered to encourage completion of a bug fix, or a new feature.
 To earn bounties, try to resolve issues with the bounty label.\
-Here are the [issue bounties](https://github.com/simonmichael/hledger/issues/?q=is%3Aissue%20state%3Aopen%20label%3Abounty).
+Here are the [issue bounties](https://github.com/plaintextaccounting/hledger/issues/?q=is%3Aissue%20state%3Aopen%20label%3Abounty).
 
 Anyone can offer bounties. There are two kinds:
 
@@ -54,4 +54,4 @@ and if approved, do the work, and as deliverables are met, we'll pay you.
 The hledger project's cashflow is currently rather limited,
 so we invite other organisations or individuals to help fund projects (or call for proposals).
 Each proposal begins as an issue, which gets the `funded-project` label when approved.
-Here are the [funded projects](https://github.com/simonmichael/hledger/issues/?q=is%3Aissue%20state%3Aopen%20label%3Afunded-project).
+Here are the [funded projects](https://github.com/plaintextaccounting/hledger/issues/?q=is%3Aissue%20state%3Aopen%20label%3Afunded-project).

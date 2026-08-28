@@ -12,6 +12,7 @@ module Hledger.Write.Html.Lucid (
     ) where
 
 import           Data.Foldable (traverse_)
+import           Data.List (intersperse)
 import Data.Text qualified as Text
 import Lucid.Base qualified as L
 import Lucid qualified as L
@@ -28,8 +29,9 @@ type Html = L.Html ()
 -- This is derived from <https://hackage.haskell.org/package/classify-frog-0.2.4.3/src/src/Spreadsheet/Format.hs>
 styledTableHtml :: (Lines border) => [[Cell border Html]] -> Html
 styledTableHtml table = do
-    L.link_ [L.rel_ "stylesheet", L.href_ "hledger.css"]
+    -- the builtin styles, then the optional user stylesheet so it can override them
     L.style_ Attr.tableStylesheet
+    L.link_ [L.rel_ "stylesheet", L.href_ "hledger.css"]
     L.table_ $ traverse_ formatRow table
 
 formatRow:: (Lines border) => [Cell border Html] -> Html
@@ -37,7 +39,17 @@ formatRow = L.tr_ . traverse_ formatCell
 
 formatCell :: (Lines border) => Cell border Html -> Html
 formatCell cell =
-    let str = cellContent cell in
+    -- Wrap amounts in <span class="amount">, one per amount,
+    -- so eg wrapping within amounts can be prevented with css.
+    let amountSpan = L.span_ [L.class_ "amount"] in
+    let str =
+            case cellParts cell of
+                [] -> case cellType cell of
+                    TypeAmount _ -> amountSpan $ cellContent cell
+                    _            -> cellContent cell
+                parts ->
+                    mconcat $ intersperse (L.toHtml (", "::Text.Text)) $
+                    map amountSpan parts in
     let content =
             if Text.null $ cellAnchor cell
                 then str
@@ -46,9 +58,14 @@ formatCell cell =
             case borderStyles cell of
                 [] -> []
                 ss -> [L.style_ $ Attr.concatStyles ss] in
+    -- Mark date cells with a "date" class, so eg wrapping within dates
+    -- can be prevented with css.
     let class_ =
-            map L.class_ $
-            filter (not . Text.null) [Spr.textFromClass $ cellClass cell] in
+            map (L.class_ . Text.unwords) $
+            filter (not . null) $
+            [filter (not . Text.null) $
+             Spr.textFromClass (cellClass cell) :
+             ["date" | cellType cell == TypeDate]] in
     let span_ makeCell attrs cont =
             case Spr.cellSpan cell of
                 Spr.NoSpan -> makeCell attrs cont

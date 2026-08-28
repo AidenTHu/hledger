@@ -1,7 +1,7 @@
 run
 
 Run a sequence of hledger commands, provided as files or command line
-arguments. Data files are parsed just once, so the commands run faster.
+arguments. Input files are parsed just once, so the commands run faster.
 
 Flags:
 no command-specific flags
@@ -42,8 +42,9 @@ a simple syntax:
 - text from # to end of line is a comment, and ignored
 - you can use single or double quotes to quote arguments when needed, as
   on the command line
-- these extra commands are available: echo TEXT prints some text, and
-  exit or quit ends the run.
+- these extra commands are available: echo TEXT prints some text
+  (interpreting the backslash escapes \n, \t, \r, \\), and exit or quit
+  ends the run.
 
 On unix systems you can use #!/usr/bin/env hledger run in the first line
 of a command file to make it a runnable script. If that gives an error,

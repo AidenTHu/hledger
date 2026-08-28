@@ -56,8 +56,8 @@ Or you can source it in your current bash session for testing.
 
 The `hledger-completion.bash` script is available in the `hledger` package tarball on Hackage,
 and on Github in the release bindists or at
-`https://github.com/simonmichael/hledger/blob/TAG/hledger/shell-completion/hledger-completion.bash`.
-(Eg: https://github.com/simonmichael/hledger/blob/1.43/hledger/shell-completion/hledger-completion.bash)
+`https://github.com/plaintextaccounting/hledger/blob/TAG/hledger/shell-completion/hledger-completion.bash`.
+(Eg: https://github.com/plaintextaccounting/hledger/blob/1.43/hledger/shell-completion/hledger-completion.bash)
 
 After it has been loaded, this script will provide completions for hledger, hledger-ui and hledger-web.
 Note if it is installed only as `hledger`, bash-completion will not load it until the user types `hledger<SPACE><TAB>`.

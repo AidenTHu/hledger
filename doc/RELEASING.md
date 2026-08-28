@@ -57,6 +57,83 @@ Release readiness and the release process go from the bottom of this diagram to 
 <!-- source: RELEASING.canvas (Obsidian) -->
 
 ## Release script
+Last updated: 2026-08\
+Same steps as Release script (2026H1), reordered and annotated with lessons from the 1.52.2 release.
+For extra how-to's not covered here, see the "How to.." and "Tips" sections below - but not the numbered
+waypoint list in the Release checklist section itself, which predates this script (last updated 2025-11)
+and may conflict with it on step order/commands.\
+Key: main: = in hledger repo main branch, rel: = in hledger repo release branch, site: = in site repo,
+(CONDITION) ... = when CONDITION is true, `CMD` = suggested relevant command.\
+Steps marked ⚠ push/upload/publish/announce to somewhere shared and are hard or impossible to undo -
+always get explicit go-ahead for that specific step, even mid-release, even if earlier steps were approved.
+Steps without ⚠ are safe to just do once they're clearly next.\
+The actual commands referred to above live in `Justfile`, `Shake.hs`, `tools/`.
+This file (`doc/.RELEASING.md`) is the maintainer's working copy of `doc/RELEASING.md`, edited live during
+a release to avoid interfering with branch switching; it may be temporarily ahead of `doc/RELEASING.md`,
+which should be updated from it after the release.
+
+0. **before any step: confirm the current branch** (`git branch --show-current`) matches that step's `main:`/`rel:`/`site:` label.
+   The branch can change between your checks (e.g. the maintainer switching branches outside your tool calls),
+   so re-check rather than trusting an earlier check.
+
+1. **main: finish fixes/features/docs/issues/prs**
+1. **main: begin/fix release builds:** `just ghbin oldest`
+1. **main: update general flags help:** build hledger, copy general flags help from `stack exec -- hledger -h` to common.m4
+1. **main: update command docs and manuals ?** `just manuals`
+1. **(major release) main: update website manuals:** `just manuals-site`
+1. **(major release) main: update website scripts/redirects:** update `site/Makefile`, `site/js/site.js`, `site/hledger.org.caddy`
+1. **main: create/update release branch:** `just relbranch VER` (for 1.99.x preview releases, create branch manually)
+   - if a GHC version the release branch needs isn't installed locally, avoid installing it if possible - save a copy
+     of main's `stack.yaml` (e.g. as `stackmain.yaml`), then use `-w stackmain.yaml` with stack commands, or
+     temporarily replace the release branch's `stack.yaml` for tools like Shake that don't take `-w`. Always restore
+     the real `stack.yaml` (`git checkout -- stack.yaml`) afterward, and check `git status` for stragglers before
+     committing/pushing.
+1. **(minor release) rel: cherry-pick new changes from main**
+1. **rel: update command docs and manuals:** `just manuals`
+1. **rel: update changelogs:** `just changelogs`; edit by hand; `just changelogs-finalise`
+1. **rel: update relnotes:** `just relnotes`; edit (add summary); commit
+   - it's normal for some packages to have zero changes in a bugfix release - `just relnotes` emits a one-line
+     "Uses PKG X.Y.Z" for them; not a problem for downstream packagers.
+1. **rel: update announcements:** edit `doc/ANNOUNCE`
+1. **rel: make release builds:** `just ghbin`
+1. **rel: update install docs:** edit `doc/ghrelnotes`, `doc/ghtestbinnotes.md`, `site/src/install.md` - do this on the
+   release branch, before the cherry-pick below, not on main (main's copies of ghrelnotes/ghtestbinnotes.md describe
+   the *next preview* line and are unrelated to the release branch's version).
+1. **main: cherry-pick changelogs, relnotes, announcement, other relevant updates from relbranch** `jjui -r ::`
+1. **rel: make release tags:** (once binaries are all built) `just reltags` - safe to re-run/move if the release branch
+   gets more commits before tags are pushed.
+1. **(non-preview release) rel: publish on hackage:** `just hackageupload` ⚠ (no unpublish - confirm before running the
+   actual upload, distinct from the earlier reversible build/upload steps)
+1. **push to github:** push site repo, push VER-branch, `just reltags-push VER`, push main ⚠
+1. **publish on github:** manually make new github release (latest or prerelease) from VER tag; `just ghrel-notes`;
+   `just ghbin-download ghrel-upload` (re-upload via `--clobber` is safe/reversible; drafting the release is fine,
+   but making it public/published is ⚠ - confirm first)
+   - create it as a *non-draft* release, named after the tag (as usual): a draft has no stable url, which
+     `just ghrel-notes` and `ghrel-upload` need. So the release goes public before its notes/binaries are
+     attached - keep this window short.
+   - `ghbin-download` takes the *latest* run of each binaries workflow; check those runs are the ones built
+     from the tagged commit (`just _ghrun-id binaries-linux-x64` etc), especially if anything was pushed
+     to the `binaries` branch since.
+   - a good final check before uploading: unpack the archive for your own platform and run
+     `./hledger --version` etc - it should show `VER-gHASH` matching the release tag's commit.
+     (Use `--conf=/dev/null` if your personal config uses newer syntax than the release understands.)
+1. **(major release) main: activate website scripts/redirects:** `just site-restart`
+1. **(major release) main: update dev version:** `just devver`
+1. **main: update manuals:** `just manuals`
+1. **main: update changelogs:** `just changelogs`; edit
+1. **announce to matrix, irc, mail list, mastodon, forum, pta.o** ⚠
+1. **(if this release fixes a previously-embargoed security issue)**
+   - keep the GHSA draft private until the release is out and installable
+   - publish the advisory once the fix has had a little time to propagate; don't gate on CVE grant, that's a separate
+     async process that can take much longer
+   - cross-link: relnotes/CHANGES entry → advisory, advisory → release tag/binaries
+   - if an issue/PR had to be redacted when the bug was first (prematurely) disclosed, restore its original content
+     once the advisory is published, and link it to the advisory. A published GHSA is already public and indexed
+     (repo Security tab, github.com/advisories, OSV, scanners) regardless of what links to it, so redacting only
+     helps for as long as the PR/issue contains materially more detail than the advisory does.
+
+
+## Release script (2026H1)
 Short version, based on the checklist below.
 Last updated: 2026-06\
 Key: main: = in hledger repo main branch, rel: = hledger repo release branch, site: = site repo.
@@ -73,10 +150,10 @@ Key: main: = in hledger repo main branch, rel: = hledger repo release branch, si
 1. **rel: update changelogs:** `j changelogs`; edit; `j changelogs-finalise`
 1. **rel: update relnotes:** `j relnotes`; edit (add summary); commit
 1. **rel: update announcements:** edit `doc/ANNOUNCE`
-1. **main: cherry-pick changelogs, relnotes, announcement, other relevant updates from relbranch** `jjui -r ::`
-1. **main: update install docs:** edit `doc/ghrelnotes`, `doc/ghtestbinnotes.md`, `site/src/install.md`
 1. **rel: make release builds:** `j ghbin`
-1. **rel: make release tags:** `j reltags`
+1. **rel: update install docs:** edit `doc/ghrelnotes`, `doc/ghtestbinnotes.md`, `site/src/install.md`
+1. **main: cherry-pick changelogs, relnotes, announcement, other relevant updates from relbranch** `jjui -r ::`
+1. **rel: make release tags:** (once binaries are all built) `j reltags`
 1. **(non-preview release) rel: publish on hackage:** `j hackageupload`
 1. **push to github:** push site repo, push VER-branch, `j reltags-push VER`, push main
 1. **publish on github:** manually make new github release (latest or prerelease) from VER tag; `j ghrel-notes`; `j ghbin-download ghrel-upload`
@@ -89,9 +166,8 @@ Key: main: = in hledger repo main branch, rel: = hledger repo release branch, si
 
 ## Release checklist
 
-This is the guide for doing a hledger release.
-It corresponds to the diagram above, with more detail of waypoints, required artifacts, and related commands.
-It should be improved each time it is used.
+This is a detailed expansion of the release artifacts / value chain diagram above, 
+listing waypoints, required artifacts, and related commands.
 Last updated: 2025-11
 
 <!-- Trailing double spaces are used for line breaks -->
@@ -127,11 +203,14 @@ Last updated: 2025-11
         `./Shake manuals -c`
   - embedded tldr pages synced with upstream (doc/tldr/*)  
         `just tldr-diff`
-  - embedded asciinema demos (hledger/embeddedfiles/*.cast)
   - shell completions (hledger/shell-completion/hledger-completion.bash)  
         `just completions`, commit any changes
   - changelogs x 5 (*/CHANGES.md)  
         `just changelogs [-c]`  
+        group the new/unreleased entries by topic, not by change type (Fixes/Features/Improvements) -
+        choose topics appropriate to this release's actual changes, using the previous major release's
+        topic headings as a starting point (not a fixed list); keep `## Breaking changes` and the
+        trailing `## Docs`/`## Examples`/`## Scripts/addons`/`## API` sections as-is  
         add notable changes from site, finance repos to project changelog (major release only)  
         add issue links with `md-issue-refs`, uniquify  
         add author github nicks  
@@ -181,7 +260,7 @@ Last updated: 2025-11
   - release tags pushed to github  
       `just reltags-push VER`
   - github draft release with release binaries attached  
-      <https://github.com/simonmichael/hledger/releases/new> *(XXX safari may not show new tag, may need brave)*  
+      <https://github.com/plaintextaccounting/hledger/releases/new> *(XXX safari may not show new tag, may need brave)*  
       `just ghrel-notes` (in release branch)  
       `just ghbin-download` <!-- (or if throttled: `just ghbin-open`, download to tmp/, unzip the unix ones) -->  
       `just ghrel-bin-upload VER`  
@@ -210,7 +289,7 @@ Last updated: 2025-11
     `j devtag-push`
   - RELEASING.md checklist/notes updated
   - monitor/support/handle issues:
-    [issue tracker](https://github.com/simonmichael/hledger/issues?q=is%3Aopen+is%3Aissue), matrix, irc, mail list, forum, reddit
+    [issue tracker](https://github.com/plaintextaccounting/hledger/issues?q=is%3Aopen+is%3Aissue), matrix, irc, mail list, forum, reddit
 
 Some more good things to do after a release:
 
@@ -424,7 +503,7 @@ A local developer build of unreleased code. This is typically in `main` or a dev
 ### Repos and branches
 
 **hledger repo**\
-The `hledger` git repository, containing the hledger software, reference manuals, and developer docs. <https://github.com/simonmichael/hledger>
+The `hledger` git repository, containing the hledger software, reference manuals, and developer docs. <https://github.com/plaintextaccounting/hledger>
 
 **site repo**\
 The `hledger_website` git repository, containing most of the hledger website which appears at <https://hledger.org>. Usually checked out under the hledger repo as `site/`. <https://github.com/simonmichael/hledger_website>

@@ -35,9 +35,9 @@ import Control.Monad.Extra (concatMapM, anyM)
 import Data.IORef (IORef, newIORef, readIORef, writeIORef)
 import Data.Time.Clock.POSIX (POSIXTime, utcTimeToPOSIXSeconds)
 
-import System.Exit (ExitCode, exitWith)
+import System.Exit (ExitCode(..), exitWith)
 import System.Console.CmdArgs.Explicit (expandArgsAt, modeNames, flagNone)
-import System.IO (stdin, stderr, hIsTerminalDevice, hIsOpen, hPutStrLn, hFlush)
+import System.IO (stdin, stderr, stdout, hIsTerminalDevice, hIsOpen, hPutStrLn, hFlush)
 import System.IO.Unsafe (unsafePerformIO)
 import System.Console.Haskeline
 
@@ -49,6 +49,7 @@ import Text.Printf (printf)
 import System.FilePath (takeBaseName, getSearchPath)
 import System.Directory (doesDirectoryExist, getModificationTime)
 import System.Process (system)
+import Hledger.Cli.Version (packageversion)
 
 -- | Command line options for this command.
 runmode = hledgerCommandMode
@@ -145,19 +146,41 @@ parseCommand line =
   -- # begins a comment, ignore everything after #
   takeWhile (not. ((Just '#')==) . headMay) $  words' (strip line)
 
+-- | Interpret the common backslash escape sequences \n, \t, \r and \\ in a string,
+-- so the run/repl echo command can print newlines, tabs etc. An unrecognised escape
+-- is left as written (its backslash is kept).
+unescape :: String -> String
+unescape ('\\':c:cs) = case c of
+  'n'  -> '\n' : unescape cs
+  't'  -> '\t' : unescape cs
+  'r'  -> '\r' : unescape cs
+  '\\' -> '\\' : unescape cs
+  _    -> '\\' : c : unescape cs
+unescape (c:cs)      = c : unescape cs
+unescape []          = []
+
+-- | Run a shell command, and if it fails, exit with its exit code; on success just return,
+-- so a sequence of run/repl commands can continue. Flushes stdout first, so that our own
+-- buffered output (eg echo's) appears before the subprocess's output.
+runShellCommandOrExit :: String -> IO ()
+runShellCommandOrExit shcmd = do
+  hFlush stdout
+  ec <- system shcmd
+  when (ec /= ExitSuccess) $ exitWith ec
+
 -- | Take a single command line (from file, or REPL, or "--"-surrounded block of the args), and run it.
 -- addonfileargs are -f options (the session's explicit input files) to pass through to addon commands.
 runCommand :: DefaultRunJournal -> [(String,String)] -> [String] -> (String -> Maybe (Mode RawOpts, CliOpts -> Journal -> IO ())) -> [String] -> [(CommandAlias,CommandLine)] -> Bool -> [String] -> IO ()
 runCommand defaultJournalOverride rungeneralopts addonfileargs findBuiltinCommand addons cmdaliases shellaliasesallowed cmdline = do
   dbg1IO "runCommand for" cmdline
   case cmdline of
-    "echo":args -> putStrLn $ unwords $ args
+    "echo":args -> putStrLn $ unescape $ unwords args
     cmdname0:args0 ->
       -- The command may be a command alias defined in the config file; expand it.
       case expandCommandAlias (isJust . findBuiltinCommand) cmdaliases cmdname0 of
        -- A !-prefixed shell command alias: run it (if allowed), with any arguments appended.
        ShellCommand shcmd
-         | shellaliasesallowed -> system (unwords $ shcmd : map quoteForCommandLine args0) >>= exitWith
+         | shellaliasesallowed -> runShellCommandOrExit (unwords $ shcmd : map quoteForCommandLine args0)
          | otherwise -> error' $ "the command alias '" ++ cmdname0
              ++ "' runs a shell command, which is only allowed from your user config file or a --conf file"
        -- Otherwise an hledger command, with the alias's arguments preceding this line's own arguments.
@@ -180,15 +203,18 @@ runCommand defaultJournalOverride rungeneralopts addonfileargs findBuiltinComman
               let
                 rawopts      = rawopts_ opts
                 mmodecmdname = headMay $ modeNames cmdmode
-                helpFlag     = boolopt "help"    rawopts
-                tldrFlag     = boolopt "tldr"    rawopts
-                infoFlag     = boolopt "info"    rawopts
-                manFlag      = boolopt "man"     rawopts
+                helpFlag     = boolopt "help"     rawopts
+                examplesFlag = boolopt "examples" rawopts
+                infoFlag     = boolopt "info"     rawopts
+                manFlag      = boolopt "man"      rawopts
               if
-                | helpFlag  -> runPager $ showModeUsage cmdmode ++ "\n"
-                | tldrFlag  -> runTldrForPage $ maybe "hledger" (("hledger-"<>)) mmodecmdname
+                | helpFlag     -> runPager $ showModeUsage cmdmode ++ "\n"
+                | examplesFlag -> runTldrForPage $ maybe "hledger" (("hledger-"<>)) mmodecmdname
                 | infoFlag  -> runInfoForTopic "hledger" mmodecmdname
                 | manFlag   -> runManForTopic "hledger"  mmodecmdname
+                | cmdname `elem` journalIgnoringCommandNames ->
+                  -- help/setup/test never read the journal, as at the CLI
+                  cmdaction opts nulljournal
                 | cmdname `elem` journalCreatingCommandNames ->
                   -- add and import can create a nonexistent journal file, as they do at the CLI
                   withPossibleRunJournal defaultJournalOverride opts (cmdaction opts)
@@ -200,7 +226,7 @@ runCommand defaultJournalOverride rungeneralopts addonfileargs findBuiltinComman
         Nothing | cmdname `elem` addons ->
           -- Pass the session's explicit input files to the addon, so it uses the same journal
           -- (as the CLI does by forwarding its -f options to addons).
-          system (printf "%s-%s %s" progname cmdname (unwords $ map quoteForCommandLine $ addonfileargs <> args)) >>= exitWith
+          runShellCommandOrExit (printf "%s-%s %s" progname cmdname (unwords $ map quoteForCommandLine $ addonfileargs <> args))
         Nothing ->
           error' $ "Unrecognized command" ++ aliasnote ++ ": " ++ unwords (cmdname:args)
     [] -> return ()
@@ -214,8 +240,6 @@ runCommand defaultJournalOverride rungeneralopts addonfileargs findBuiltinComman
 runREPL :: DefaultRunJournal -> [(String,String)] -> [String] -> (String -> Maybe (Mode RawOpts, CliOpts -> Journal -> IO ())) -> [String] -> [(CommandAlias,CommandLine)] -> Bool -> Maybe (FilePath, RawOpts) -> Maybe (IO [String]) -> Bool -> IO ()
 runREPL defaultJournalOverride@(DefaultRunJournal jpaths) rungeneralopts addonfileargs findBuiltinCommand addons cmdaliases shellaliasesallowed mconfinfo mrescanAddons watch = do
   isTerminal <- isStdinTerminal
-  -- Use the main input file's base name as the prompt.
-  let prompt = takeBaseName (snd $ splitReaderPrefix $ NE.head jpaths) ++ "> "
   -- Mutable alias and addon state, so these can be reloaded when their sources change on disk.
   confmtime0 <- maybe (return 0) (fmap (fromMaybe 0) . maybeFileModificationTime . fst) mconfinfo
   aliasesRef <- newIORef (confmtime0, cmdaliases)
@@ -224,14 +248,35 @@ runREPL defaultJournalOverride@(DefaultRunJournal jpaths) rungeneralopts addonfi
   if not isTerminal
     then runInputT defaultSettings (loop aliasesRef addonsRef False "")
     else do
-      putStrLn "Enter hledger commands. To exit, enter 'quit' or 'exit', or send EOF."
+      -- Show a startup banner: the program name and version and a usage hint,
+      -- coloured with a gradient like the commands list when supported.
+      -- w <- fromMaybe 80 <$> getTerminalWidth
+      -- The interactive prompt is coloured only in terminals that fully emulate one.
+      -- Emacs's M-x shell (comint) advertises xterm but mishandles the cursor movement
+      -- haskeline uses to redraw a prompt containing escape codes, garbling the display;
+      -- there we use a plain prompt (the banner above is fine, being plain putStrLn output).
+      emacs <- insideEmacsNotVterm
+      let
+        grad intensity row s = gradientStr intensity 2 (length s) row 0 s
+        fpath = snd $ splitReaderPrefix $ NE.head jpaths
+                  --------------------------------------80----------------------------------------
+        title  =  progname <> " " <> packageversion
+        hint   = "Ready for hledger or !shell commands. For help: h or h -h. To exit: q or ctrl-d."
+        promptbase = takeBaseName fpath ++ "> "
+        prompt = if emacs then promptbase else stxMarkEscapes $ grad faint' 2 promptbase
+      -- putStrLn $ grad faint' 0 $ replicate w '-'
+      putStrLn $ grad bold' 1 title
+      putStrLn $ faint' hint
+      -- Then run the REPL loop.
       runInputT defaultSettings (loop aliasesRef addonsRef True prompt)
+
   where
   loop :: IORef (POSIXTime,[(CommandAlias,CommandLine)]) -> IORef (POSIXTime,[String]) -> Bool -> String -> InputT IO ()
   loop aliasesRef addonsRef interactive prompt = do
     minput <- getInputLine prompt
     case minput of
       Nothing -> return ()
+      Just "q" -> return ()
       Just "quit" -> return ()
       Just "exit" -> return ()
       Just input -> do
@@ -247,8 +292,12 @@ runREPL defaultJournalOverride@(DefaultRunJournal jpaths) rungeneralopts addonfi
               (_, addons')     <- readIORef addonsRef
               case strip input of
                 "!"       -> return ()           -- a bare !, do nothing
-                '!':shcmd -> void $ system shcmd  -- !SHELLCMD, run the rest as a shell command
-                _         -> runCommand defaultJournalOverride rungeneralopts addonfileargs findBuiltinCommand addons' cmdaliases' shellaliasesallowed $ parseCommand input
+                '!':shcmd -> hFlush stdout >> void (system shcmd)  -- !SHELLCMD, run the rest as a shell command
+                -- h is a short alias for the help command.
+                _         -> runCommand defaultJournalOverride rungeneralopts addonfileargs findBuiltinCommand addons' cmdaliases' shellaliasesallowed $
+                             case parseCommand input of
+                               "h":rest -> "help":rest
+                               cmd      -> cmd
         liftIO $ if interactive
           then action `catches`
                   [Handler (\(e::ErrorCall) -> putStrLn $ rstrip $ show e)
@@ -262,6 +311,18 @@ runREPL defaultJournalOverride@(DefaultRunJournal jpaths) rungeneralopts addonfi
 isStdinTerminal = do
   op <- hIsOpen stdin
   if op then hIsTerminalDevice stdin else return False
+
+-- | Mark any ANSI escape sequences (eg SGR colour/style codes) in a string as zero-width
+-- for haskeline, by appending a \STX character to each. Haskeline treats text between
+-- \ESC and \STX as zero-width; without this, escape codes in the prompt make it
+-- miscalculate the prompt's width, garbling the display.
+stxMarkEscapes :: String -> String
+stxMarkEscapes ('\ESC':cs) =
+  case break (=='m') cs of  -- SGR escape sequences end with 'm'
+    (code, 'm':rest) -> '\ESC' : code ++ "m\STX" ++ stxMarkEscapes rest
+    _                -> '\ESC' : cs  -- unterminated escape sequence, leave as is
+stxMarkEscapes (c:cs) = c : stxMarkEscapes cs
+stxMarkEscapes ""     = ""
 
 -- | Cache of all journals that have been read by commands given to "run",
 -- keyed by the fully-expanded filename.

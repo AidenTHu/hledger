@@ -29,15 +29,14 @@ $  printf '[alias]\nmybal = balance --tree -N\n' >$$.conf; hledger --conf $$.con
                    1  a:y
                   -2  b
 
-# ** 4. An [alias NAME] section also defines a custom command, with its
-# command line written below, possibly on multiple lines, possibly with
-# some lines commented out.
+# ** 4. An alias's command line can span several more-indented lines, and lines
+# can be commented out.
 <
 2026-01-01
   a:x  1
   a:y  1
   b   -2
-$  printf '[alias mybal]\nbalance --tree\n# --flat\n-N\n' >$$.conf; hledger --conf $$.conf -f- mybal; rm -f $$.conf
+$  printf '[alias]\nmybal = balance --tree\n  # --flat\n  -N\n' >$$.conf; hledger --conf $$.conf -f- mybal; rm -f $$.conf
                    2  a
                    1    x
                    1    y
@@ -76,13 +75,16 @@ $  printf '[alias]\nbadalias = nosuchcmd --foo\n' >$$.conf; hledger --conf $$.co
 >2 /command nosuchcmd \(expanded from the badalias command alias\) is not recognised/
 >= 1
 
-# ** 11. An [alias] section line without an equals sign gives a helpful error.
+# ** 11. An [alias] section line without an equals sign gives a helpful error,
+# showing the file position and problem line.
 $  printf '[alias]\nbadline\n' >$$.conf; hledger --conf $$.conf -f /dev/null files; s=$?; rm -f $$.conf; exit $s
->2 /an \[alias\] section line should look like/
+>2 /\.conf:2:
+2 \| badline
+an \[alias\] section line should look like/
 >= 1
 
 # ** 12. Command aliases are shown in the commands list.
-$  printf '[alias]\nnetworth = bse -H --tree\n' >$$.conf; hledger --conf $$.conf commands | grep -A1 '^ALIASES'; rm -f $$.conf
+$  printf '[alias]\nnetworth = bse -H --tree\n' >$$.conf; hledger --conf $$.conf help commands | grep -A1 '^ALIASES'; rm -f $$.conf
 ALIASES
  networth = bse -H --tree
 
@@ -93,7 +95,7 @@ $  printf '[alias]\nlist = files\n' >$$.conf; hledger --conf $$.conf -n -f /dev/
 
 # ** 14. A --no-conf flag inside the config file (which is ignored, see cli.test)
 # does not hide the file's aliases from the commands list.
-$  printf -- '--no-conf\n\n[alias]\nlist = files\n' >$$.conf; hledger --conf $$.conf commands | grep -c '^ALIASES'; rm -f $$.conf
+$  printf -- '--no-conf\n\n[alias]\nlist = files\n' >$$.conf; hledger --conf $$.conf help commands | grep -c '^ALIASES'; rm -f $$.conf
 1
 
 # ** 15. Command aliases can be used in run's command line arguments.
@@ -138,7 +140,7 @@ $  printf '[alias]\nbadalias = nosuchcmd\n' >$$.conf; hledger --conf $$.conf run
 # separator (the extra -- that cmdargs consumes is added automatically).
 # LEDGER_FILE points run (and its inline commands) at our test journal, so the
 # result doesn't depend on the environment's default journal.
-$  printf '[alias r3]\nrun\n-- echo ran: -- stats\n' >$$.conf; printf '2026-01-01\n  a  1\n  b\n' >$$.j; LEDGER_FILE=$$.j hledger --conf $$.conf r3 | grep -E 'ran:|Txns span'; rm -f $$.conf $$.j
+$  printf '[alias]\nr3 = run\n  -- echo ran: -- stats\n' >$$.conf; printf '2026-01-01\n  a  1\n  b\n' >$$.j; LEDGER_FILE=$$.j hledger --conf $$.conf r3 | grep -E 'ran:|Txns span'; rm -f $$.conf $$.j
 ran:
 Txns span           : 2026-01-01 to 2026-01-02 (1 days)
 
@@ -151,16 +153,16 @@ hello
 $  printf '[alias]\nhi = !echo hello\n' >$$.conf; hledger --conf $$.conf hi there; rm -f $$.conf
 hello there
 
-# ** 22. A shell alias also works in the [alias NAME] section form.
-$  printf '[alias hi]\n!echo hello\n' >$$.conf; hledger --conf $$.conf hi; rm -f $$.conf
-hello
+# ** 22. A shell alias's command can also span multiple more-indented lines.
+$  printf '[alias]\nhi = !echo hello\n  there\n' >$$.conf; hledger --conf $$.conf hi; rm -f $$.conf
+hello there
 
 # ** 23. The shell command's exit code is propagated.
 $  printf '[alias]\nbad = !false\n' >$$.conf; hledger --conf $$.conf bad; s=$?; rm -f $$.conf; exit $s
 >= 1
 
 # ** 24. Shell aliases are shown in the commands list, with their ! definition.
-$  printf '[alias]\nhi = !echo hello\n' >$$.conf; hledger --conf $$.conf commands | grep -A1 '^ALIASES'; rm -f $$.conf
+$  printf '[alias]\nhi = !echo hello\n' >$$.conf; hledger --conf $$.conf help commands | grep -A1 '^ALIASES'; rm -f $$.conf
 ALIASES
  hi = !echo hello
 
@@ -181,7 +183,36 @@ $  d=$(mktemp -d); mkdir $d/work; printf '[alias]\nevil = !echo pwned\n' >$d/wor
 >2 /only allowed from your user config file/
 >= 1
 
-# ** 28. Leading whitespace is ignored, so an indented [alias] section header and
-# indented alias definition (including the [alias NAME] multi-line form) still work.
-$  printf '  [alias hi]\n  files\n' >$$.conf; hledger --conf $$.conf -f /dev/null hi; rm -f $$.conf
+# ** 28. Leading whitespace is ignored, so an indented [alias] section header and its
+# (also indented) NAME = ... lines still work.
+$  printf '  [alias]\n  hi = files\n' >$$.conf; hledger --conf $$.conf -f /dev/null hi; rm -f $$.conf
 /dev/null
+
+# ** 29. A # inside quotes in a config line is literal, not a comment, so an alias's
+# command line can contain a quoted #. (The regex ignores the general options that an
+# aliased "run --" echoes back after the text.)
+$  printf "[alias]\nhashfoo = run -- echo '# foo'\n" >$$.conf; hledger --conf $$.conf -f /dev/null hashfoo; rm -f $$.conf
+> /# foo/
+
+# ** 30. A multi-line alias value ends at the next (dedented) NAME = line, so a following
+# alias is its own alias, not absorbed into the previous one. Here m spans two lines; n
+# still works as a separate command.
+$  printf '[alias]\nm = balance\n  --tree\nn = accounts\n' >$$.conf; printf '2026-01-01\n  a:x  1\n  b\n' >$$.j; LEDGER_FILE=$$.j hledger --conf $$.conf n; rm -f $$.conf $$.j
+a:x
+b
+
+# ** 31. The old [alias NAME] section form (removed) defines no alias; like any
+# unrecognised section, it is ignored.
+$  printf '[alias foo] run\n-- echo hi\n' >$$.conf; hledger --conf $$.conf foo; s=$?; rm -f $$.conf; exit $s
+>2 /command foo is not recognised/
+>= 1
+
+# ** 32. A successful shell alias does not end a run sequence; later commands still run.
+$  printf '[alias]\nhi = !echo hello\n' >$$.conf; hledger --conf $$.conf run -f /dev/null -- hi -- echo after; rm -f $$.conf
+hello
+after
+
+# ** 33. A failing shell alias ends the run sequence, propagating its exit code.
+$  printf '[alias]\nbad = !exit 3\n' >$$.conf; hledger --conf $$.conf run -f /dev/null -- echo one -- bad -- echo two; s=$?; rm -f $$.conf; exit $s
+one
+>= 3

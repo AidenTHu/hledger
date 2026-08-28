@@ -2,11 +2,11 @@ close
 
 (equity)
 
-close prints several kinds of "closing" and/or "opening" transactions,
-useful in various situations: migrating balances to a new journal file,
-retaining earnings into equity, consolidating balances, viewing lot
-costs.. Like print, it prints valid journal entries. You can copy these
-into your journal file(s) when you are happy with how they look.
+Print several kinds of "closing" and/or "opening" transactions, useful
+eg when migrating balances to a new journal file, retaining earnings
+into equity, consolidating balances, or viewing lot costs. Like print,
+it prints valid journal entries. You can copy these into your journal
+file(s) when you are happy with how they look.
 
 Flags:
      --clopen[=TAGVAL]      show closing and opening balances transactions,
@@ -169,7 +169,11 @@ With --show-costs, balances' costs are also shown, with different costs
 kept separate. This may generate very large journal entries, if you have
 many currency conversions or investment transactions. close --show-costs
 is currently the best way to view investment lots with hledger. (To move
-or dispose of lots, see the more capable hledger-move script.)
+or dispose of lots, see the more capable hledger-move script.) With
+--lots, lot subaccount balances are always shown without costs, even
+under --show-costs: their cost information is carried by the lot name
+itself, and transacted costs on lot postings would prevent the output
+from being read back.
 
 close and balance assertions
 

@@ -17,6 +17,39 @@ API/developer-ish changes in hledger-lib.
 For user-visible changes, see the hledger package changelog.
 
 
+# d4e0c16a
+
+- `Write.Spreadsheet`'s `Cell` has a new `cellParts` field, holding a multi-commodity amount's individual amounts for writers (eg HTML) that want to style each one separately; other writers can ignore it and use `cellContent` as before. `Data.Amount` has a new `showMixedAmountOneLinePartsB`, like `showMixedAmountOneLineB` but returning the amounts individually rather than joined.
+
+
+
+
+
+
+Breaking changes
+
+- `Journal`'s derived JSON instance no longer includes its transient
+  `jparse*` parser-state fields (`jincludefilestack` is renamed to
+  `jparseincludefilestack`, for consistency with the others, and then
+  dropped along with them). This affects only hledger-lib users who
+  serialise a `Journal` themselves; hledger and hledger-web don't expose
+  Journal JSON.
+
+Fixes
+
+- `divideAmount`/`divideMixedAmount` no longer raise an error when
+  dividing by zero; they now return the amount unchanged.
+
+Improvements
+
+- `Hledger.Data.Errors.decorateExcerpt` is now exported, and there's a
+  new `wordsmay`, a total variant of `words'`.
+
+
+# 1.52.2 2026-08-24
+
+
+
 # 1.99.3 2026-06-24
 
 Breaking changes
@@ -142,7 +175,7 @@ Fixes
   exception if the amount's quantity was zero. Now it's a no-op in that case.
   [#2476]
 
-[#2476]: https://github.com/simonmichael/hledger/issues/2476
+[#2476]: https://github.com/plaintextaccounting/hledger/issues/2476
 
 
 # 1.51.2 2026-01-08
@@ -380,7 +413,7 @@ Improvements
 - distinguish oneLineFmt and oneLineNoCostFmt; add fullZeroFmt
 - matchedPostingsBeforeAndDuring: improve debug output
 
-[#2177]: https://github.com/simonmichael/hledger/issues/2177
+[#2177]: https://github.com/plaintextaccounting/hledger/issues/2177
 
 
 # 1.32.3 2024-01-28
@@ -706,12 +739,12 @@ Misc. changes
 - Hledger.Utils: Add a helper function numDigitsInt to get the number
   of digits in an integer, which has a surprising number of ways to
   get it wrong.
-  ([#1813](https://github.com/simonmichael/hledger/issues/1813) (Stephen Morgan)
+  ([#1813](https://github.com/plaintextaccounting/hledger/issues/1813) (Stephen Morgan)
 
 # 1.25 2022-03-04
 
 - hledger-lib now builds with GHC 9.2 and latest deps. 
-  ([#1774](https://github.com/simonmichael/hledger/issues/1774)
+  ([#1774](https://github.com/plaintextaccounting/hledger/issues/1774)
 
 - Journal has a new jaccounttypes map.
   The journalAccountType lookup function makes it easy to check an account's type.
@@ -804,8 +837,8 @@ Much code cleanup and reorganisation, such as:
   As a consequence, all the ways of representing zero with a MixedAmount ([],
   [A 0], [A 0, B 0, ...]) are now Eq-ual (==), whereas before they were
   not. We have not been able to find anything broken by this change.
-  ([#1563](https://github.com/simonmichael/hledger/issues/1563), 
-  [#1564](https://github.com/simonmichael/hledger/issues/1564), 
+  ([#1563](https://github.com/plaintextaccounting/hledger/issues/1563), 
+  [#1564](https://github.com/plaintextaccounting/hledger/issues/1564), 
   Stephen Morgan)
 
 - HUnit's testCase and testGroup are now used directly instead of
@@ -828,7 +861,7 @@ Much code cleanup and reorganisation, such as:
   as it is now equivalent to utcTimeToPOSIXSeconds from Data.Time.Clock.POSIX.
   To get the current system time, you should now use getPOSIXTime 
   from Data.Time.Clock.POSIX instead of getClockTime.
-  ([#1650](https://github.com/simonmichael/hledger/issues/1650), Stephen Morgan)
+  ([#1650](https://github.com/plaintextaccounting/hledger/issues/1650), Stephen Morgan)
 
 - modifyTransactions now takes a Map of commodity styles, and will style amounts according to that argument. journalAddForecast and journalTransform now return an Either String Journal. (Stephen Morgan)
   This improves efficiency, as we no longer have to restyle all amounts in
@@ -848,7 +881,7 @@ Much code cleanup and reorganisation, such as:
 
   This is done to be more consistent with future field naming conventions,
   and to make automatic generation of lenses simpler. See discussion in
-  [#1545](https://github.com/simonmichael/hledger/issues/1545).
+  [#1545](https://github.com/plaintextaccounting/hledger/issues/1545).
 
       rsOpts      -> _rsReportOpts
       rsToday     -> _rsDay
@@ -923,7 +956,7 @@ Much code cleanup and reorganisation, such as:
   This allows us to have a uniform procedure for balancing transactions,
   whether they are normal transactions or forecast transactions, including
   dealing with balance assignments, balance assertions, and auto postings.
-  ([#1638](https://github.com/simonmichael/hledger/issues/1638), Stephen Morgan)
+  ([#1638](https://github.com/plaintextaccounting/hledger/issues/1638), Stephen Morgan)
 
 # 1.22.1 2021-08-02
 
@@ -1381,7 +1414,7 @@ including:
 - NFData instances are no longer derived for hledger's data types.
   This speeds up a full build by roughly 7%. But it means we can't
   deep-evaluate hledger values, or time hledger code with Criterion.
-  https://github.com/simonmichael/hledger/pull/1330#issuecomment-684075129
+  https://github.com/plaintextaccounting/hledger/pull/1330#issuecomment-684075129
   has some ideas on this.
 
 - Query no longer has a custom Show instance

@@ -69,6 +69,7 @@ module Hledger.Utils.IO (
   getTerminalHeightWidth,
   getTerminalHeight,
   getTerminalWidth,
+  insideEmacsNotVterm,
 
   -- * Pager output
   findPager,
@@ -85,6 +86,8 @@ module Hledger.Utils.IO (
   useColorOnStderr,
   useColorOnStdoutUnsafe,
   useColorOnStderrUnsafe,
+  supportsTrueColor,
+  supportsTrueColorUnsafe,
   bold',
   faint',
   black',
@@ -105,6 +108,10 @@ module Hledger.Utils.IO (
   brightWhite',
   rgb',
   sgrresetall,
+  accent,
+  gradientStr,
+  titleLine,
+  titleAndVersionLine,
 
   -- ** Generic
 
@@ -152,7 +159,7 @@ import           GHC.IO.Encoding (getLocaleEncoding, textEncodingName)
 import           GHC.IO.Exception (IOException(..), IOErrorType (ResourceVanished))
 import           Language.Haskell.TH.Syntax (Q, Exp)
 import           Safe (headMay, maximumDef)
-import           System.Console.ANSI (Color(..),ColorIntensity(..), ConsoleLayer(..), SGR(..), hSupportsANSIColor, setSGRCode, getLayerColor, ConsoleIntensity (..))
+import           System.Console.ANSI (Color(..),ColorIntensity(..), ConsoleLayer(..), SGR(..), hSupportsANSIColor, setSGRCode, getLayerColor, ConsoleIntensity (..), xterm6LevelRGB)
 import           System.Console.Terminal.Size (Window (Window), size)
 import           System.Directory (getHomeDirectory, getModificationTime, findExecutable)
 import           System.Environment (getArgs, getEnvironment, lookupEnv, getProgName)
@@ -683,6 +690,17 @@ getTerminalHeight = fmap fst <$> getTerminalHeightWidth
 getTerminalWidth :: IO (Maybe Int)
 getTerminalWidth  = fmap snd <$> getTerminalHeightWidth
 
+-- | Are we running inside an Emacs subprocess other than vterm ?
+-- Terminals like Emacs's M-x shell (comint) advertise a full xterm terminal
+-- but only partially emulate it (SGR colours render, but cursor movement and
+-- terminal queries do not), so interactive line editing, paging and background
+-- colour detection tend to misbehave there.
+-- vterm is excluded because it emulates a terminal fully.
+-- Emacs sets INSIDE_EMACS to eg "30.1,comint" or "30.1,vterm", so we look for a
+-- "vterm" component rather than an exact match.
+insideEmacsNotVterm :: IO Bool
+insideEmacsNotVterm = maybe False (not . ("vterm" `isInfixOf`)) <$> lookupEnv "INSIDE_EMACS"
+
 
 
 -- Pager output
@@ -717,7 +735,7 @@ maybePagerFor output = do
     windows = os == "mingw32"
   pagerno    <- maybe False (not . either error' id . parseYN) <$> getOpt ["pager"]
   outputfile <- hasOutputFile
-  emacsterm  <- lookupEnv "INSIDE_EMACS" <&> (`notElem` [Nothing, Just "vterm"])
+  emacsterm  <- insideEmacsNotVterm
   mhw        <- getTerminalHeightWidth
   mpager     <- findPager
   return $ do
@@ -880,9 +898,22 @@ useColorOnStdoutUnsafe = unsafePerformIO useColorOnStdout
 useColorOnStderrUnsafe :: Bool
 useColorOnStderrUnsafe = unsafePerformIO useColorOnStderr
 
+-- | Does the terminal appear to support 24-bit "true colour" ?
+-- Detected from the COLORTERM environment variable being "truecolor" or "24bit",
+-- the de-facto convention. This errs conservative: it can miss truecolor terminals
+-- that don't set COLORTERM (eg across ssh/tmux/sudo), in which case we fall back to
+-- 256-colour; and it can't help terminals that set it but don't actually render
+-- truecolor. When false, 'rgb'' downgrades to the nearest xterm 256-colour.
+supportsTrueColor :: IO Bool
+supportsTrueColor = maybe False (`elem` ["truecolor","24bit"]) <$> lookupEnv "COLORTERM"
+
+-- | Like 'supportsTrueColor', but using unsafePerformIO.
+supportsTrueColorUnsafe :: Bool
+supportsTrueColorUnsafe = unsafePerformIO supportsTrueColor
+
 -- | Detect whether ANSI should be used on stdout using useColorOnStdoutUnsafe,
 -- and if so prepend and append the given SGR codes to a string.
--- Currently used in a few places (the commands list, the recentassertions error message, add, demo);
+-- Currently used in a few places (the commands list, the recentassertions error message, add);
 -- see useColorOnStdoutUnsafe's limitations.
 ansiWrapUnsafe :: SGRString -> SGRString -> String -> String
 ansiWrapUnsafe pre post s = if useColorOnStdoutUnsafe then pre<>s<>post else s
@@ -911,7 +942,12 @@ sgrbrightblue    = setSGRCode [SetColor Foreground Vivid Blue]
 sgrbrightmagenta = setSGRCode [SetColor Foreground Vivid Magenta]
 sgrbrightcyan    = setSGRCode [SetColor Foreground Vivid Cyan]
 sgrbrightwhite   = setSGRCode [SetColor Foreground Vivid White]
-sgrrgb r g b     = setSGRCode [SetRGBColor Foreground $ sRGB r g b]
+-- Emit a 24-bit truecolor foreground code, or if the terminal doesn't advertise
+-- truecolor support (see supportsTrueColorUnsafe), the nearest xterm 256-colour.
+sgrrgb r g b
+  | supportsTrueColorUnsafe = setSGRCode [SetRGBColor Foreground $ sRGB r g b]
+  | otherwise               = setSGRCode [SetPaletteColor Foreground $ xterm6LevelRGB (lvl r) (lvl g) (lvl b)]
+  where lvl v = max 0 $ min 5 $ round (v * 5)  -- map a 0..1 intensity to a 0..5 colour-cube level
 
 -- | Set various ANSI styles/colours in a string, only if useColorOnStdoutUnsafe says we should.
 bold' :: String -> String
@@ -971,6 +1007,58 @@ brightWhite'  = ansiWrapUnsafe sgrbrightwhite sgrresetfg
 rgb' :: Float -> Float -> Float -> String -> String
 rgb' r g b  = ansiWrapUnsafe (sgrrgb r g b) sgrresetfg
 
+-- | Choose and apply an accent color for hledger output, if possible
+-- picking one that will contrast with the current terminal background colour.
+accent :: String -> String
+accent
+  | not useColorOnStdoutUnsafe    = id  -- XXX unsafe accenting the title banner - seems to work, even respecting config file
+  | terminalIsLight == Just False = brightWhite'
+  | terminalIsLight == Just True  = brightBlack'
+  | otherwise                     = id
+
+-- | Colour a string with hledger's diagonal blue-to-green gradient: each
+-- character's colour depends on its position (@row@, and column counting from
+-- @col0@) within a grid @h@ rows tall and @w@ columns wide, fading blue at the
+-- top-left to green at the bottom-right. The gradient is brighter on a dark
+-- terminal background and darker on a light one. The whole string is wrapped in
+-- the given intensity style (eg 'bold'' or 'faint''); the per-character colour
+-- codes only touch the foreground, so the intensity is kept across the string.
+-- When the background lightness can't be detected (eg inside emacs, where the
+-- background-colour query doesn't work), it uses the light-background palette,
+-- whose deeper shades stay legible on both light and dark backgrounds; only a
+-- background known to be dark gets the brighter dark-background palette.
+-- Colouring is skipped entirely only when colour is off.
+gradientStr :: (String -> String) -> Int -> Int -> Int -> Int -> String -> String
+gradientStr intensity h w row col0 s
+  | not useColorOnStdoutUnsafe = s
+  | otherwise =
+      let light      = terminalIsLight /= Just False  -- deep palette unless the background is known dark
+          (r1,g1,b1) = if light then (0.12,0.44,0.69) else (0.16,0.71,0.85)  -- start (blue)
+          (r2,g2,b2) = if light then (0.25,0.49,0.12) else (0.48,0.75,0.26)  -- end   (green)
+          fullspan   = fromIntegral (max 1 (h + w - 2)) :: Float
+          paint c ch
+            | ch == ' ' = " "  -- leave gaps uncoloured, and out of the escape-code noise
+            | otherwise = rgb' (mix r1 r2) (mix g1 g2) (mix b1 b2) [ch]
+            where t     = fromIntegral (row + c) / fullspan  -- 0 at top-left, 1 at bottom-right
+                  mix a b = a + (b - a) * t
+      in intensity $ concat $ zipWith paint [col0..] s
+
+-- | Render a title heading coloured with hledger's blue-to-green bold gradient,
+-- when colour is enabled.
+titleLine :: String -> String
+titleLine title = gradientStr bold' 1 (length title) 0 0 title
+
+-- | Render a one-line heading with a title at the left and a version (or other
+-- short annotation) right-aligned to the given width, both coloured with
+-- hledger's blue-to-green gradient (bold title, faint version) when colour is
+-- enabled.
+titleAndVersionLine :: Int -> String -> String -> String
+titleAndVersionLine width title version = styledtitle <> pad <> styledversion
+  where
+    styledtitle   = gradientStr bold'  1 (length title)   0 0 title
+    styledversion = gradientStr faint' 1 (length version) 0 0 version
+    pad = replicate (max 1 $ width - length title - length version) ' '
+
 -- Generic:
 
 -- | Wrap a string in ANSI codes to set and reset foreground colour.
@@ -1022,11 +1110,11 @@ terminalColor = unsafePerformIO . getLayerColor'
 -- A version of ansi-terminal's getLayerColor that is less likely to leak escape sequences to output,
 -- and that returns a RGB of Floats (0..1) that is more compatible with the colour package.
 -- This does nothing in a non-interactive context (eg when piping stdout to another command),
--- inside emacs (emacs shell buffers show the escape sequence for some reason),
--- or in a non-colour-supporting terminal.
+-- inside emacs (comint shell buffers show the query's escape sequence instead of answering it,
+-- and vterm doesn't answer the query at all), or in a non-colour-supporting terminal.
 getLayerColor' :: ConsoleLayer -> IO (Maybe (RGB Float))
 getLayerColor' l = do
-  inemacs       <- not.null <$> lookupEnv "INSIDE_EMACS"
+  inemacs       <- not . null <$> lookupEnv "INSIDE_EMACS"
   interactive   <- hIsTerminalDevice stdout
   supportscolor <- hSupportsANSIColor stdout
   if inemacs || not interactive || not supportscolor then return Nothing

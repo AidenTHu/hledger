@@ -118,7 +118,6 @@ old
 /examples/edk-hledger-ui-mobile.gif
 /examples/tty-ui-1.gif
 /site/
-!/site/src/*.md
 /finance
 /examples/demo/
 /doc/ghrelnotes.md
@@ -128,3 +127,5 @@ old
 /tools/docshelltest
 .latest.*
 .github/workflows/ci-arm.yml
+/doc/ai/aicommits.csv
+/doc/ai/ai.unlogged

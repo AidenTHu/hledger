@@ -100,7 +100,8 @@ compoundBalanceCommandMode CompoundBalanceCommandSpec{..} =
     ,flagNone ["row-total","T"] (setboolopt "row-total") "show a row total column (in multicolumn reports)"
     ,flagNone ["summary-only"] (setboolopt "summary-only") "display only row summaries (e.g. row total, average) (in multicolumn reports)"
     ,flagNone ["no-total","N"] (setboolopt "no-total") "omit the final total row"
-    ,flagNone ["no-elide"] (setboolopt "no-elide") "in tree mode, don't squash boring parent accounts"
+    ,flagNone ["no-elide"] (setboolopt "no-elide") "in tree mode, don't squash boring parent accounts; in list mode, also show parent accounts (usually zero, hidden without -E)"
+    ,flagNone ["full-names"] (setboolopt "full-names") "in tree mode, show full account names instead of indented leaf names"
     ,flagReq  ["format"] (\s opts -> Right $ setopt "format" s opts) "FORMATSTR" "use this custom line format (in simple reports)"
     ,flagNone ["sort-amount","S"] (setboolopt "sort-amount") "sort by amount instead of account code/name"
     ,flagNone ["percent", "%"] (setboolopt "percent") "express values in percentage of each column's total"
@@ -358,12 +359,13 @@ compoundBalanceReportAsHtml ropts cbr =
               oneLineNoCostFmt "" (Just nbsp) ropts cbr
       colspanattr = colspan_ $ T.pack $ show $ length $ NonEmpty.head cells
   in do
-    link_ [rel_ "stylesheet", href_ "hledger.css"]
+    -- the builtin styles, then the optional user stylesheet so it can override them
     style_ $ stylesheet $
       tableStyle ++ [
       ("td:nth-child(1)", "white-space:nowrap"),
       ("tr:nth-child(odd) td", "background-color:#eee")
       ]
+    link_ [rel_ "stylesheet", href_ "hledger.css"]
     table_ $ do
       unless (T.null title) $
         tr_ $ th_ [colspanattr, style_ alignleft] $ h2_ $ toHtml title

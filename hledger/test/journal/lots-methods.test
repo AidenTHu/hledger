@@ -551,3 +551,265 @@ $ hledger -f- print --lots -x
 
 >=
 
+
+# ** 23. A transfer into an AVERAGE account re-averages the pool, like an
+# acquisition at the carried cost: (10x$20 + 10x$10)/20 = $15. The later
+# disposal's gain proves the pooled cost (5 x ($30-$15) = $75), and the
+# destination lot subaccounts are costless as usual under AVERAGE.
+<
+commodity A  ; lots:
+account assets:avg  ; lots: AVERAGE
+
+2026-01-01 buy in fifo account
+    assets:x    10 A {$10}
+    assets:cash
+
+2026-02-01 buy in average account
+    assets:avg   10 A {$20}
+    assets:cash
+
+2026-03-01 transfer fifo account to average account
+    assets:x    -10 A
+    assets:avg   10 A
+
+2026-04-01 sell from average account
+    assets:avg  -5 A {} @ $30
+    assets:cash  $150
+
+$ hledger -f- bal --lots
+                 5 A  assets:avg:{2026-01-01}
+                10 A  assets:avg:{2026-02-01}
+               $-150  assets:cash
+                 $75  equity:unrealised-gain
+                $-75  revenues:gain
+--------------------
+               $-150
+                15 A  
+
+# ** 24. A transfer out of an AVERAGE pool carries the pooled cost ($20)
+# into the destination account, and leaves the remaining pool's running
+# cost unchanged: both later disposals have gain 5 x ($50-$20) = $150.
+<
+commodity A  ; lots:
+account assets:avg  ; lots: AVERAGE
+
+2026-01-01 buy
+    assets:avg   10 A {$10}
+    assets:cash
+
+2026-02-01 buy
+    assets:avg   10 A {$30}
+    assets:cash
+
+2026-03-01 transfer out of the pool
+    assets:avg   -5 A {}
+    assets:fifo    5 A
+
+2026-04-01 sell from the fifo account
+    assets:fifo  -5 A {} @ $50
+    assets:cash  $250
+
+2026-05-01 sell from the pool
+    assets:avg   -5 A {} @ $50
+    assets:cash  $250
+
+$ hledger -f- bal --lots
+                10 A  assets:avg:{2026-02-01}
+                $100  assets:cash
+                $300  equity:unrealised-gain
+               $-300  revenues:gain
+--------------------
+                $100
+                10 A  
+
+# ** 25. print --lots -x of a transfer into an AVERAGE account: both
+# fragments show the carried (source) cost; the source subaccount keeps its
+# cost, the destination subaccount is costless. (The post-merge pool cost
+# lives in lot state and appears on later disposals.)
+<
+commodity A  ; lots:
+account assets:avg  ; lots: AVERAGE
+
+2026-01-01 buy in fifo account
+    assets:x    10 A {$10}
+    assets:cash
+
+2026-02-01 buy in average account
+    assets:avg   10 A {$20}
+    assets:cash
+
+2026-03-01 transfer fifo account to average account
+    assets:x    -10 A
+    assets:avg   10 A
+
+$ hledger -f- print --lots -x
+2026-01-01 buy in fifo account
+    assets:x:{2026-01-01, $10}                    10 A {$10} @ $10
+    assets:cash                                $-100
+
+2026-02-01 buy in average account
+    assets:avg:{2026-02-01}                       10 A {$20} @ $20
+    assets:cash                                $-200
+
+2026-03-01 transfer fifo account to average account
+    assets:x:{2026-01-01, $10}                   -10 A {2026-01-01, $10}
+    assets:avg:{2026-01-01}                       10 A {2026-01-01, $10}
+
+>=
+
+# ** 26. A cost in a transfer-to annotation into an AVERAGE account is not
+# required to match the source lot's cost (the pool's running cost
+# legitimately differs); date and label must still match.
+<
+commodity A  ; lots:
+account assets:avg  ; lots: AVERAGE
+
+2026-01-01 buy in fifo account
+    assets:x    10 A {$10}
+    assets:cash
+
+2026-02-01 buy in average account
+    assets:avg   10 A {$20}
+    assets:cash
+
+2026-03-01 transfer, destination annotation with a different cost
+    assets:x    -10 A {2026-01-01, $10}
+    assets:avg   10 A {2026-01-01, $15}
+
+$ hledger -f- bal --lots -N
+                10 A  assets:avg:{2026-01-01}
+                10 A  assets:avg:{2026-02-01}
+               $-300  assets:cash
+
+# ** 27. AVERAGEALL: a transfer between accounts within the global pool
+# does not change the shared cost ($60); the later disposal's gain is
+# 5 x ($70-$60) = $50.
+<
+commodity AAPL  ; lots: AVERAGEALL
+
+2026-01-15 buy
+    assets:broker1    10 AAPL {$40}
+    assets:checking
+
+2026-02-01 buy
+    assets:broker2    10 AAPL {$80}
+    assets:checking
+
+2026-03-01 transfer within the global pool
+    assets:broker1   -10 AAPL {}
+    assets:broker2    10 AAPL
+
+2026-04-01 sell
+    assets:broker2    -5 AAPL {} @ $70
+    assets:cash       $350
+
+$ hledger -f- bal --lots
+              5 AAPL  assets:broker2:{2026-01-15}
+             10 AAPL  assets:broker2:{2026-02-01}
+                $350  assets:cash
+              $-1200  assets:checking
+                 $50  equity:unrealised-gain
+                $-50  revenues:gain
+--------------------
+               $-850
+             15 AAPL  
+
+# ** 28. A global (*ALL) method mixed with a different method for the same
+# commodity is an error: the non-global account would skip the global
+# validation, making it meaningless.
+<
+commodity AAPL  ; lots: FIFOALL
+account assets:b  ; lots: LIFO
+
+2026-01-15 buy
+    assets:a    10 AAPL {$50}
+    assets:checking
+
+2026-02-01 buy
+    assets:b    10 AAPL {$60}
+    assets:checking
+
+$ hledger -f- bal --lots -N 2>&1
+hledger: Error: -:1:
+1 | commodity AAPL  ; lots: FIFOALL
+
+AAPL uses the global method FIFOALL (from commodity tag on AAPL) in assets:a,
+but a different method elsewhere:
+  assets:b uses LIFO (from account tag on assets:b)
+A global (*ALL) method must be used by every account holding the commodity.
+Declare it once on the commodity declaration, and remove conflicting account lots: tags.
+>=1
+
+# ** 29. Likewise AVERAGEALL mixed with per-account AVERAGE (they are
+# different pools).
+<
+commodity AAPL  ; lots: AVERAGEALL
+account assets:b  ; lots: AVERAGE
+
+2026-01-15 buy
+    assets:a    10 AAPL {$50}
+    assets:checking
+
+2026-02-01 buy
+    assets:b    10 AAPL {$60}
+    assets:checking
+
+$ hledger -f- bal --lots -N
+>2 /AAPL uses the global method AVERAGEALL \(from commodity tag on AAPL\)/
+>=1
+
+# ** 30. A redundant account tag declaring the same global method is fine.
+<
+commodity AAPL  ; lots: FIFOALL
+account assets:b  ; lots: FIFOALL
+
+2026-01-15 buy
+    assets:a    10 AAPL {$50}
+    assets:checking
+
+2026-02-01 buy
+    assets:b    10 AAPL {$60}
+    assets:checking
+
+$ hledger -f- bal --lots -N
+             10 AAPL  assets:b:{2026-02-01, $60}
+             10 AAPL  assets:a:{2026-01-15, $50}
+              $-1100  assets:checking
+
+# ** 31. A conflicting method tag on an account that never holds the
+# commodity is fine: only accounts holding it must agree.
+<
+commodity AAPL  ; lots: FIFOALL
+account assets:cash  ; lots: LIFO
+
+2026-01-15 buy
+    assets:a    10 AAPL {$50}
+    assets:checking
+
+2026-02-01 buy
+    assets:b    10 AAPL {$60}
+    assets:checking
+
+$ hledger -f- bal --lots -N
+             10 AAPL  assets:a:{2026-01-15, $50}
+             10 AAPL  assets:b:{2026-02-01, $60}
+              $-1100  assets:checking
+
+# ** 32. Local methods (no *ALL) may be mixed per account freely.
+<
+commodity AAPL  ; lots:
+account assets:a  ; lots: LIFO
+account assets:b  ; lots: HIFO
+
+2026-01-15 buy
+    assets:a    10 AAPL {$50}
+    assets:checking
+
+2026-02-01 buy
+    assets:b    10 AAPL {$60}
+    assets:checking
+
+$ hledger -f- bal --lots -N
+             10 AAPL  assets:a:{2026-01-15, $50}
+             10 AAPL  assets:b:{2026-02-01, $60}
+              $-1100  assets:checking

@@ -61,7 +61,7 @@ Dev notes on joyful.com:
 **Github:**\
 main repo: <https://code.hledger.org>
 
-[commits](https://github.com/simonmichael/hledger/commits),
+[commits](https://github.com/plaintextaccounting/hledger/commits),
 <https://ci.hledger.org>,
 <https://nightly.hledger.org>,
 <https://release.hledger.org>
@@ -215,7 +215,7 @@ binary packages:
 \
 **Sandstorm:**
 [hledger web app & reviews](https://apps.sandstorm.io/app/8x12h6p0x0nrzk73hfq6zh2jxtgyzzcty7qsatkg7jfg2mzw5n90),
-[issues](https://github.com/simonmichael/hledger/issues?utf8=✓&q=label%3A%22platform%3A%20sandstorm%22%20)\
+[issues](https://github.com/plaintextaccounting/hledger/issues?utf8=✓&q=label%3A%22platform%3A%20sandstorm%22%20)\
 \
 **Reference:** [fosskers GHC compatibility chart](https://www.fosskers.ca/en/blog/base)\
 \
@@ -229,7 +229,7 @@ hledger-api demo
 [api-demo.hledger.org/api/v1/accounts](https://api-demo.hledger.org/api/v1/accounts),
 [api-demo.hledger.org/swagger.json](https://api-demo.hledger.org/swagger.json),
 [in swagger editor](https://editor2.swagger.io/#/?import=api-demo.hledger.org/swagger.json&no-proxy)\
-[unfinished angular sample app](https://api-demo.hledger.org) ([code](https://github.com/simonmichael/hledger/tree/main/hledger-api/examples/angular))
+[unfinished angular sample app](https://api-demo.hledger.org) ([code](https://github.com/plaintextaccounting/hledger/tree/main/hledger-api/examples/angular))
 -->
 
 <!-- The Debian packages:

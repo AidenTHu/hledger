@@ -16,6 +16,7 @@ the export list, the import list, builtinCommands, commandsList.
 
 module Hledger.Cli.Commands (
    commands
+  ,mainmode
   ,testcmd
   ,builtinCommands
   ,builtinCommandNames
@@ -33,14 +34,16 @@ module Hledger.Cli.Commands (
   ,module Hledger.Cli.Commands.Balancesheet
   ,module Hledger.Cli.Commands.Balancesheetequity
   ,module Hledger.Cli.Commands.Cashflow
+  ,module Hledger.Cli.Commands.Check
   ,module Hledger.Cli.Commands.Close
   ,module Hledger.Cli.Commands.Codes
   ,module Hledger.Cli.Commands.Commodities
-  ,module Hledger.Cli.Commands.Demo
   ,module Hledger.Cli.Commands.Descriptions
   ,module Hledger.Cli.Commands.Diff
+  ,module Hledger.Cli.Commands.Files
   ,module Hledger.Cli.Commands.Get
   ,module Hledger.Cli.Commands.Help
+  ,module Hledger.Cli.Commands.Holdings
   ,module Hledger.Cli.Commands.Import
   ,module Hledger.Cli.Commands.Incomestatement
   ,module Hledger.Cli.Commands.Notes
@@ -49,6 +52,7 @@ module Hledger.Cli.Commands (
   ,module Hledger.Cli.Commands.Print
   ,module Hledger.Cli.Commands.Register
   ,module Hledger.Cli.Commands.Rewrite
+  ,module Hledger.Cli.Commands.Roi
   ,module Hledger.Cli.Commands.Run
   ,module Hledger.Cli.Commands.Setup
   ,module Hledger.Cli.Commands.Stats
@@ -63,8 +67,7 @@ import Data.List.Extra (groupSortOn, nubOrdOn, nubSort)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Time.Calendar
-import Safe (headErr)
-import String.ANSI
+import Safe (headErr, headMay)
 import System.Console.CmdArgs.Explicit as C
 import System.Environment (withArgs)
 import System.FilePath (dropExtension, takeBaseName, takeExtension)
@@ -87,12 +90,12 @@ import Hledger.Cli.Commands.Check
 import Hledger.Cli.Commands.Close
 import Hledger.Cli.Commands.Codes
 import Hledger.Cli.Commands.Commodities
-import Hledger.Cli.Commands.Demo
 import Hledger.Cli.Commands.Descriptions
 import Hledger.Cli.Commands.Diff
 import Hledger.Cli.Commands.Files
 import Hledger.Cli.Commands.Get
 import Hledger.Cli.Commands.Help
+import Hledger.Cli.Commands.Holdings
 import Hledger.Cli.Commands.Import
 import Hledger.Cli.Commands.Incomestatement
 import Hledger.Cli.Commands.Notes
@@ -106,8 +109,10 @@ import Hledger.Cli.Commands.Run
 import Hledger.Cli.Commands.Setup
 import Hledger.Cli.Commands.Stats
 import Hledger.Cli.Commands.Tags
-import Hledger.Cli.Utils (tests_Cli_Utils)
-import Data.Functor ((<&>))
+import Hledger.Cli.Utils (tests_Cli_Utils, openBrowserOn)
+import Hledger.Cli.Commands.Quickref (showQuickref)
+import Hledger.Cli.DocFiles (runTldrForPage)
+import Data.Functor ((<&>), void)
 
 -- | The cmdargs subcommand mode (for command-line parsing)
 -- and IO action (for doing the command's work) for each builtin command.
@@ -125,14 +130,13 @@ builtinCommands = [
   ,(checkmode              , check)
   ,(closemode              , close)
   ,(codesmode              , codes)
-  ,(commandsmode           , commands)
   ,(commoditiesmode        , commodities)
-  ,(demomode               , demo)
   ,(descriptionsmode       , descriptions)
   ,(diffmode               , diff)
   ,(filesmode              , files)
   ,(getmode                , getcmd)
-  ,(helpmode               , help')
+  ,(helpmode               , help)
+  ,(holdingsmode           , holdings)
   ,(importmode             , importcmd)
   ,(incomestatementmode    , incomestatement)
   ,(notesmode              , notes)
@@ -149,6 +153,72 @@ builtinCommands = [
   ,(tagsmode               , tags)
   ,(testmode               , testcmd)
   ]
+
+-- | The overall cmdargs mode describing hledger's command-line options and subcommands.
+-- The names of known addons are provided so they too can be recognised as commands.
+mainmode addons = defMode {
+  modeNames = [progname ++ " [COMMAND]"]
+ ,modeArgs = ([], Just $ argsFlag "[ARGS]")
+ ,modeHelp = unlines ["hledger's main command line interface. Run with no ARGS to list commands."]
+ ,modeGroupModes = Group {
+    -- subcommands in the unnamed group, shown first:
+    groupUnnamed = [
+     ]
+    -- subcommands in named groups:
+   ,groupNamed = [
+     ]
+    -- subcommands handled but not shown in the help:
+   ,groupHidden = map fst builtinCommands ++ map addonCommandMode addons
+   }
+ ,modeGroupFlags = Group {
+     -- flags in named groups: (keep synced with Hledger.Cli.CliOptions.highlightHelp)
+     groupNamed = cligeneralflagsgroups1
+     -- flags in the unnamed group, shown last: (keep synced with dropUnsupportedOpts)
+    ,groupUnnamed = confflags
+     -- other flags handled but not shown in help:
+    ,groupHidden = hiddenflagsformainmode
+    }
+ ,modeHelpSuffix = []
+ }
+
+-- | The help command: show some part of hledger's documentation, dispatching on
+-- its first argument to a subtopic. Recognised subtopics are: quickref (the quick
+-- reference card), commands (the commands list), usage [CMD] (command-line usage,
+-- general or for CMD), manual [TOPIC] (the manual, optionally at TOPIC),
+-- examples [CMD..] (brief tldr examples), and home/install/relnotes/docs/support/sponsor
+-- (open the corresponding hledger.org page in a web browser).
+-- With no argument it shows the quickref card; any other first argument is
+-- treated as a manual topic.
+help :: CliOpts -> Journal -> IO ()
+help opts _
+  -- With -l, always list matching manual topics, bypassing the special
+  -- subcommands (commands, usage, examples, install, etc). A leading "manual"
+  -- argument is the (now implicit) subcommand name, so it's consumed rather than
+  -- treated as a topic; thus `help -l manual` behaves like `help manual -l`.
+  | boolopt "help-l" (rawopts_ opts) = manual opts $ headMay $ case args of
+      "manual":rest -> rest
+      _             -> args
+  | otherwise = case args of
+    []              -> showQuickref
+    "quickref":_    -> showQuickref
+    "commands":_    -> commands opts nulljournal
+    "usage":rest    ->
+      let usagemode = case rest of
+            c:_ | Just (m,_) <- findBuiltinCommand c -> m
+            _                                        -> mainmode []
+      in runPager $ showModeUsage usagemode ++ "\n"
+    "manual":rest   -> manual opts (headMay rest)
+    "examples":rest -> mapM_ runTldrForPage $
+                         if null rest then ["hledger"] else map ("hledger-"<>) rest
+    "home":_        -> void $ openBrowserOn "https://hledger.org"
+    "install":_     -> void $ openBrowserOn "https://hledger.org/install.html"
+    "relnotes":_    -> void $ openBrowserOn "https://hledger.org/relnotes.html"
+    "docs":_        -> void $ openBrowserOn "https://hledger.org/doc.html"
+    "support":_     -> void $ openBrowserOn "https://hledger.org/support.html"
+    "sponsor":_     -> void $ openBrowserOn "https://hledger.org/sponsor.html"
+    _               -> manual opts (headMay args)
+  where
+    args = listofstringopt "args" (rawopts_ opts)
 
 -- figlet -f FONTNAME hledger, then escape backslashes
 _banner_slant = drop 1 [""
@@ -178,44 +248,11 @@ _banner_speed = drop 1 [""
   ,"                         /____/               "
   ]
 
--- | Choose and apply an accent color for hledger output, if possible
--- picking one that will contrast with the current terminal background colour.
-accent :: String -> String
-accent
-  | not useColorOnStdoutUnsafe    = id  -- XXX unsafe accenting the title banner - seems to work, even respecting config file
-  | terminalIsLight == Just False = brightWhite
-  | terminalIsLight == Just True  = brightBlack
-  | otherwise                     = id
-
--- | Colour a string with hledger's diagonal blue-to-green gradient: each
--- character's colour depends on its position (@row@, and column counting from
--- @col0@) within a grid @h@ rows tall and @w@ columns wide, fading blue at the
--- top-left to green at the bottom-right. The gradient is brighter on a dark
--- terminal background and darker on a light one. The whole string is wrapped in
--- the given intensity style (eg 'bold'' or 'faint''); the per-character colour
--- codes only touch the foreground, so the intensity is kept across the string.
--- Falls back to the single 'accent' colour when the background lightness is
--- unknown, and to no colouring when colour is off.
-gradientStr :: (String -> String) -> Int -> Int -> Int -> Int -> String -> String
-gradientStr intensity h w row col0 s
-  | not useColorOnStdoutUnsafe = s
-  | otherwise = intensity $ case terminalIsLight of
-      Nothing    -> accent s
-      Just light ->
-        let (r1,g1,b1) = if light then (0.12,0.44,0.69) else (0.16,0.71,0.85)  -- start (blue)
-            (r2,g2,b2) = if light then (0.25,0.49,0.12) else (0.48,0.75,0.26)  -- end   (green)
-            fullspan   = fromIntegral (max 1 (h + w - 2)) :: Float
-            paint c ch
-              | ch == ' ' = " "  -- leave gaps uncoloured, and out of the escape-code noise
-              | otherwise = rgb' (mix r1 r2) (mix g1 g2) (mix b1 b2) [ch]
-              where t     = fromIntegral (row + c) / fullspan  -- 0 at top-left, 1 at bottom-right
-                    mix a b = a + (b - a) * t
-        in concat $ zipWith paint [col0..] s
+-- accent and gradientStr, used for the commands list and REPL banners, are in Hledger.Utils.IO.
 
 -- | The commands list, showing command names, standard aliases,
 -- and short descriptions. This is modified at runtime, as follows:
 --
--- progversion is the program name and version.
 -- builtin is True when showing only built-in commands.
 --
 -- Lines beginning with a space represent builtin commands, with format:
@@ -235,8 +272,7 @@ gradientStr intensity h w row col0 s
 -- TODO: generate more of this automatically.
 --
 commandsList :: String -> Bool -> [String] -> [(CommandAlias,CommandLine)] -> [String]
-commandsList progversion builtin othercmds cmdaliases =
-  bannerWithVersion ++   -- XXX not showing bold, why ?
+commandsList _progversion builtin othercmds cmdaliases =
   -- Keep the following synced with:
   --  commands.m4
   --  hledger.m4.md -> Commands
@@ -244,145 +280,109 @@ commandsList progversion builtin othercmds cmdaliases =
   -- IN PARTICULAR KEEP SYNCED WITH commandsListExtractCommands,
   -- it needs checking/updating after any wording/layout changes here
   [
-  separator
-  ,""
-  ,"Usage: hledger [COMMAND] [OPTIONS] [ARGS]"
-  ,""
-  -- ,"Commands (builtins + addons):"  -- XXX adapt for commands --builtin
-  ,"Commands (" <> (if builtin then "showing built-in only" else "including installed addons") <> "):"
-  ,""
+  titleline
+  -- ,""
     -----------------------------------------80-------------------------------------
-  ,bold' "HELP"
-  ," commands                 show this commands list (default)"
-  ," --tldr    [COMMAND]      show brief command examples [for COMMAND]"
-  ," --help/-h [COMMAND]      show full command line help [for COMMAND]"
-  ," help [-i|-m|-p] [TOPIC]  show the hledger manual     [for TOPIC]"
-  ," demo [DEMO]              show brief demos in the terminal"
-  -- ,"                          for more help, see https://hledger.org"
-  ,""
-    -----------------------------------------80-------------------------------------
-  ,bold' "USER INTERFACES"
-  ," repl                     run commands efficiently from an interactive prompt"
-  ," run                      run commands efficiently from a file or command line"
+  ,section "USER INTERFACES"
+  ," help (h)                 show documentation"
+  ," repl                     run multiple commands from an interactive prompt"
+  ," run                      run multiple commands from a file or command line"
   ,"+ui                       run a terminal UI"
   ,"+web                      run a web UI"
-                                                                                     -- see also: MoLe, https://hledger.org/mobile.html
-  ,""
+  -- ,""
     -----------------------------------------80-------------------------------------
-  ,bold' "ENTERING DATA"
-  ," add                      add transactions using interactive prompts"
+  ,section "ENTERING DATA"
+  ," add                      add transactions using terminal prompts"
   ,"+iadd                     add transactions using a TUI (hledger-iadd)"
   ," import                   add new transactions from other files, eg CSV files"
   ,"+edit                     edit specific transactions with $EDITOR"               -- hledger-utils
-  ,""
+  -- ,""
     -----------------------------------------80-------------------------------------
-  ,bold' "BASIC REPORTS"
+  ,section "BASIC REPORTS"
   ," accounts (acc)           show account names"
   ," codes                    show transaction codes"
   ," commodities (comm)       show commodity/currency symbols"
   ," descriptions (desc)      show transaction descriptions"
-  ," files                    show data files in use"
+  ," files                    show input files in use"
   ," notes                    show note part of transaction descriptions"
   ," payees                   show payee part of transaction descriptions"
-  ," prices                   show historical market prices"
+  ," prices                   show market prices"
   ," stats                    show journal statistics"
   ," tags                     show tag names"
-  ,""
+  -- ,""
     -----------------------------------------80-------------------------------------
-  ,bold' "STANDARD REPORTS"
-  ," print                    show full transaction entries, or export journal data"
+  ,section "STANDARD REPORTS"
+  ," print                    show journal entries, or export journal data"
   ," aregister (areg)         show transactions & running balance in one account"
-  ," register (reg)           show postings & running total in one or more accounts"
-  ," balancesheet (bs)        show assets and liabilities"
+  ," register (reg)           show postings & running total across accounts"
+  ," balancesheet (bs)        show assets, liabilities and net worth"
   ," balancesheetequity (bse) show assets, liabilities and equity"
   ," cashflow (cf)            show changes in liquid assets"
   ," incomestatement (is)     show revenues and expenses"
-  ,""
+  -- ,""
     -----------------------------------------80-------------------------------------
-  ,bold' "ADVANCED REPORTS"
+  ,section "ADVANCED REPORTS"
   ," balance (bal)            show balance changes, end balances, gains, budgets.."
+  ," holdings                 show investment holdings"
   ,"+lots                     show a commodity's lots"                               -- hledger-lots
   ," roi                      show return on investments"
-  ,""
+  -- ,""
     -----------------------------------------80-------------------------------------
-  ,bold' "CHARTS"
+  ,section "CHARTS"
   ," activity                 show posting counts as a bar chart"
   ,"+bar                      show balances or changes as a bar chart"               -- hledger-bar
   ,"+plot                     show advanced matplotlib charts as gui/svg/png/pdf.."  -- hledger-utils
-  ,""
+  -- ,""
     -----------------------------------------80-------------------------------------
-  ,bold' "GENERATING DATA"
+  ,section "GENERATING DATA"
   ,"+autosync                 download/deduplicate/show OFX data as transactions"    -- ledger-autosync
   ," close                    generate transactions to zero/restore/assert balances"
-  ," get                      fetch transactions then market prices via helper scripts"
+  ," get                      fetch new transactions and market price data"
   ,"+interest                 generate transactions transferring accrued interest"   -- hledger-interest
   ,"+lots sell                generate a lot-selling transaction"                    -- hledger-lots
   ,"+pricehist                download historical market prices"                     -- pricehist
-  ," rewrite                  add postings to transactions, like print --auto"
-  ,""
+  ," rewrite                  generate auto postings, like print --auto"
+  -- ,""
     -----------------------------------------80-------------------------------------
-  ,bold' "MAINTENANCE"
-  ," check                    run any of hledger's built-in correctness checks"
+  ,section "MAINTENANCE"
+  ," check                    check for various kinds of error in the data"
   ,"+check-fancyassertions    check more powerful balance assertions"                -- hledger-check-fancyassertions
   ,"+check-tagfiles           check that files referenced in tag values exist"       -- hledger-check-tagfiles
   ," diff                     compare an account's transactions in two journals"
   ,"+git                      save or view journal file history simply in git"       -- hledger-git
   ,"+pijul                    save or view journal file history simply in pijul"     -- hledger-pijul
   ," setup                    check and show the status of the hledger installation"
-  ," test                     run some self tests"
-  ,""
+  ," test                     run self tests"
+  -- ,""
     -----------------------------------------80-------------------------------------
   ]
-  ++ [bold' "OTHER ADDONS" | not builtin]
+  ++ [section "OTHER ADDONS" | not builtin]
   ++ map (' ':) (lines $ multicol 79 othercmds)
   ++ (if null cmdaliases then [] else
       let aliasw = maximum (map (length.fst) cmdaliases)
-      in  "" :
-          bold' "ALIASES" :
+      in  -- "" :
+          section "ALIASES" :
           [" " <> padright aliasw a <> " = " <> def | (a,def) <- cmdaliases])
-  ++ [""]
+  -- ++ [""]
   where
+    section = bold'
     padright w s = s <> replicate (w - length s) ' '
-    version = unwords $ drop 1 $ words progversion
-    rightmargin = 79  -- the width of the separator line / the right margin
-    -- The diagonal gradient spans a grid of the banner rows plus the separator
-    -- row below them, reaching from column 0 to the right margin.
-    gradh = length _banner_smslant + 1
-    grad intensity = gradientStr intensity gradh rightmargin
-    -- The ascii banner (bold), with the version and website url (dimmed)
-    -- right-aligned to the right margin, all sharing the one diagonal gradient.
-    bannerWithVersion = zipWith3 annotate [0..] _banner_smslant (["", version, "https://hledger.org"] ++ repeat "")
-      where
-        annotate i b ""  = grad bold' i 0 b
-        annotate i b ann = grad bold' i 0 (formatString True (Just col0) Nothing b) <> grad faint' i col0 ann
-          where col0 = rightmargin - length ann
-    -- The separator line, continuing the gradient on the row below the banner.
-    separator = grad id (length _banner_smslant) 0 (replicate rightmargin '-')
+    -- A one-line title heading, in the quickref style.
+    titleline = titleLine "HLEDGER COMMANDS"
 
 -- | Extract just the command names from the default commands list above,
--- (the first word of lines between "Usage:" and "OTHER" beginning with a space or plus sign),
+-- (the first word of lines before "OTHER" beginning with a space or plus sign),
 -- in the order they occur. With a true first argument, extracts only the addon command names.
 commandsListExtractCommands :: Bool -> [String] -> [String]
 commandsListExtractCommands addonsonly l =
-  [ cmdname | prefixchar:line@(firstchar:_) <- 
-      takeWhile (not . isInfixOf "OTHER") $ dropWhile (not . isInfixOf "Usage:") l
+  [ cmdname | prefixchar:line@(firstchar:_) <-
+      takeWhile (not . isInfixOf "OTHER") l
   , prefixchar `elem` '+':[' '|not addonsonly]
   , isAlphaNum firstchar
   , not $ "https://" `isInfixOf` line
   , let cmdname:_ = words line
   ]
   -- Keep synced with commandsList.
-
-commandsmode =
-  hledgerCommandMode
-    $(embedFileRelative "Hledger/Cli/Commands/Commands.txt")
-    [flagNone ["builtin"] (setboolopt "builtin")  "show only builtin commands, not addons"
-    ]
-    [(helpflagstitle, helpflags)]
-    hiddenflags  -- accept --conf/--no-conf, to show/hide command aliases defined in a config file
-    -- flagReq  ["debug"]    (\s opts -> Right $ setopt "debug" s opts) "[N]" "show debug output (levels 1-9, default: 1)"
-
-    ([], Nothing)
 
 -- | Display the commands list.
 commands :: CliOpts -> Journal -> IO ()

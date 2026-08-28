@@ -32,7 +32,7 @@ allow-newer:
 -- generate a ghc environment file, to let doctest work
 -- (eg: ./.ghc.environment.x86_64-darwin-8.8.3). 
 -- cabal 3 doesn't write these by default.
--- https://github.com/simonmichael/hledger/issues/1139
+-- https://github.com/plaintextaccounting/hledger/issues/1139
 -- https://github.com/sol/doctest/issues/245#issuecomment-583171683
 -- cabal 2 doesn't understand this flag, but it's just a warning; should be ok.
 -- cabal 3 still fails with doctest the first time; you have to run it

@@ -1,7 +1,7 @@
 # Code
 
 hledger is a suite of applications, tools and libraries.
-The main hledger code repository is [github.com/simonmichael/hledger](https://github.com/simonmichael/hledger)
+The main hledger code repository is [github.com/plaintextaccounting/hledger](https://github.com/plaintextaccounting/hledger)
 (shortcut url `code.hledger.org`).
 There are also various hledger add-ons maintained as separate projects with their own repos.
 
@@ -14,12 +14,12 @@ They are:
 ### hledger-lib
 
 [package](https://hackage.haskell.org/package/hledger-lib),
-[code](https://github.com/simonmichael/hledger/tree/main/hledger-lib)
+[code](https://github.com/plaintextaccounting/hledger/tree/main/hledger-lib)
 
 Core data models, parsing, standard reports, and utilities.
 Most data types are defined in [Hledger.Data.Types](https://hackage.haskell.org/package/hledger-lib/docs/Hledger-Data-Types.html),
 while functions that operate on them are defined in Hledger.Data.TYPENAME.
-Under [Hledger.Read](https://github.com/simonmichael/hledger/tree/main/hledger-lib/Hledger/Read.hs)
+Under [Hledger.Read](https://github.com/plaintextaccounting/hledger/tree/main/hledger-lib/Hledger/Read.hs)
 are parsers for the supported input formats.
 Data files are parsed into a
 [Journal](https://hackage.haskell.org/package/hledger-lib/docs/Hledger-Data-Types.html#t:Journal),
@@ -85,33 +85,33 @@ Amount -- AmountStyle
 ### hledger
 
 [package](https://hackage.haskell.org/package/hledger),
-[code](https://github.com/simonmichael/hledger/tree/main/hledger),
+[code](https://github.com/plaintextaccounting/hledger/tree/main/hledger),
 [manual](https://hledger.org/hledger.html)
 
 hledger's command line interface, and command line options and utilities for other hledger tools.
 
 Try tracing the execution of a hledger command:
 
-1. [Hledger.Cli.Main:main](https://github.com/simonmichael/hledger/blob/main/hledger/Hledger/Cli/Main.hs#L302)
+1. [Hledger.Cli.Main:main](https://github.com/plaintextaccounting/hledger/blob/main/hledger/Hledger/Cli/Main.hs#L302)
 parses the command line to select a command, then
 2. gives it to
-[Hledger.Cli.Utils:withJournal](https://github.com/simonmichael/hledger/blob/main/hledger/Hledger/Cli/Utils.hs#L73),
+[Hledger.Cli.Utils:withJournal](https://github.com/plaintextaccounting/hledger/blob/main/hledger/Hledger/Cli/Utils.hs#L73),
 which runs it after doing all the initial parsing.
 3. Parsing code is under
-[hledger-lib:Hledger.Read](https://github.com/simonmichael/hledger/tree/main/hledger-lib/Hledger/Read.hs),
-eg [Hledger.Read.JournalReader](https://github.com/simonmichael/hledger/tree/main/hledger-lib/Hledger/Read/JournalReader.hs).
+[hledger-lib:Hledger.Read](https://github.com/plaintextaccounting/hledger/tree/main/hledger-lib/Hledger/Read.hs),
+eg [Hledger.Read.JournalReader](https://github.com/plaintextaccounting/hledger/tree/main/hledger-lib/Hledger/Read/JournalReader.hs).
 4. Commands extract useful information from the parsed data model using
-[hledger-lib:Hledger.Reports](https://github.com/simonmichael/hledger/tree/main/hledger-lib/Hledger/Reports),
+[hledger-lib:Hledger.Reports](https://github.com/plaintextaccounting/hledger/tree/main/hledger-lib/Hledger/Reports),
 and
 5. render in plain text for console output (or another output format, like CSV).
 6. Everything uses the data types and utilities from
-[hledger-lib:Hledger.Data](https://github.com/simonmichael/hledger/tree/main/hledger-lib/Hledger/Data)
-and [hledger-lib:Hledger.Utils](https://github.com/simonmichael/hledger/blob/main/hledger-lib/Hledger/Utils.hs).
+[hledger-lib:Hledger.Data](https://github.com/plaintextaccounting/hledger/tree/main/hledger-lib/Hledger/Data)
+and [hledger-lib:Hledger.Utils](https://github.com/plaintextaccounting/hledger/blob/main/hledger-lib/Hledger/Utils.hs).
 
 ### hledger-ui
 
 [package](https://hackage.haskell.org/package/hledger-ui),
-[code](https://github.com/simonmichael/hledger/tree/main/hledger-ui),
+[code](https://github.com/plaintextaccounting/hledger/tree/main/hledger-ui),
 [manual](https://hledger.org/hledger-ui.html)
 
 A terminal interface.
@@ -119,7 +119,7 @@ A terminal interface.
 ### hledger-web
 
 [package](https://hackage.haskell.org/package/hledger-web),
-[code](https://github.com/simonmichael/hledger/tree/main/hledger-web),
+[code](https://github.com/plaintextaccounting/hledger/tree/main/hledger-web),
 [manual](https://hledger.org/hledger-web.html)
 
 A web interface.
@@ -145,12 +145,12 @@ There is also:
 
 Most of the action is in
 
-- [config/routes](https://github.com/simonmichael/hledger/tree/main/hledger-web/config/routes)
-- [templates/default-layout-wrapper.hamlet](https://github.com/simonmichael/hledger/tree/main/hledger-web/templates/default-layout-wrapper.hamlet)
-- [Foundation](https://github.com/simonmichael/hledger/tree/main/hledger-web/Foundation.hs)
-- [Handler.*](https://github.com/simonmichael/hledger/tree/main/hledger-web/Handler)
-- [static/hledger.js](https://github.com/simonmichael/hledger/tree/main/hledger-web/static/hledger.js)
-- [static/hledger.css](https://github.com/simonmichael/hledger/tree/main/hledger-web/static/hledger.css)
+- [config/routes](https://github.com/plaintextaccounting/hledger/tree/main/hledger-web/config/routes)
+- [templates/default-layout-wrapper.hamlet](https://github.com/plaintextaccounting/hledger/tree/main/hledger-web/templates/default-layout-wrapper.hamlet)
+- [Foundation](https://github.com/plaintextaccounting/hledger/tree/main/hledger-web/Foundation.hs)
+- [Handler.*](https://github.com/plaintextaccounting/hledger/tree/main/hledger-web/Handler)
+- [static/hledger.js](https://github.com/plaintextaccounting/hledger/tree/main/hledger-web/static/hledger.js)
+- [static/hledger.css](https://github.com/plaintextaccounting/hledger/tree/main/hledger-web/static/hledger.css)
 
 Handler module and function names end with R, like the yesod-generated route type they deal with.
 
@@ -214,7 +214,7 @@ Relevant tools include:
 Haddock comments are the standard way of attaching docs (and sometimes small tests)
 to a haskell definition. They are used pervasively in the hledger codebase.
 
-From [#2222](https://github.com/simonmichael/hledger/pull/2222):
+From [#2222](https://github.com/plaintextaccounting/hledger/pull/2222):
 
 I tend to add a line of english description to most things.
 They can be a big help to someone else debugging/improving code later.

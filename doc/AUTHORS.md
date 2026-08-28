@@ -15,4 +15,4 @@ You should have received a copy of the GNU General Public License along with thi
 If not, see <https://www.gnu.org/licenses/>.
 
 The above text is here rather than in LICENSE to assist github's license detector
-at <https://github.com/simonmichael/hledger>.
+at <https://github.com/plaintextaccounting/hledger>.

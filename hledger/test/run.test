@@ -320,3 +320,56 @@ exphl
 $ sh -c 'C=$(mktemp "${TMPDIR:-/tmp}/hledger-exphl.XXXXXX"); J=$(mktemp "${TMPDIR:-/tmp}/hledger-exphlj.XXXXXX"); printf "[alias]\nexphl = run -- echo %sNonreimbursed expenses:%s\n" "'"'"'" "'"'"'" > "$C"; printf "2017-01-01 x\n  a  1\n  b\n" > "$J"; hledger repl --conf "$C" -f "$J"; rm -f "$C" "$J"'
 >
 Nonreimbursed expenses:
+
+# ** 24. In the repl, help (with no argument) shows the quick reference card.
+<
+help
+$ hledger repl -f sample.journal
+> /HLEDGER QUICK REFERENCE/
+
+# ** 25. In the repl, help subtopics dispatch like the help command at the CLI
+# (here: help usage CMD shows that command's usage, not the manual).
+<
+help usage balance
+$ hledger repl -f sample.journal
+> /^balance \[OPTIONS\]/
+
+# ** 26. In the repl, h is a short alias for help, passing arguments through
+# (here: h usage CMD works like help usage CMD).
+<
+h usage balance
+$ hledger repl -f sample.journal
+> /^balance \[OPTIONS\]/
+
+# ** 27. In the repl, CMD -h shows the full help (including the general flags),
+# not a truncated version, like CMD -h at the command line.
+<
+balance -h
+$ hledger repl -f sample.journal
+> /General input flags:/
+
+# ** 28. run/repl's echo interprets the backslash escapes \n, \t, \r and \\
+# (unrecognised escapes like \q are kept as written). Tab and CR are mapped to
+# T and R by tr, so the expected output needs no literal control characters.
+<
+2017-01-01
+  a  1
+  b
+$ hledger run -f- -- echo 'one\ntwo' -- echo 'tab\tend' -- echo 'cr\rend' -- echo 'back\\slash' -- echo 'keep\qme' | tr '\t\r' 'TR'
+>
+one
+two
+tabTend
+crRend
+back\slash
+keep\qme
+
+# ** 29. A successful addon command does not end a run sequence; later commands still run.
+$ mkdir -p $$d; printf '#!/bin/sh\necho ADDON RAN\n' >$$d/hledger-zzzz; chmod +x $$d/hledger-zzzz; PATH=$$d:$PATH hledger run -f /dev/null -- zzzz -- echo after; rm -rf $$d
+ADDON RAN
+after
+
+# ** 30. A failing addon command ends the run sequence, propagating its exit code.
+$ mkdir -p $$d; printf '#!/bin/sh\nexit 3\n' >$$d/hledger-zzzz; chmod +x $$d/hledger-zzzz; PATH=$$d:$PATH hledger run -f /dev/null -- echo one -- zzzz -- echo two; s=$?; rm -rf $$d; exit $s
+one
+>= 3

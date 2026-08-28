@@ -73,11 +73,6 @@ Also, strict mode ensures that the `assertions` and `lots` checks run (overridin
 
 These are not wanted by everyone, but can be run using the `check` command:
 
-- **basis** - all lot acquisitions set a per-unit basis equal to the per-unit transacted cost.
-This guards against typos in cost basis amounts causing wrong capital gain calculation at disposal time.
-It also enforces hledger's preferred style of "basis cost = transacted cost, with any real difference (as in gifts, NSO, RSU, etc) funded by a separate posting",
-rather than expressing the difference as a {B} @ T mismatch.
-
 - **tags** - all tags used must be [declared](#tag-directive).
   This prevents mis-spelled tag names.
   Note hledger fairly often finds unintended tags in comments.
@@ -103,11 +98,16 @@ rather than expressing the difference as a {B} @ T mismatch.
   (eg the `checking` in `assets:bank:checking`).
   This ensures each account can be matched by a unique short name, easier to remember and to type.
 
+- **basis** - all lot acquisitions set a per-unit basis equal to the per-unit transacted cost.
+  This guards against typos in cost basis amounts causing wrong capital gain calculation at disposal time.
+  It also enforces hledger's preferred style of "basis cost = transacted cost, with any real difference (as in gifts, NSO, RSU, etc) funded by a separate posting",
+  rather than expressing the difference as a {B} @ T mismatch.
+
 ### Custom checks
 
 You can build your own custom checks with [add-on command scripts].
 See also [Cookbook > Scripting](scripting.html).
-Here are some examples from [hledger/bin/](https://github.com/simonmichael/hledger/tree/main/bin):
+Here are some examples from [hledger/bin/](https://github.com/plaintextaccounting/hledger/tree/main/bin):
 
 - **hledger-check-tagfiles** - all tag values containing `/` exist as file paths
 

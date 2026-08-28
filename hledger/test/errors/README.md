@@ -32,7 +32,7 @@ then open the data files to see how flycheck handles them.
 `C-c ! l` opens a pane for easy viewing.
 
 <!-- Use absolute urls here, this page can be viewed on github or hledger.org. -->
-[hledger/test/errors/]:  https://github.com/simonmichael/hledger/tree/main/hledger/test/errors
+[hledger/test/errors/]:  https://github.com/plaintextaccounting/hledger/tree/main/hledger/test/errors
 [ERRORS]:                https://hledger.org/ERRORS.html
 [hledger check]:         https://hledger.org/hledger.html#check
 [flycheck-hledger-home]: https://github.com/DamienCassou/flycheck-hledger
@@ -43,9 +43,9 @@ then open the data files to see how flycheck handles them.
 ## Error improvement
 
 Work is ongoing to make our error messages more consistent and more useful
-([#1436](https://github.com/simonmichael/hledger/issues/1436),
-[#1885](https://github.com/simonmichael/hledger/pull/1885), 
-[#1886](https://github.com/simonmichael/hledger/pull/1886)..).
+([#1436](https://github.com/plaintextaccounting/hledger/issues/1436),
+[#1885](https://github.com/plaintextaccounting/hledger/pull/1885), 
+[#1886](https://github.com/plaintextaccounting/hledger/pull/1886)..).
 This is a big project, and your help is welcome; every bit of progress
 counts, and this is a fast way to help users.
 

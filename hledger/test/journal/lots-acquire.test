@@ -57,7 +57,8 @@ $ hledger -f- print --verbose-tags
 
 >=
 
-# ** 5. Account-level lots: tag also triggers lot classification.
+# ** 5. An account-level lots: tag does not declare lotfulness; it sets the
+# reduction method, so it requires a method value. A valueless one is an error.
 <
 account assets:broker  ; lots:
 
@@ -66,11 +67,8 @@ account assets:broker  ; lots:
     assets:cash     -$1000
 
 $ hledger -f- print --verbose-tags
-2026-01-07 Buy stock
-    assets:broker                                 10 AAPL {$100}  ; ptype: acquire
-    assets:cash                               $-1000
-
->=
+>2 /An account lots: tag sets the disposal order/
+>=1
 
 # ** 6. With --lots, acquired lots are displayed in their own subaccounts.
 <
@@ -491,5 +489,23 @@ $ hledger -f- print -a
 2026-01-01
     assets:{2026-01-01, 2.50 €}                  100.00 AAAA {2.50 €} @@ 250 €  ; ptype: acquire
     cash                                        -250 €
+
+>=
+
+# *** 36. An acquire posting whose amount is inferred from a balance
+# assignment is classified in a second pass after balancing, and the
+# balancing cost is attached to the lotful commodity, so the lot is
+# created as if the amount had been written explicitly (#2686).
+<
+commodity ABC ; lots:
+
+2026-01-01 buy
+    equity:open-close   -$10
+    assets:broker1      = 2.3 ABC
+
+$ hledger -f- print -a
+2026-01-01 buy
+    equity:open-close                           $-10
+    assets:broker1:{2026-01-01, $4.34782609}       2.3 ABC {$4.34782609} @@ $10 = 2.3 ABC  ; ptype: acquire
 
 >=

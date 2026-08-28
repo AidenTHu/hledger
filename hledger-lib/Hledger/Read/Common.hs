@@ -367,20 +367,31 @@ journalFinalise iopts@InputOpts{auto_,balancingopts_,ignore_lots_,infer_costs_,i
 
       -- Auto postings
       >>= (if auto_ && not (null $ jtxnmodifiers pj)
-            then journalAddAutoPostings verbose_tags_ _ioDay balancingopts_       -- add auto postings if enabled; does preliminary transaction balancing
+            then journalAddAutoPostings verbose_tags_ _ioDay                      -- add auto postings if enabled; does preliminary transaction balancing
+                  balancingopts_{lotful_commodities_ = if checklots then journalLotfulCommodities pj else mempty
+                                ,account_lots_tags_ = if checklots then journalAccountLotsTags pj else mempty
+                                ,verbose_balancing_tags_ = verbose_tags_}
             else pure)
 
-      -- Lot classification and transacted cost inference
+      -- Lot cost basis and transacted cost inference
       -- (skipped by --ignore-lots or -I; forced back on by --strict or `hledger check lots`)
       >>= (if checklots then journalInferBasisFromAccountNames           else pure)  -- infer cost basis from lot subaccount names (validates them)
-      <&> (if checklots then journalClassifyLotPostings verbose_tags_    else id  )  -- detect and classify lot postings (acquire/dispose/transfer..), maybe with visible tags
-      <&> (if checklots then journalInferPostingsTransactedCost          else id  )  -- in acquire postings, infer a transacted cost from cost basis
+      <&> (if checklots then journalInferPostingsTransactedCost          else id  )  -- in acquire-shaped postings, infer a transacted cost from cost basis
       >>= (if checklots then journalAddGainOrUGainPosting verbose_tags_  else pure)  -- if user wrote an explicit rgain or ugain posting alone, add its counter
 
       -- Transaction balancing
       >>= (\j -> if checkordereddates then journalCheckOrdereddates j $> j else Right j)     -- maybe check that journal entries are in date order
       >>= (\j -> journalBalanceTransactions                                                  -- infer balance assignments/amounts, maybe check balance assertions
-            (balancingopts_{ignore_assertions_=not checkassertions, account_types_ = jaccounttypes j}) j)
+            (balancingopts_{ignore_assertions_=not checkassertions, account_types_ = jaccounttypes j
+                           ,lotful_commodities_ = if checklots then journalLotfulCommodities j else mempty
+                           ,account_lots_tags_ = if checklots then journalAccountLotsTags j else mempty
+                           ,verbose_balancing_tags_ = verbose_tags_}) j)
+
+      -- Lot classification
+      -- Runs after balancing, when all posting amounts are known (inferred
+      -- amounts included), so every entry shape classifies the same way as
+      -- if its amounts had been written explicitly (#2686, #2690, #2692).
+      <&> (if checklots then journalClassifyLotPostings verbose_tags_ else id)  -- detect and classify lot postings (acquire/dispose/transfer..), maybe with visible tags
 
       -- Post-balancing enrichment
       >>= journalInferCommodityStyles                                             -- infer commodity styles once more now that all posting amounts are present
@@ -398,9 +409,11 @@ journalFinalise iopts@InputOpts{auto_,balancingopts_,ignore_lots_,infer_costs_,i
       -- Lot and capital gains calculation/checking
       -- (skipped by --ignore-lots or -I; forced back on by --strict or `hledger check lots`)
       >>= (if checklots then journalCheckLotsTagValues                   else pure)  -- validate lots: tag values on commodity/account declarations
+      >>= (if checklots then journalCheckLotsMethodCoherence             else pure)  -- reject a global (*ALL) method mixed with other methods for one commodity
       >>= (if checklots then journalCalculateLots verbose_tags_          else pure)  -- evaluate lot selectors, calculate lot balances, add lot subaccounts
       >>= (if checkbasis then journalCheckAcquireBasis                   else pure)  -- if `hledger check basis`, error on any acquire with cost basis ≠ transacted cost
       >>= (if checklots then journalAddOrCheckGainPostings verbose_tags_ else pure)  -- in disposal transactions, add the realised-gain + unrealised-gain posting pair
+      <&> (if checklots then journalStripBalancerCopiedBases             else id  )  -- remove balancer-copied basis annotations, kept until now as classification evidence
 
 -- | Apply any auto posting rules to generate extra postings on this journal's transactions.
 -- With a true first argument, adds visible tags to generated postings and modified transactions.
@@ -1278,6 +1291,10 @@ disambiguateNumber msuggestedStyle (AmbiguousNumber grp1 sep grp2) =
 -- Left (AmbiguousNumber "1" ',' "000")
 -- >>> parseTest rawnumberp "1 000"
 -- Right (WithSeparators ' ' ["1","000"] Nothing)
+-- >>> parseTest rawnumberp "1'000"
+-- Right (WithSeparators '\'' ["1","000"] Nothing)
+-- >>> parseTest rawnumberp "1_000"
+-- Right (WithSeparators '_' ["1","000"] Nothing)
 --
 rawnumberp :: TextParser m (Either AmbiguousNumber RawNumber)
 rawnumberp = label "number" $ do
@@ -1343,7 +1360,7 @@ rawnumberp = label "number" $ do
     pure $ NoSeparators grp1 (Just (decPt, mempty))
 
 isDigitSeparatorChar :: Char -> Bool
-isDigitSeparatorChar c = isDecimalMark c || isDigitSeparatorSpaceChar c
+isDigitSeparatorChar c = c == '.' || c == ',' || c == '\'' || c == '_' || isDigitSeparatorSpaceChar c
 
 -- | Kinds of unicode space character we accept as digit group marks.
 -- See also https://en.wikipedia.org/wiki/Decimal_separator#Digit_grouping .
@@ -1824,6 +1841,8 @@ tests_Common = testGroup "Common" [
      assertParseEq p "1"          (1, 0, Nothing, Nothing)
      assertParseEq p "1.1"        (1.1, 1, Just '.', Nothing)
      assertParseEq p "1,000.1"    (1000.1, 1, Just '.', Just $ DigitGroups ',' [3])
+     assertParseEq p "1_000.1"    (1000.1, 1, Just '.', Just $ DigitGroups '_' [3])
+     assertParseEq p "1'000.1"    (1000.1, 1, Just '.', Just $ DigitGroups '\'' [3])
      assertParseEq p "1.00.000,1" (100000.1, 1, Just ',', Just $ DigitGroups '.' [3,2])
      assertParseEq p "1,000,000"  (1000000, 0, Nothing, Just $ DigitGroups ',' [3,3])  -- could be simplified to [3]
      assertParseEq p "1."         (1, 0, Just '.', Nothing)

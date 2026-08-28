@@ -2,9 +2,9 @@ balance
 
 (bal)
 
-A flexible, general purpose "summing" report that shows accounts with
-some kind of numeric data. This can be balance changes per period, end
-balances, budget performance, capital gains, etc.
+Show accounts with some kind of summed numeric data: balance changes per
+period, end balances on period end dates, simple capital gains, budget
+goal performance, etc.
 
 Flags:
      --sum                  calculation mode: show sum of posting amounts
@@ -46,7 +46,11 @@ Flags:
      --summary-only         display only row summaries (e.g. row total,
                             average) (in multicolumn reports)
   -N --no-total             omit the final total row
-     --no-elide             in tree mode, don't squash boring parent accounts
+     --no-elide             in tree mode, don't squash boring parent
+                            accounts; in list mode, also show parent accounts
+                            (usually zero, hidden without -E)
+     --full-names           in tree mode, show full account names instead of
+                            indented leaf names
      --format=FORMATSTR     use this custom line format (in simple reports)
   -S --sort-amount          sort by amount instead of account code/name (in
                             flat mode). With multiple columns, sorts by the row
@@ -55,7 +59,8 @@ Flags:
                             total
   -r --related              show the other accounts transacted with, instead
      --invert               display all amounts with reversed sign
-     --transpose            switch rows and columns (use vertical time axis)
+     --transpose            switch rows and columns (use vertical time axis);
+                            repeat to cancel
      --layout=ARG           how to lay out multi-commodity amounts and the
                             overall table:
                             'wide[,W]': commodities on same line, up to W wide
@@ -288,6 +293,57 @@ Notes:
 - Each group of sibling accounts (ie, under a common parent) is sorted
   separately.
 
+In list mode, --no-elide shows parent accounts as well, with their
+exclusive balances. These are zero unless the parent has postings of its
+own, so -E/--empty is usually also needed to make them visible.
+Together, these flags guarantee a complete table of all posted-to
+accounts and their parents, with full names:
+
+$ hledger -f examples/sample.journal balance --no-elide -E
+                   0  assets
+                   0  assets:bank
+                   0  assets:bank:checking
+                  $1  assets:bank:saving
+                 $-2  assets:cash
+                   0  expenses
+                  $1  expenses:food
+                  $1  expenses:supplies
+                   0  income
+                 $-1  income:gifts
+                 $-1  income:salary
+                   0  liabilities
+                  $1  liabilities:debts
+--------------------
+                   0
+
+This can be useful eg when exporting to a spreadsheet which will look up
+balances by account name.
+
+In tree mode, --full-names writes each account's full name instead of
+indenting leaf names, while keeping tree mode's inclusive balances. So
+--tree --no-elide --full-names -E shows the same complete table as
+above, but with inclusive balances:
+
+$ hledger -f examples/sample.journal balance --tree --no-elide --full-names -E
+                 $-1  assets
+                  $1  assets:bank
+                   0  assets:bank:checking
+                  $1  assets:bank:saving
+                 $-2  assets:cash
+                  $2  expenses
+                  $1  expenses:food
+                  $1  expenses:supplies
+                 $-2  income
+                 $-1  income:gifts
+                 $-1  income:salary
+                  $1  liabilities
+                  $1  liabilities:debts
+--------------------
+                   0
+
+Note that in this variant, parent and subaccount balances overlap, so
+(as in any tree mode report) the rows sum to more than the final total.
+
 Depth limiting
 
 With a depth:NUM query, or --depth NUM option, or just -NUM (eg: -3)
@@ -399,6 +455,8 @@ Notes:
 - Average and/or total columns can be added with the -A/--average and
   -T/--row-total flags.
 - The --transpose flag can be used to exchange rows and columns.
+  Repeating it reverses its effect (an even number of --transpose flags
+  has no effect).
 - The --pivot FIELD option causes a different transaction field to be
   used as "account name". See PIVOTING.
 - The --summary-only flag (--summary also works) hides all but the Total

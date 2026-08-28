@@ -61,6 +61,100 @@ h2, h2:last-child > h3 { margin-top:4em; }
 User-visible changes in the core hledger tools.
 
 
+## 2026-08-27 hledger-1.52.3
+
+
+### hledger 1.52.3
+
+- Uses hledger-lib 1.52.3.
+
+
+### hledger-ui 1.52.3
+
+- Uses hledger 1.52.3.
+
+
+### hledger-web 1.52.3
+
+
+Fixes
+
+- Another XSS (cross-site scripting) vulnerability has been fixed, in
+  the add transaction form's error message. Any web page visited while
+  hledger-web was running could use it to run javascript in
+  hledger-web's origin, and from there read the whole journal, or
+  alter it. All hledger-web users should upgrade. See also:
+  GHSA-vq7r-8w52-jv84.  (Arthur Cinader, Simon Michael, [#2700])
+
+- A newline submitted in a transaction's description, code or account
+  name is no longer written into the journal file. This removes the
+  possibility of the user inserting an include directive, which could
+  expose system files readable by the hledger-web server. See also:
+  GHSA-vq7r-8w52-jv84.  [#2704]
+
+  Note: as in 1.52.2, these fixes were backported from
+  AI-assisted fixes in hledger 2, under the security exception in
+  <https://hledger.org/AI.html>; they have been reviewed and tested.
+
+- hledger-web's official binaries, and builds from the hledger source
+  tree, now use aeson 2.3, avoiding a denial of service bug.
+  (<https://haskell.github.io/security-advisories/advisory/HSEC-2026-0007.html>)
+
+[#2700]: https://github.com/plaintextaccounting/hledger/issues/2700
+[#2704]: https://github.com/plaintextaccounting/hledger/issues/2704
+
+
+### credits 1.52.3
+
+Simon Michael,
+Arthur Cinader.
+
+
+
+## 2026-08-24 hledger-1.52.2
+
+
+### hledger 1.52.2
+
+- Uses hledger-lib 1.52.2.
+
+
+### hledger-ui 1.52.2
+
+- Uses hledger 1.52.2.
+
+
+### hledger-web 1.52.2
+
+
+Fixes
+
+- An XSS (cross-site scripting) vulnerability has been fixed in the add
+  transaction form's autocomplete. Journal data from an untrusted source
+  could execute javascript when shown as a completion suggestion. All
+  hledger-web users are encouraged to upgrade. Full technical details:
+  GHSA-538p-cvc4-4qjm.
+  (Arthur Cinader, Simon Michael, [#2698])
+  
+  Note: this bug was detected, and the original patch was generated, by
+  Arthur Cinader with AI assistance, for hledger 2.x.  Because the
+  vulnerability is in theory quite severe, and the fix is small and
+  obvious, and I don't want to add risk by redoing it from memory, and
+  no-one else volunteered promptly to do that work - and after
+  discussion in the chat and mail list (see today's thread), and careful
+  human review and testing - I manually backported the same fix to
+  hledger 1. And, updated the project's [AI policy](https://hledger.org/AI.html)
+  to allow this for needed security-related fixes like this one.
+
+
+### credits 1.52.2
+
+Simon Michael,
+Arthur Cinader.
+
+[#2698]: https://github.com/plaintextaccounting/hledger/pull/2698
+
+
 ## 2026-06-24 hledger-1.99.3
 (2.0 preview 3)
 
@@ -175,7 +269,7 @@ more robust roi report.**
 
   Or with `--transactions` or `--prices`, only the selected phase is run.
   The data and prices directories are autocreated if needed, next to the main journal file.
-  Sample scripts can be found in <https://github.com/simonmichael/hledger/tree/main/bin>.
+  Sample scripts can be found in <https://github.com/plaintextaccounting/hledger/tree/main/bin>.
   The sample `getprices` requires `pricehist`.
 
 - `import` with no file arguments now reads from all `.rules` files in
@@ -441,24 +535,24 @@ more robust roi report.**
 - `Hledger.Data.Amount`: consolidate `showPriceDirective` here.
 
 
-[#1148]: https://github.com/simonmichael/hledger/issues/1148
-[#1640]: https://github.com/simonmichael/hledger/issues/1640
-[#1950]: https://github.com/simonmichael/hledger/issues/1950
-[#2049]: https://github.com/simonmichael/hledger/issues/2049
-[#2410]: https://github.com/simonmichael/hledger/issues/2410
-[#2420]: https://github.com/simonmichael/hledger/issues/2420
-[#2489]: https://github.com/simonmichael/hledger/issues/2489
-[#2576]: https://github.com/simonmichael/hledger/issues/2576
-[#2577]: https://github.com/simonmichael/hledger/issues/2577
-[#2578]: https://github.com/simonmichael/hledger/issues/2578
-[#2581]: https://github.com/simonmichael/hledger/issues/2581
-[#2584]: https://github.com/simonmichael/hledger/issues/2584
-[#2588]: https://github.com/simonmichael/hledger/issues/2588
-[#2603]: https://github.com/simonmichael/hledger/issues/2603
-[#2636]: https://github.com/simonmichael/hledger/issues/2636
-[#2645]: https://github.com/simonmichael/hledger/issues/2645
-[#2646]: https://github.com/simonmichael/hledger/issues/2646
-[#2649]: https://github.com/simonmichael/hledger/issues/2649
+[#1148]: https://github.com/plaintextaccounting/hledger/issues/1148
+[#1640]: https://github.com/plaintextaccounting/hledger/issues/1640
+[#1950]: https://github.com/plaintextaccounting/hledger/issues/1950
+[#2049]: https://github.com/plaintextaccounting/hledger/issues/2049
+[#2410]: https://github.com/plaintextaccounting/hledger/issues/2410
+[#2420]: https://github.com/plaintextaccounting/hledger/issues/2420
+[#2489]: https://github.com/plaintextaccounting/hledger/issues/2489
+[#2576]: https://github.com/plaintextaccounting/hledger/issues/2576
+[#2577]: https://github.com/plaintextaccounting/hledger/issues/2577
+[#2578]: https://github.com/plaintextaccounting/hledger/issues/2578
+[#2581]: https://github.com/plaintextaccounting/hledger/issues/2581
+[#2584]: https://github.com/plaintextaccounting/hledger/issues/2584
+[#2588]: https://github.com/plaintextaccounting/hledger/issues/2588
+[#2603]: https://github.com/plaintextaccounting/hledger/issues/2603
+[#2636]: https://github.com/plaintextaccounting/hledger/issues/2636
+[#2645]: https://github.com/plaintextaccounting/hledger/issues/2645
+[#2646]: https://github.com/plaintextaccounting/hledger/issues/2646
+[#2649]: https://github.com/plaintextaccounting/hledger/issues/2649
 
 
 ### hledger-ui 1.99.3
@@ -491,7 +585,7 @@ Docs
 API
 
 
-[#2646]: https://github.com/simonmichael/hledger/issues/2646
+[#2646]: https://github.com/plaintextaccounting/hledger/issues/2646
 
 
 ### hledger-web 1.99.3
@@ -582,9 +676,9 @@ used per month:
 - gitignore updates
 
 
-[#2410]: https://github.com/simonmichael/hledger/issues/2410
-[#2636]: https://github.com/simonmichael/hledger/issues/2636
-[#2642]: https://github.com/simonmichael/hledger/issues/2642
+[#2410]: https://github.com/plaintextaccounting/hledger/issues/2410
+[#2636]: https://github.com/plaintextaccounting/hledger/issues/2636
+[#2642]: https://github.com/plaintextaccounting/hledger/issues/2642
 
 
 ### credits 1.99.3
@@ -703,9 +797,9 @@ Docs
 
 - Cost basis, Lot reporting: many updates.
 
-[#2570]: https://github.com/simonmichael/hledger/issues/2570
-[#2571]: https://github.com/simonmichael/hledger/issues/2571
-[#2572]: https://github.com/simonmichael/hledger/issues/2572
+[#2570]: https://github.com/plaintextaccounting/hledger/issues/2570
+[#2571]: https://github.com/plaintextaccounting/hledger/issues/2571
+[#2572]: https://github.com/plaintextaccounting/hledger/issues/2572
 
 
 ### hledger-ui 1.99.2
@@ -1112,17 +1206,17 @@ Scripts/addons
 - `hledger-fancyassertions`: use `showMixedAmount` for properly formatted output. (Joshua Chapman)
 - `ledgereval`: evaluate Ledger value expressions at the command line
 
-[#2508]: https://github.com/simonmichael/hledger/issues/2508
-[#2511]: https://github.com/simonmichael/hledger/issues/2511
-[#2522]: https://github.com/simonmichael/hledger/issues/2522
-[#2535]: https://github.com/simonmichael/hledger/issues/2535
-[#2544]: https://github.com/simonmichael/hledger/issues/2544
-[#2553]: https://github.com/simonmichael/hledger/issues/2553
-[#2555]: https://github.com/simonmichael/hledger/issues/2555
-[#2556]: https://github.com/simonmichael/hledger/issues/2556
-[#2557]: https://github.com/simonmichael/hledger/issues/2557
-[#2563]: https://github.com/simonmichael/hledger/issues/2563
-[#2564]: https://github.com/simonmichael/hledger/issues/2564
+[#2508]: https://github.com/plaintextaccounting/hledger/issues/2508
+[#2511]: https://github.com/plaintextaccounting/hledger/issues/2511
+[#2522]: https://github.com/plaintextaccounting/hledger/issues/2522
+[#2535]: https://github.com/plaintextaccounting/hledger/issues/2535
+[#2544]: https://github.com/plaintextaccounting/hledger/issues/2544
+[#2553]: https://github.com/plaintextaccounting/hledger/issues/2553
+[#2555]: https://github.com/plaintextaccounting/hledger/issues/2555
+[#2556]: https://github.com/plaintextaccounting/hledger/issues/2556
+[#2557]: https://github.com/plaintextaccounting/hledger/issues/2557
+[#2563]: https://github.com/plaintextaccounting/hledger/issues/2563
+[#2564]: https://github.com/plaintextaccounting/hledger/issues/2564
 
 
 ### hledger-ui 1.52
@@ -1148,13 +1242,13 @@ Improvements
 - The selection colour has been changed to cyan, for better visibility in typical terminals.
   (Rahul Shankar V, Simon Michael) [#2175], [#2551]
 
-[#1911]: https://github.com/simonmichael/hledger/issues/1911
-[#2168]: https://github.com/simonmichael/hledger/issues/2168
-[#2175]: https://github.com/simonmichael/hledger/issues/2175
-[#2476]: https://github.com/simonmichael/hledger/issues/2476
-[#2544]: https://github.com/simonmichael/hledger/issues/2544
-[#2550]: https://github.com/simonmichael/hledger/issues/2550
-[#2551]: https://github.com/simonmichael/hledger/issues/2551
+[#1911]: https://github.com/plaintextaccounting/hledger/issues/1911
+[#2168]: https://github.com/plaintextaccounting/hledger/issues/2168
+[#2175]: https://github.com/plaintextaccounting/hledger/issues/2175
+[#2476]: https://github.com/plaintextaccounting/hledger/issues/2476
+[#2544]: https://github.com/plaintextaccounting/hledger/issues/2544
+[#2550]: https://github.com/plaintextaccounting/hledger/issues/2550
+[#2551]: https://github.com/plaintextaccounting/hledger/issues/2551
 
 
 ### hledger-web 1.52
@@ -1170,7 +1264,7 @@ Docs
 - openapi.yaml (the OpenAPI spec for hledger-web's JSON API) has been updated.
   (n0vdd)
 
-[#2544]: https://github.com/simonmichael/hledger/issues/2544
+[#2544]: https://github.com/plaintextaccounting/hledger/issues/2544
 
 
 ### project changes 1.52
@@ -1203,10 +1297,10 @@ Infrastructure/tools
   - ensure linux binary uses fixed haskeline [#2410]
   - testbin: update, use testlatest tag / testbin branch
 
-[#2410]: https://github.com/simonmichael/hledger/issues/2410
-[#2497]: https://github.com/simonmichael/hledger/issues/2497
-[#2527]: https://github.com/simonmichael/hledger/issues/2527
-[#2528]: https://github.com/simonmichael/hledger/issues/2528
+[#2410]: https://github.com/plaintextaccounting/hledger/issues/2410
+[#2497]: https://github.com/plaintextaccounting/hledger/issues/2497
+[#2527]: https://github.com/plaintextaccounting/hledger/issues/2527
+[#2528]: https://github.com/plaintextaccounting/hledger/issues/2528
 
 
 ### credits 1.52
@@ -1266,8 +1360,8 @@ API
 - Hledger.Cli.Utils:
   withPossibleJournal
 
-[#2505]: https://github.com/simonmichael/hledger/issues/2505
-[#2514]: https://github.com/simonmichael/hledger/issues/2514
+[#2505]: https://github.com/plaintextaccounting/hledger/issues/2505
+[#2514]: https://github.com/plaintextaccounting/hledger/issues/2514
 
 
 ### hledger-ui 1.51.2
@@ -1280,7 +1374,7 @@ API
 
 - Allow base 4.22 / ghc 9.14.
 
-[#2512]: https://github.com/simonmichael/hledger/issues/2512
+[#2512]: https://github.com/plaintextaccounting/hledger/issues/2512
 
 
 ### hledger-web 1.51.2
@@ -1290,7 +1384,7 @@ API
 
 - Allow base 4.22 / ghc 9.14.
 
-[#2520]: https://github.com/simonmichael/hledger/issues/2520
+[#2520]: https://github.com/plaintextaccounting/hledger/issues/2520
 
 
 ### credits 1.51.2
@@ -1328,8 +1422,8 @@ Fixes
 - Fix build failures with the scripts in bin/.
   (Dmitry Astapov, [#2497])
 
-[#2503]: https://github.com/simonmichael/hledger/issues/2503
-[#2497]: https://github.com/simonmichael/hledger/issues/2497
+[#2503]: https://github.com/plaintextaccounting/hledger/issues/2503
+[#2497]: https://github.com/plaintextaccounting/hledger/issues/2497
 
 
 ### hledger-ui 1.51.1
@@ -1362,7 +1456,7 @@ Fixes
 - Relative includes from a symlinked file work again, fixing some fallout from 1.50.4's fixes.
   [#2503]
 
-[#2503]: https://github.com/simonmichael/hledger/issues/2503
+[#2503]: https://github.com/plaintextaccounting/hledger/issues/2503
 
 
 ### hledger-ui 1.50.5
@@ -1433,7 +1527,7 @@ Docs
 
 Examples
 
-- Organise/rename examples/csv/ as the [CSV rules library](https://github.com/simonmichael/hledger/tree/master/examples/csv)
+- Organise/rename examples/csv/ as the [CSV rules library](https://github.com/plaintextaccounting/hledger/tree/master/examples/csv)
 
 Scripts/addons
 
@@ -1532,10 +1626,10 @@ Ooker,
 Sam Almahri.
 
 
-[#2427]: https://github.com/simonmichael/hledger/issues/2427
-[#2468]: https://github.com/simonmichael/hledger/issues/2468
-[#2492]: https://github.com/simonmichael/hledger/issues/2492
-[#2494]: https://github.com/simonmichael/hledger/issues/2494
+[#2427]: https://github.com/plaintextaccounting/hledger/issues/2427
+[#2468]: https://github.com/plaintextaccounting/hledger/issues/2468
+[#2492]: https://github.com/plaintextaccounting/hledger/issues/2492
+[#2494]: https://github.com/plaintextaccounting/hledger/issues/2494
 
 
 
@@ -1561,7 +1655,7 @@ Fixes
   but if you notice any slowdown caused by having many include directives and a slow filesystem,
   please report it.
 
-[#2498]: https://github.com/simonmichael/hledger/issues/2498
+[#2498]: https://github.com/plaintextaccounting/hledger/issues/2498
 
 
 ### hledger-ui 1.50.4
@@ -1580,7 +1674,7 @@ Fixes
 
 Simon Michael.
 
-[#2498]: https://github.com/simonmichael/hledger/issues/2498
+[#2498]: https://github.com/plaintextaccounting/hledger/issues/2498
 
 
 
@@ -1659,16 +1753,16 @@ Caleb Maclennan,
 Stephen Morgan.
 
 
-[#2451]: https://github.com/simonmichael/hledger/issues/2451
-[#2468]: https://github.com/simonmichael/hledger/issues/2468
-[#2469]: https://github.com/simonmichael/hledger/issues/2469
-[#2478]: https://github.com/simonmichael/hledger/issues/2478
-[#2479]: https://github.com/simonmichael/hledger/issues/2479
-[#2485]: https://github.com/simonmichael/hledger/issues/2485
-[#2493]: https://github.com/simonmichael/hledger/issues/2493
-[#2495]: https://github.com/simonmichael/hledger/issues/2495
-[#2495]: https://github.com/simonmichael/hledger/issues/2495
-[#2495]: https://github.com/simonmichael/hledger/issues/2495
+[#2451]: https://github.com/plaintextaccounting/hledger/issues/2451
+[#2468]: https://github.com/plaintextaccounting/hledger/issues/2468
+[#2469]: https://github.com/plaintextaccounting/hledger/issues/2469
+[#2478]: https://github.com/plaintextaccounting/hledger/issues/2478
+[#2479]: https://github.com/plaintextaccounting/hledger/issues/2479
+[#2485]: https://github.com/plaintextaccounting/hledger/issues/2485
+[#2493]: https://github.com/plaintextaccounting/hledger/issues/2493
+[#2495]: https://github.com/plaintextaccounting/hledger/issues/2495
+[#2495]: https://github.com/plaintextaccounting/hledger/issues/2495
+[#2495]: https://github.com/plaintextaccounting/hledger/issues/2495
 
 
 
@@ -1692,8 +1786,8 @@ Fixes
   (see https://github.com/gregorycollins/hashtables/issues/97)).
   (hseg, [#2463])
 
-[#2463]: https://github.com/simonmichael/hledger/issues/2463
-[#2465]: https://github.com/simonmichael/hledger/issues/2465
+[#2463]: https://github.com/plaintextaccounting/hledger/issues/2463
+[#2465]: https://github.com/plaintextaccounting/hledger/issues/2465
 
 
 ### hledger-ui 1.50.2
@@ -1768,11 +1862,11 @@ Improvements
 Simon Michael (@simonmichael),
 Stephen Morgan (@Xitian9).
 
-[#2014]: https://github.com/simonmichael/hledger/issues/2014
-[#2288]: https://github.com/simonmichael/hledger/issues/2288
-[#2451]: https://github.com/simonmichael/hledger/issues/2451
-[#2452]: https://github.com/simonmichael/hledger/issues/2452
-[#2454]: https://github.com/simonmichael/hledger/issues/2454
+[#2014]: https://github.com/plaintextaccounting/hledger/issues/2014
+[#2288]: https://github.com/plaintextaccounting/hledger/issues/2288
+[#2451]: https://github.com/plaintextaccounting/hledger/issues/2451
+[#2452]: https://github.com/plaintextaccounting/hledger/issues/2452
+[#2454]: https://github.com/plaintextaccounting/hledger/issues/2454
 
 
 ## 2025-09-03 hledger-1.50
@@ -2071,30 +2165,30 @@ Jay Neubrand (@jneubrand),
 Lukas Fleischer (@lfos),
 savanto (@savanto).
 
-[#458]:  https://github.com/simonmichael/hledger/issues/458
-[#1874]: https://github.com/simonmichael/hledger/issues/1874
-[#1975]: https://github.com/simonmichael/hledger/issues/1975
-[#1995]: https://github.com/simonmichael/hledger/issues/1995
-[#2059]: https://github.com/simonmichael/hledger/issues/2059
-[#2141]: https://github.com/simonmichael/hledger/issues/2141
-[#2360]: https://github.com/simonmichael/hledger/issues/2360
-[#2365]: https://github.com/simonmichael/hledger/issues/2365
-[#2388]: https://github.com/simonmichael/hledger/issues/2388
-[#2395]: https://github.com/simonmichael/hledger/issues/2395
-[#2399]: https://github.com/simonmichael/hledger/issues/2399
-[#2400]: https://github.com/simonmichael/hledger/issues/2400
-[#2402]: https://github.com/simonmichael/hledger/issues/2402
-[#2403]: https://github.com/simonmichael/hledger/issues/2403
-[#2410]: https://github.com/simonmichael/hledger/issues/2410
-[#2411]: https://github.com/simonmichael/hledger/issues/2411
-[#2412]: https://github.com/simonmichael/hledger/issues/2412
-[#2416]: https://github.com/simonmichael/hledger/issues/2416
-[#2417]: https://github.com/simonmichael/hledger/issues/2417
-[#2419]: https://github.com/simonmichael/hledger/issues/2419
-[#2443]: https://github.com/simonmichael/hledger/issues/2443
-[#2444]: https://github.com/simonmichael/hledger/issues/2444
-[#2445]: https://github.com/simonmichael/hledger/issues/2445
-[#2446]: https://github.com/simonmichael/hledger/issues/2446
+[#458]:  https://github.com/plaintextaccounting/hledger/issues/458
+[#1874]: https://github.com/plaintextaccounting/hledger/issues/1874
+[#1975]: https://github.com/plaintextaccounting/hledger/issues/1975
+[#1995]: https://github.com/plaintextaccounting/hledger/issues/1995
+[#2059]: https://github.com/plaintextaccounting/hledger/issues/2059
+[#2141]: https://github.com/plaintextaccounting/hledger/issues/2141
+[#2360]: https://github.com/plaintextaccounting/hledger/issues/2360
+[#2365]: https://github.com/plaintextaccounting/hledger/issues/2365
+[#2388]: https://github.com/plaintextaccounting/hledger/issues/2388
+[#2395]: https://github.com/plaintextaccounting/hledger/issues/2395
+[#2399]: https://github.com/plaintextaccounting/hledger/issues/2399
+[#2400]: https://github.com/plaintextaccounting/hledger/issues/2400
+[#2402]: https://github.com/plaintextaccounting/hledger/issues/2402
+[#2403]: https://github.com/plaintextaccounting/hledger/issues/2403
+[#2410]: https://github.com/plaintextaccounting/hledger/issues/2410
+[#2411]: https://github.com/plaintextaccounting/hledger/issues/2411
+[#2412]: https://github.com/plaintextaccounting/hledger/issues/2412
+[#2416]: https://github.com/plaintextaccounting/hledger/issues/2416
+[#2417]: https://github.com/plaintextaccounting/hledger/issues/2417
+[#2419]: https://github.com/plaintextaccounting/hledger/issues/2419
+[#2443]: https://github.com/plaintextaccounting/hledger/issues/2443
+[#2444]: https://github.com/plaintextaccounting/hledger/issues/2444
+[#2445]: https://github.com/plaintextaccounting/hledger/issues/2445
+[#2446]: https://github.com/plaintextaccounting/hledger/issues/2446
 
 
 ## 2025-06-13 hledger-1.43.2
@@ -2134,10 +2228,10 @@ savanto (@savanto).
 
 Simon Michael.
 
-[#73]:   https://github.com/simonmichael/hledger/issues/73
-[#2405]: https://github.com/simonmichael/hledger/issues/2405
-[#2406]: https://github.com/simonmichael/hledger/issues/2406
-[#2407]: https://github.com/simonmichael/hledger/issues/2407
+[#73]:   https://github.com/plaintextaccounting/hledger/issues/73
+[#2405]: https://github.com/plaintextaccounting/hledger/issues/2405
+[#2406]: https://github.com/plaintextaccounting/hledger/issues/2406
+[#2407]: https://github.com/plaintextaccounting/hledger/issues/2407
 
 
 
@@ -2188,10 +2282,10 @@ Fixes
 
 Simon Michael.
 
-[#2367]: https://github.com/simonmichael/hledger/issues/2367
-[#2394]: https://github.com/simonmichael/hledger/issues/2394
-[#2396]: https://github.com/simonmichael/hledger/issues/2396
-[#2397]: https://github.com/simonmichael/hledger/issues/2397
+[#2367]: https://github.com/plaintextaccounting/hledger/issues/2367
+[#2394]: https://github.com/plaintextaccounting/hledger/issues/2394
+[#2396]: https://github.com/plaintextaccounting/hledger/issues/2396
+[#2397]: https://github.com/plaintextaccounting/hledger/issues/2397
 
 
 
@@ -2443,21 +2537,21 @@ Sam Almahri (@samahri),
 Ben Sima (@bsima),
 Doug Goldstein (@cardoe).
 
-[#73]: https://github.com/simonmichael/hledger/issues/73
-[#2002]: https://github.com/simonmichael/hledger/issues/2002
-[#2141]: https://github.com/simonmichael/hledger/issues/2141
-[#2355]: https://github.com/simonmichael/hledger/issues/2355
-[#2356]: https://github.com/simonmichael/hledger/issues/2356
-[#2359]: https://github.com/simonmichael/hledger/issues/2359
-[#2367]: https://github.com/simonmichael/hledger/issues/2367
-[#2368]: https://github.com/simonmichael/hledger/issues/2368
-[#2371]: https://github.com/simonmichael/hledger/issues/2371
-[#2373]: https://github.com/simonmichael/hledger/issues/2373
-[#2381]: https://github.com/simonmichael/hledger/issues/2381
-[#2385]: https://github.com/simonmichael/hledger/issues/2385
-[#2387]: https://github.com/simonmichael/hledger/issues/2387
-[#2391]: https://github.com/simonmichael/hledger/issues/2391
-[#2394]: https://github.com/simonmichael/hledger/issues/2394
+[#73]: https://github.com/plaintextaccounting/hledger/issues/73
+[#2002]: https://github.com/plaintextaccounting/hledger/issues/2002
+[#2141]: https://github.com/plaintextaccounting/hledger/issues/2141
+[#2355]: https://github.com/plaintextaccounting/hledger/issues/2355
+[#2356]: https://github.com/plaintextaccounting/hledger/issues/2356
+[#2359]: https://github.com/plaintextaccounting/hledger/issues/2359
+[#2367]: https://github.com/plaintextaccounting/hledger/issues/2367
+[#2368]: https://github.com/plaintextaccounting/hledger/issues/2368
+[#2371]: https://github.com/plaintextaccounting/hledger/issues/2371
+[#2373]: https://github.com/plaintextaccounting/hledger/issues/2373
+[#2381]: https://github.com/plaintextaccounting/hledger/issues/2381
+[#2385]: https://github.com/plaintextaccounting/hledger/issues/2385
+[#2387]: https://github.com/plaintextaccounting/hledger/issues/2387
+[#2391]: https://github.com/plaintextaccounting/hledger/issues/2391
+[#2394]: https://github.com/plaintextaccounting/hledger/issues/2394
 [hledger_site#132]: https://github.com/simonmichael/hledger_site/issues/132
 [hledger_site#133]: https://github.com/simonmichael/hledger_site/issues/133
 
@@ -2517,9 +2611,9 @@ Docs
 Simon Michael (@simonmichael),
 Thomas Miedema (@thomie).
 
-[#2354]: https://github.com/simonmichael/hledger/issues/2354
-[#2386]: https://github.com/simonmichael/hledger/issues/2386
-[#2389]: https://github.com/simonmichael/hledger/issues/2389
+[#2354]: https://github.com/plaintextaccounting/hledger/issues/2354
+[#2386]: https://github.com/plaintextaccounting/hledger/issues/2386
+[#2389]: https://github.com/plaintextaccounting/hledger/issues/2389
 [hledger_site#132]: https://github.com/simonmichael/hledger_site/issues/132
 
 
@@ -2567,8 +2661,8 @@ Pranesh Prakash (@the-solipsist),
 Stephen Morgan (@Xitian9),
 Thomas Miedema (@thomie).
 
-[#2345]: https://github.com/simonmichael/hledger/issues/2345
-[#2352]: https://github.com/simonmichael/hledger/issues/2352
+[#2345]: https://github.com/plaintextaccounting/hledger/issues/2345
+[#2352]: https://github.com/plaintextaccounting/hledger/issues/2352
 
 
 
@@ -2784,24 +2878,24 @@ Joschua Kesper (@jokesper),
 Lars Kellogg-Stedman (@larks).
 
 
-[#126]:  https://github.com/simonmichael/hledger/issues/126
-[#1826]: https://github.com/simonmichael/hledger/issues/1826
-[#1846]: https://github.com/simonmichael/hledger/issues/1846
-[#2302]: https://github.com/simonmichael/hledger/issues/2302
-[#2304]: https://github.com/simonmichael/hledger/issues/2304
-[#2305]: https://github.com/simonmichael/hledger/issues/2305
-[#2309]: https://github.com/simonmichael/hledger/issues/2309
-[#2313]: https://github.com/simonmichael/hledger/issues/2313
-[#2314]: https://github.com/simonmichael/hledger/issues/2314
-[#2318]: https://github.com/simonmichael/hledger/issues/2318
-[#2319]: https://github.com/simonmichael/hledger/issues/2319
-[#2323]: https://github.com/simonmichael/hledger/issues/2323
-[#2327]: https://github.com/simonmichael/hledger/issues/2327
-[#2328]: https://github.com/simonmichael/hledger/issues/2328
-[#2332]: https://github.com/simonmichael/hledger/issues/2332
-[#2333]: https://github.com/simonmichael/hledger/issues/2333
-[#2335]: https://github.com/simonmichael/hledger/issues/2335
-[#2340]: https://github.com/simonmichael/hledger/issues/2340
+[#126]:  https://github.com/plaintextaccounting/hledger/issues/126
+[#1826]: https://github.com/plaintextaccounting/hledger/issues/1826
+[#1846]: https://github.com/plaintextaccounting/hledger/issues/1846
+[#2302]: https://github.com/plaintextaccounting/hledger/issues/2302
+[#2304]: https://github.com/plaintextaccounting/hledger/issues/2304
+[#2305]: https://github.com/plaintextaccounting/hledger/issues/2305
+[#2309]: https://github.com/plaintextaccounting/hledger/issues/2309
+[#2313]: https://github.com/plaintextaccounting/hledger/issues/2313
+[#2314]: https://github.com/plaintextaccounting/hledger/issues/2314
+[#2318]: https://github.com/plaintextaccounting/hledger/issues/2318
+[#2319]: https://github.com/plaintextaccounting/hledger/issues/2319
+[#2323]: https://github.com/plaintextaccounting/hledger/issues/2323
+[#2327]: https://github.com/plaintextaccounting/hledger/issues/2327
+[#2328]: https://github.com/plaintextaccounting/hledger/issues/2328
+[#2332]: https://github.com/plaintextaccounting/hledger/issues/2332
+[#2333]: https://github.com/plaintextaccounting/hledger/issues/2333
+[#2335]: https://github.com/plaintextaccounting/hledger/issues/2335
+[#2340]: https://github.com/plaintextaccounting/hledger/issues/2340
 
 
 
@@ -3106,25 +3200,25 @@ Gal Lakovnik Gorenec,
 amano.kenji,
 gesh (@hseg).
 
-[#986]:  https://github.com/simonmichael/hledger/issues/986
-[#1846]: https://github.com/simonmichael/hledger/issues/1846
-[#2215]: https://github.com/simonmichael/hledger/issues/2215
-[#2222]: https://github.com/simonmichael/hledger/issues/2222
-[#2223]: https://github.com/simonmichael/hledger/issues/2223
-[#2225]: https://github.com/simonmichael/hledger/issues/2225
-[#2227]: https://github.com/simonmichael/hledger/issues/2227
-[#2231]: https://github.com/simonmichael/hledger/issues/2231
-[#2238]: https://github.com/simonmichael/hledger/issues/2238
-[#2241]: https://github.com/simonmichael/hledger/issues/2241
-[#2254]: https://github.com/simonmichael/hledger/issues/2254
-[#2280]: https://github.com/simonmichael/hledger/issues/2280
-[#2281]: https://github.com/simonmichael/hledger/issues/2281
-[#2284]: https://github.com/simonmichael/hledger/issues/2284
-[#2287]: https://github.com/simonmichael/hledger/issues/2287
-[#2289]: https://github.com/simonmichael/hledger/issues/2289
-[#2292]: https://github.com/simonmichael/hledger/issues/2292
-[#2293]: https://github.com/simonmichael/hledger/issues/2293
-[#2295]: https://github.com/simonmichael/hledger/issues/2295
+[#986]:  https://github.com/plaintextaccounting/hledger/issues/986
+[#1846]: https://github.com/plaintextaccounting/hledger/issues/1846
+[#2215]: https://github.com/plaintextaccounting/hledger/issues/2215
+[#2222]: https://github.com/plaintextaccounting/hledger/issues/2222
+[#2223]: https://github.com/plaintextaccounting/hledger/issues/2223
+[#2225]: https://github.com/plaintextaccounting/hledger/issues/2225
+[#2227]: https://github.com/plaintextaccounting/hledger/issues/2227
+[#2231]: https://github.com/plaintextaccounting/hledger/issues/2231
+[#2238]: https://github.com/plaintextaccounting/hledger/issues/2238
+[#2241]: https://github.com/plaintextaccounting/hledger/issues/2241
+[#2254]: https://github.com/plaintextaccounting/hledger/issues/2254
+[#2280]: https://github.com/plaintextaccounting/hledger/issues/2280
+[#2281]: https://github.com/plaintextaccounting/hledger/issues/2281
+[#2284]: https://github.com/plaintextaccounting/hledger/issues/2284
+[#2287]: https://github.com/plaintextaccounting/hledger/issues/2287
+[#2289]: https://github.com/plaintextaccounting/hledger/issues/2289
+[#2292]: https://github.com/plaintextaccounting/hledger/issues/2292
+[#2293]: https://github.com/plaintextaccounting/hledger/issues/2293
+[#2295]: https://github.com/plaintextaccounting/hledger/issues/2295
 
 
 
@@ -3255,14 +3349,14 @@ Arto Jonsson (@artoj),
 Victor Mihalache (@victormihalache).
 
 
-[#2099]: https://github.com/simonmichael/hledger/issues/2099
-[#2100]: https://github.com/simonmichael/hledger/issues/2100
-[#2127]: https://github.com/simonmichael/hledger/issues/2127
-[#2201]: https://github.com/simonmichael/hledger/issues/2201
-[#2202]: https://github.com/simonmichael/hledger/issues/2202
-[#2204]: https://github.com/simonmichael/hledger/issues/2204
-[#2211]: https://github.com/simonmichael/hledger/issues/2211
-[#2218]: https://github.com/simonmichael/hledger/issues/2218
+[#2099]: https://github.com/plaintextaccounting/hledger/issues/2099
+[#2100]: https://github.com/plaintextaccounting/hledger/issues/2100
+[#2127]: https://github.com/plaintextaccounting/hledger/issues/2127
+[#2201]: https://github.com/plaintextaccounting/hledger/issues/2201
+[#2202]: https://github.com/plaintextaccounting/hledger/issues/2202
+[#2204]: https://github.com/plaintextaccounting/hledger/issues/2204
+[#2211]: https://github.com/plaintextaccounting/hledger/issues/2211
+[#2218]: https://github.com/plaintextaccounting/hledger/issues/2218
 
 
 
@@ -3281,7 +3375,7 @@ Features
 
 - You can now get a quick list of example command lines for hledger or its most useful subcommands by adding the `--tldr` flag (or just `--tl`).  For best appearance you should install the [`tldr`][tldr] client, though it's not required.
 
-  These short "tldr pages" are a great counterbalance to verbose PTA docs. You can also use `tldr` without hledger to view the latest versions, or translations: `tldr hledger[-COMMAND]`. Or you can [browse tldr pages online](https://tldr.inbrowser.app/search?query=hledger+). Consider contributing translations! More tips at <https://github.com/simonmichael/hledger/tree/master/doc/tldr>.
+  These short "tldr pages" are a great counterbalance to verbose PTA docs. You can also use `tldr` without hledger to view the latest versions, or translations: `tldr hledger[-COMMAND]`. Or you can [browse tldr pages online](https://tldr.inbrowser.app/search?query=hledger+). Consider contributing translations! More tips at <https://github.com/plaintextaccounting/hledger/tree/master/doc/tldr>.
 
 [tldr]: https://tldr.sh
 
@@ -3333,8 +3427,8 @@ Scripts/addons
 
 - Added `hledger-pricehist`, an alias for the `pricehist` market price fetcher so that it can appear in hledger's commands list.
 
-[#2005]: https://github.com/simonmichael/hledger/issues/2005
-[#2198]: https://github.com/simonmichael/hledger/issues/2198
+[#2005]: https://github.com/plaintextaccounting/hledger/issues/2005
+[#2198]: https://github.com/plaintextaccounting/hledger/issues/2198
 
 
 ### hledger-ui 1.34
@@ -3372,7 +3466,7 @@ Docs
 - A basic [OpenAPI specification][openapi.yaml] is provided for hledger-web's JSON-over-HTTP API. This is also applicable to `hledger print`'s JSON output format.
 
 [ghc-debug]: https://gitlab.haskell.org/ghc/ghc-debug
-[openapi.yaml]: https://github.com/simonmichael/hledger/blob/master/hledger-web/config/openapi.yaml
+[openapi.yaml]: https://github.com/plaintextaccounting/hledger/blob/master/hledger-web/config/openapi.yaml
 [tldr]: https://tldr.sh
 
 
@@ -3449,8 +3543,8 @@ Simon Michael (@simonmichael)
 
 - Simon Michael (@simonnmichael)
 
-[#2149]: https://github.com/simonmichael/hledger/issues/2149
-[#2196]: https://github.com/simonmichael/hledger/issues/2196
+[#2149]: https://github.com/plaintextaccounting/hledger/issues/2149
+[#2196]: https://github.com/plaintextaccounting/hledger/issues/2196
 
 
 ## 2024-04-18 hledger-1.33
@@ -3660,26 +3754,26 @@ API
 
 
 
-[#815]:  https://github.com/simonmichael/hledger/issues/815
-[#1056]: https://github.com/simonmichael/hledger/issues/1056
-[#2071]: https://github.com/simonmichael/hledger/issues/2071
-[#2088]: https://github.com/simonmichael/hledger/issues/2088
-[#2119]: https://github.com/simonmichael/hledger/issues/2119
-[#2135]: https://github.com/simonmichael/hledger/issues/2135
-[#2135]: https://github.com/simonmichael/hledger/issues/2135
-[#2148]: https://github.com/simonmichael/hledger/issues/2148
-[#2151]: https://github.com/simonmichael/hledger/issues/2151
-[#2151]: https://github.com/simonmichael/hledger/issues/2151
-[#2158]: https://github.com/simonmichael/hledger/issues/2158
-[#2159]: https://github.com/simonmichael/hledger/issues/2159
-[#2164]: https://github.com/simonmichael/hledger/issues/2164
-[#2171]: https://github.com/simonmichael/hledger/issues/2171
-[#2176]: https://github.com/simonmichael/hledger/issues/2176
-[#2177]: https://github.com/simonmichael/hledger/issues/2177
-[#2178]: https://github.com/simonmichael/hledger/issues/2178
-[#2189]: https://github.com/simonmichael/hledger/issues/2189
-[#2190]: https://github.com/simonmichael/hledger/issues/2190
-[#2191]: https://github.com/simonmichael/hledger/issues/2191
+[#815]:  https://github.com/plaintextaccounting/hledger/issues/815
+[#1056]: https://github.com/plaintextaccounting/hledger/issues/1056
+[#2071]: https://github.com/plaintextaccounting/hledger/issues/2071
+[#2088]: https://github.com/plaintextaccounting/hledger/issues/2088
+[#2119]: https://github.com/plaintextaccounting/hledger/issues/2119
+[#2135]: https://github.com/plaintextaccounting/hledger/issues/2135
+[#2135]: https://github.com/plaintextaccounting/hledger/issues/2135
+[#2148]: https://github.com/plaintextaccounting/hledger/issues/2148
+[#2151]: https://github.com/plaintextaccounting/hledger/issues/2151
+[#2151]: https://github.com/plaintextaccounting/hledger/issues/2151
+[#2158]: https://github.com/plaintextaccounting/hledger/issues/2158
+[#2159]: https://github.com/plaintextaccounting/hledger/issues/2159
+[#2164]: https://github.com/plaintextaccounting/hledger/issues/2164
+[#2171]: https://github.com/plaintextaccounting/hledger/issues/2171
+[#2176]: https://github.com/plaintextaccounting/hledger/issues/2176
+[#2177]: https://github.com/plaintextaccounting/hledger/issues/2177
+[#2178]: https://github.com/plaintextaccounting/hledger/issues/2178
+[#2189]: https://github.com/plaintextaccounting/hledger/issues/2189
+[#2190]: https://github.com/plaintextaccounting/hledger/issues/2190
+[#2191]: https://github.com/plaintextaccounting/hledger/issues/2191
 
 
 ### hledger-ui 1.33
@@ -3729,9 +3823,9 @@ Docs
   the non-display of costs,
   and non-zeros that look like zero because of hidden costs.
 
-[#2140]: https://github.com/simonmichael/hledger/issues/2140
-[#2163]: https://github.com/simonmichael/hledger/issues/2163
-[#2166]: https://github.com/simonmichael/hledger/issues/2166
+[#2140]: https://github.com/plaintextaccounting/hledger/issues/2140
+[#2163]: https://github.com/plaintextaccounting/hledger/issues/2163
+[#2166]: https://github.com/plaintextaccounting/hledger/issues/2166
 
 
 ### project changes 1.33
@@ -3810,11 +3904,11 @@ Fixes
 Simon Michael,
 Colin Dean.
 
-[#2159]: https://github.com/simonmichael/hledger/issues/2159
-[#2156]: https://github.com/simonmichael/hledger/issues/2156
-[#2153]: https://github.com/simonmichael/hledger/issues/2153
-[#2150]: https://github.com/simonmichael/hledger/issues/2150
-[#2133]: https://github.com/simonmichael/hledger/issues/2133
+[#2159]: https://github.com/plaintextaccounting/hledger/issues/2159
+[#2156]: https://github.com/plaintextaccounting/hledger/issues/2156
+[#2153]: https://github.com/plaintextaccounting/hledger/issues/2153
+[#2150]: https://github.com/plaintextaccounting/hledger/issues/2150
+[#2133]: https://github.com/plaintextaccounting/hledger/issues/2133
 
 ## 2023-12-31 hledger-1.32.2
 
@@ -3878,11 +3972,11 @@ Improvements
   rather than "any of our IPv4 or IPv6 addresses" and 3000.
 
 
-[#2139]: https://github.com/simonmichael/hledger/issues/2139
-[#2134]: https://github.com/simonmichael/hledger/issues/2134
-[#2130]: https://github.com/simonmichael/hledger/issues/2130
-[#2127]: https://github.com/simonmichael/hledger/issues/2127
-[#2100]: https://github.com/simonmichael/hledger/issues/2100
+[#2139]: https://github.com/plaintextaccounting/hledger/issues/2139
+[#2134]: https://github.com/plaintextaccounting/hledger/issues/2134
+[#2130]: https://github.com/plaintextaccounting/hledger/issues/2130
+[#2127]: https://github.com/plaintextaccounting/hledger/issues/2127
+[#2100]: https://github.com/plaintextaccounting/hledger/issues/2100
 
 ## 2023-12-07 hledger-1.32.1
 
@@ -3914,9 +4008,9 @@ Improvements
 
 - Use hledger-1.32.1
 
-[#2125]: https://github.com/simonmichael/hledger/issues/2125
-[#2123]: https://github.com/simonmichael/hledger/issues/2123
-[#2119]: https://github.com/simonmichael/hledger/issues/2119
+[#2125]: https://github.com/plaintextaccounting/hledger/issues/2125
+[#2123]: https://github.com/plaintextaccounting/hledger/issues/2123
+[#2119]: https://github.com/plaintextaccounting/hledger/issues/2119
 
 
 ## 2023-12-01 hledger-1.32
@@ -4244,84 +4338,84 @@ Philipp Klocke,
 Stephen Morgan,
 bobobo1618.
 
-[#2116]: https://github.com/simonmichael/hledger/issues/2116
-[#2115]: https://github.com/simonmichael/hledger/issues/2115
-[#2114]: https://github.com/simonmichael/hledger/issues/2114
-[#2113]: https://github.com/simonmichael/hledger/issues/2113
-[#2111]: https://github.com/simonmichael/hledger/issues/2111
-[#2110]: https://github.com/simonmichael/hledger/issues/2110
-[#2105]: https://github.com/simonmichael/hledger/issues/2105
-[#2103]: https://github.com/simonmichael/hledger/issues/2103
-[#2102]: https://github.com/simonmichael/hledger/issues/2102
-[#2099]: https://github.com/simonmichael/hledger/issues/2099
-[#2097]: https://github.com/simonmichael/hledger/issues/2097
-[#2096]: https://github.com/simonmichael/hledger/issues/2096
-[#2094]: https://github.com/simonmichael/hledger/issues/2094
-[#2091]: https://github.com/simonmichael/hledger/issues/2091
-[#2088]: https://github.com/simonmichael/hledger/issues/2088
-[#2085]: https://github.com/simonmichael/hledger/issues/2085
-[#2084]: https://github.com/simonmichael/hledger/issues/2084
-[#2083]: https://github.com/simonmichael/hledger/issues/2083
-[#2079]: https://github.com/simonmichael/hledger/issues/2079
-[#2068]: https://github.com/simonmichael/hledger/issues/2068
-[#2065]: https://github.com/simonmichael/hledger/issues/2065
-[#2050]: https://github.com/simonmichael/hledger/issues/2050
-[#2045]: https://github.com/simonmichael/hledger/issues/2045
-[#2041]: https://github.com/simonmichael/hledger/issues/2041
-[#2040]: https://github.com/simonmichael/hledger/issues/2040
-[#2039]: https://github.com/simonmichael/hledger/issues/2039
-[#2034]: https://github.com/simonmichael/hledger/issues/2034
-[#2032]: https://github.com/simonmichael/hledger/issues/2032
-[#2025]: https://github.com/simonmichael/hledger/issues/2025
-[#2024]: https://github.com/simonmichael/hledger/issues/2024
-[#2023]: https://github.com/simonmichael/hledger/issues/2023
-[#2020]: https://github.com/simonmichael/hledger/issues/2020
-[#2018]: https://github.com/simonmichael/hledger/issues/2018
-[#2015]: https://github.com/simonmichael/hledger/issues/2015
-[#2012]: https://github.com/simonmichael/hledger/issues/2012
-[#2011]: https://github.com/simonmichael/hledger/issues/2011
-[#2009]: https://github.com/simonmichael/hledger/issues/2009
-[#2007]: https://github.com/simonmichael/hledger/issues/2007
-[#1997]: https://github.com/simonmichael/hledger/issues/1997
-[#1996]: https://github.com/simonmichael/hledger/issues/1996
-[#1982]: https://github.com/simonmichael/hledger/issues/1982
-[#1978]: https://github.com/simonmichael/hledger/issues/1978
-[#1977]: https://github.com/simonmichael/hledger/issues/1977
-[#1970]: https://github.com/simonmichael/hledger/issues/1970
-[#1967]: https://github.com/simonmichael/hledger/issues/1967
-[#1966]: https://github.com/simonmichael/hledger/issues/1966
-[#1965]: https://github.com/simonmichael/hledger/issues/1965
-[#1962]: https://github.com/simonmichael/hledger/issues/1962
-[#1961]: https://github.com/simonmichael/hledger/issues/1961
-[#1959]: https://github.com/simonmichael/hledger/issues/1959
-[#1953]: https://github.com/simonmichael/hledger/issues/1953
-[#1950]: https://github.com/simonmichael/hledger/issues/1950
-[#1942]: https://github.com/simonmichael/hledger/issues/1942
-[#1936]: https://github.com/simonmichael/hledger/issues/1936
-[#1933]: https://github.com/simonmichael/hledger/issues/1933
-[#1932]: https://github.com/simonmichael/hledger/issues/1932
-[#1927]: https://github.com/simonmichael/hledger/issues/1927
-[#1921]: https://github.com/simonmichael/hledger/issues/1921
-[#1919]: https://github.com/simonmichael/hledger/issues/1919
-[#1915]: https://github.com/simonmichael/hledger/issues/1915
-[#1909]: https://github.com/simonmichael/hledger/issues/1909
-[#1907]: https://github.com/simonmichael/hledger/issues/1907
-[#1905]: https://github.com/simonmichael/hledger/issues/1905
-[#1889]: https://github.com/simonmichael/hledger/issues/1889
-[#1879]: https://github.com/simonmichael/hledger/issues/1879
-[#1870]: https://github.com/simonmichael/hledger/issues/1870
-[#1839]: https://github.com/simonmichael/hledger/issues/1839
-[#1770]: https://github.com/simonmichael/hledger/issues/1770
-[#1763]: https://github.com/simonmichael/hledger/issues/1763
-[#1754]: https://github.com/simonmichael/hledger/issues/1754
-[#1562]: https://github.com/simonmichael/hledger/issues/1562
-[#1436]: https://github.com/simonmichael/hledger/issues/1436
-[#1229]: https://github.com/simonmichael/hledger/issues/1229
-[#1220]: https://github.com/simonmichael/hledger/issues/1220
-[#1012]: https://github.com/simonmichael/hledger/issues/1012
-[#869]: https://github.com/simonmichael/hledger/issues/869
-[#834]: https://github.com/simonmichael/hledger/issues/834
-[#821]: https://github.com/simonmichael/hledger/issues/821
+[#2116]: https://github.com/plaintextaccounting/hledger/issues/2116
+[#2115]: https://github.com/plaintextaccounting/hledger/issues/2115
+[#2114]: https://github.com/plaintextaccounting/hledger/issues/2114
+[#2113]: https://github.com/plaintextaccounting/hledger/issues/2113
+[#2111]: https://github.com/plaintextaccounting/hledger/issues/2111
+[#2110]: https://github.com/plaintextaccounting/hledger/issues/2110
+[#2105]: https://github.com/plaintextaccounting/hledger/issues/2105
+[#2103]: https://github.com/plaintextaccounting/hledger/issues/2103
+[#2102]: https://github.com/plaintextaccounting/hledger/issues/2102
+[#2099]: https://github.com/plaintextaccounting/hledger/issues/2099
+[#2097]: https://github.com/plaintextaccounting/hledger/issues/2097
+[#2096]: https://github.com/plaintextaccounting/hledger/issues/2096
+[#2094]: https://github.com/plaintextaccounting/hledger/issues/2094
+[#2091]: https://github.com/plaintextaccounting/hledger/issues/2091
+[#2088]: https://github.com/plaintextaccounting/hledger/issues/2088
+[#2085]: https://github.com/plaintextaccounting/hledger/issues/2085
+[#2084]: https://github.com/plaintextaccounting/hledger/issues/2084
+[#2083]: https://github.com/plaintextaccounting/hledger/issues/2083
+[#2079]: https://github.com/plaintextaccounting/hledger/issues/2079
+[#2068]: https://github.com/plaintextaccounting/hledger/issues/2068
+[#2065]: https://github.com/plaintextaccounting/hledger/issues/2065
+[#2050]: https://github.com/plaintextaccounting/hledger/issues/2050
+[#2045]: https://github.com/plaintextaccounting/hledger/issues/2045
+[#2041]: https://github.com/plaintextaccounting/hledger/issues/2041
+[#2040]: https://github.com/plaintextaccounting/hledger/issues/2040
+[#2039]: https://github.com/plaintextaccounting/hledger/issues/2039
+[#2034]: https://github.com/plaintextaccounting/hledger/issues/2034
+[#2032]: https://github.com/plaintextaccounting/hledger/issues/2032
+[#2025]: https://github.com/plaintextaccounting/hledger/issues/2025
+[#2024]: https://github.com/plaintextaccounting/hledger/issues/2024
+[#2023]: https://github.com/plaintextaccounting/hledger/issues/2023
+[#2020]: https://github.com/plaintextaccounting/hledger/issues/2020
+[#2018]: https://github.com/plaintextaccounting/hledger/issues/2018
+[#2015]: https://github.com/plaintextaccounting/hledger/issues/2015
+[#2012]: https://github.com/plaintextaccounting/hledger/issues/2012
+[#2011]: https://github.com/plaintextaccounting/hledger/issues/2011
+[#2009]: https://github.com/plaintextaccounting/hledger/issues/2009
+[#2007]: https://github.com/plaintextaccounting/hledger/issues/2007
+[#1997]: https://github.com/plaintextaccounting/hledger/issues/1997
+[#1996]: https://github.com/plaintextaccounting/hledger/issues/1996
+[#1982]: https://github.com/plaintextaccounting/hledger/issues/1982
+[#1978]: https://github.com/plaintextaccounting/hledger/issues/1978
+[#1977]: https://github.com/plaintextaccounting/hledger/issues/1977
+[#1970]: https://github.com/plaintextaccounting/hledger/issues/1970
+[#1967]: https://github.com/plaintextaccounting/hledger/issues/1967
+[#1966]: https://github.com/plaintextaccounting/hledger/issues/1966
+[#1965]: https://github.com/plaintextaccounting/hledger/issues/1965
+[#1962]: https://github.com/plaintextaccounting/hledger/issues/1962
+[#1961]: https://github.com/plaintextaccounting/hledger/issues/1961
+[#1959]: https://github.com/plaintextaccounting/hledger/issues/1959
+[#1953]: https://github.com/plaintextaccounting/hledger/issues/1953
+[#1950]: https://github.com/plaintextaccounting/hledger/issues/1950
+[#1942]: https://github.com/plaintextaccounting/hledger/issues/1942
+[#1936]: https://github.com/plaintextaccounting/hledger/issues/1936
+[#1933]: https://github.com/plaintextaccounting/hledger/issues/1933
+[#1932]: https://github.com/plaintextaccounting/hledger/issues/1932
+[#1927]: https://github.com/plaintextaccounting/hledger/issues/1927
+[#1921]: https://github.com/plaintextaccounting/hledger/issues/1921
+[#1919]: https://github.com/plaintextaccounting/hledger/issues/1919
+[#1915]: https://github.com/plaintextaccounting/hledger/issues/1915
+[#1909]: https://github.com/plaintextaccounting/hledger/issues/1909
+[#1907]: https://github.com/plaintextaccounting/hledger/issues/1907
+[#1905]: https://github.com/plaintextaccounting/hledger/issues/1905
+[#1889]: https://github.com/plaintextaccounting/hledger/issues/1889
+[#1879]: https://github.com/plaintextaccounting/hledger/issues/1879
+[#1870]: https://github.com/plaintextaccounting/hledger/issues/1870
+[#1839]: https://github.com/plaintextaccounting/hledger/issues/1839
+[#1770]: https://github.com/plaintextaccounting/hledger/issues/1770
+[#1763]: https://github.com/plaintextaccounting/hledger/issues/1763
+[#1754]: https://github.com/plaintextaccounting/hledger/issues/1754
+[#1562]: https://github.com/plaintextaccounting/hledger/issues/1562
+[#1436]: https://github.com/plaintextaccounting/hledger/issues/1436
+[#1229]: https://github.com/plaintextaccounting/hledger/issues/1229
+[#1220]: https://github.com/plaintextaccounting/hledger/issues/1220
+[#1012]: https://github.com/plaintextaccounting/hledger/issues/1012
+[#869]: https://github.com/plaintextaccounting/hledger/issues/869
+[#834]: https://github.com/plaintextaccounting/hledger/issues/834
+[#821]: https://github.com/plaintextaccounting/hledger/issues/821
 
 ## 2023-09-03 hledger-1.31
 
@@ -5450,16 +5544,16 @@ Improvements
   - considering only the first 1000 items for choosing column
     widths. You can restore the old behaviour (guaranteed alignment
     across all items) with the new `--align-all` flag.
-    ([#1839]](https://github.com/simonmichael/hledger/issues/1839), Stephen Morgan)
+    ([#1839]](https://github.com/plaintextaccounting/hledger/issues/1839), Stephen Morgan)
 
   - discarding cost data more aggressively, giving big speedups for
     large journals with many costs.
-  	([#1828](https://github.com/simonmichael/hledger/issues/1828), Stephen Morgan)
+  	([#1828](https://github.com/plaintextaccounting/hledger/issues/1828), Stephen Morgan)
 
 - Most error messages from the journal reader and the `check` command now use
   a consistent layout, with an "Error:" prefix, line and column numbers,
   and an excerpt highlighting the problem. Work in progress.
-  ([#1436](https://github.com/simonmichael/hledger/issues/1436)) (Simon Michael, Stephen Morgan)
+  ([#1436](https://github.com/plaintextaccounting/hledger/issues/1436)) (Simon Michael, Stephen Morgan)
 
 - `hledger check ordereddates` now always checks all transactions
   (previously it could be restricted by query arguments).
@@ -5473,24 +5567,24 @@ Fixes
 - Value reports with `--date2` and a report interval (like `hledger bal -VM --date2`)
   were failing with a "expected all spans to have an end date" error since 1.22;
   this is now fixed.
-  ([#1851](https://github.com/simonmichael/hledger/issues/1851), Stephen Morgan)
+  ([#1851](https://github.com/plaintextaccounting/hledger/issues/1851), Stephen Morgan)
 
 - In CSV rules, interpolation of a non-existent field like `%999` or `%nosuchfield`
   is now ignored (previously it inserted that literal text).
   Note this means such an error will not be reported; 
   Simon chose this as the more convenient behaviour when converting CSV.
   Experimental.
-  ([#1803](https://github.com/simonmichael/hledger/issues/1803), [#1814](https://github.com/simonmichael/hledger/issues/1814)) (Stephen Morgan)
+  ([#1803](https://github.com/plaintextaccounting/hledger/issues/1803), [#1814](https://github.com/plaintextaccounting/hledger/issues/1814)) (Stephen Morgan)
 
 - `--infer-market-price` was inferring a negative price when selling.
-  ([#1813](https://github.com/simonmichael/hledger/issues/1813), Stephen Morgan)
+  ([#1813](https://github.com/plaintextaccounting/hledger/issues/1813), Stephen Morgan)
 
 - Allow an escaped forward slash in regular expression account aliases.
-  ([#982](https://github.com/simonmichael/hledger/issues/982), Stephen Morgan)
+  ([#982](https://github.com/plaintextaccounting/hledger/issues/982), Stephen Morgan)
 
 - The `tags` command now also lists tags from unused account declarations.
   It also has improved command-line help layout.
-  ([#1857](https://github.com/simonmichael/hledger/issues/1857))
+  ([#1857](https://github.com/plaintextaccounting/hledger/issues/1857))
 
 - `hledger accounts` now shows its debug output at a more appropriate level (4).
 
@@ -5596,14 +5690,14 @@ Features
       hledger reg type:x   # register of all expenses
       hledger acc --types  # list accounts and their types
 
-  ([#1820](https://github.com/simonmichael/hledger/issues/1820), 
-  [#1822](https://github.com/simonmichael/hledger/issues/1822)) 
+  ([#1820](https://github.com/plaintextaccounting/hledger/issues/1820), 
+  [#1822](https://github.com/plaintextaccounting/hledger/issues/1822)) 
   (Simon Michael, Stephen Morgan)
 
 - The `tag:` query can now also match account tags, as defined in account directives.
   Subaccounts inherit tags from their parents.
   Accounts, postings and transactions can be filtered by account tag.
-  ([#1817](https://github.com/simonmichael/hledger/issues/1817))
+  ([#1817](https://github.com/plaintextaccounting/hledger/issues/1817))
 
 - The new `--infer-equity` flag replaces the `@`/`@@` price notation in commodity
   conversion transactions with more correct equity postings (when not using `-B/--cost`).
@@ -5628,25 +5722,25 @@ Features
   
       account Equity:Trading    ; type:V
 
-  ([#1554](https://github.com/simonmichael/hledger/issues/1554)) (Stephen Morgan, Simon Michael)
+  ([#1554](https://github.com/plaintextaccounting/hledger/issues/1554)) (Stephen Morgan, Simon Michael)
 
 - Balance commands (`bal`, `bs` etc.) can now generate easy-to-process "tidy" CSV data 
   with `-O csv --layout tidy`.
   In tidy data, every variable is a column and each row represents a single data point 
   (cf <https://vita.had.co.nz/papers/tidy-data.html>).
-  ([#1768](https://github.com/simonmichael/hledger/issues/1768), 
-  [#1773](https://github.com/simonmichael/hledger/issues/1773), 
-  [#1775](https://github.com/simonmichael/hledger/issues/1775)) 
+  ([#1768](https://github.com/plaintextaccounting/hledger/issues/1768), 
+  [#1773](https://github.com/plaintextaccounting/hledger/issues/1773), 
+  [#1775](https://github.com/plaintextaccounting/hledger/issues/1775)) 
   (Stephen Morgan)
 
 Improvements
 
 - Strict mode (`-s/--strict`) now also checks periodic transactions (`--forecast`) 
   and auto postings (`--auto`). 
-  ([#1810](https://github.com/simonmichael/hledger/issues/1810)) (Stephen Morgan)
+  ([#1810](https://github.com/plaintextaccounting/hledger/issues/1810)) (Stephen Morgan)
 
 - `hledger check commodities` now always accepts zero amounts which have no commodity symbol. 
-  ([#1767](https://github.com/simonmichael/hledger/issues/1767)) (Stephen Morgan)
+  ([#1767](https://github.com/plaintextaccounting/hledger/issues/1767)) (Stephen Morgan)
 
 - Relative [smart dates](hledger.md#smart-dates) may now specify an arbitrary number of some period into the future or past).
   Some examples:
@@ -5659,10 +5753,10 @@ Improvements
 
 - CSV output now always disables digit group marks (eg, thousands separators),
   making it more machine readable by default. 
-  ([#1771](https://github.com/simonmichael/hledger/issues/1771)) (Stephen Morgan)
+  ([#1771](https://github.com/plaintextaccounting/hledger/issues/1771)) (Stephen Morgan)
 
 - Unicode may now be used in field names/references in CSV rules files.
-  ([#1809](https://github.com/simonmichael/hledger/issues/1809)) (Stephen Morgan)
+  ([#1809](https://github.com/plaintextaccounting/hledger/issues/1809)) (Stephen Morgan)
 
 - Error messages improved:
   - Balance assignments
@@ -5672,26 +5766,26 @@ Improvements
 Fixes
 
 - `--layout=bare` no longer shows a commodity symbol for zero amounts. 
-  ([#1789](https://github.com/simonmichael/hledger/issues/1789)) (Stephen Morgan)
+  ([#1789](https://github.com/plaintextaccounting/hledger/issues/1789)) (Stephen Morgan)
 
 - `balance --budget` no longer elides boring parents of unbudgeted accounts 
   if they have a budget. 
-  ([#1800](https://github.com/simonmichael/hledger/issues/1800)) (Stephen Morgan)
+  ([#1800](https://github.com/plaintextaccounting/hledger/issues/1800)) (Stephen Morgan)
 
 - `roi` now reports TWR correctly
 
   - when there are several PnL changes occurring on a single day
   - and also when investment is fully sold/withdrawn/discounted at the end of a particular reporting period.
 
-  ([#1791](https://github.com/simonmichael/hledger/issues/1791)) (Dmitry Astapov)
+  ([#1791](https://github.com/plaintextaccounting/hledger/issues/1791)) (Dmitry Astapov)
 
 Documentation
 
 - There is a new CONVERSION & COST section, replacing COSTING. 
-  ([#1554](https://github.com/simonmichael/hledger/issues/1554))
+  ([#1554](https://github.com/plaintextaccounting/hledger/issues/1554))
 
 - Some problematic interactions of account aliases with other features have been noted. 
-  ([#1788](https://github.com/simonmichael/hledger/issues/1788))
+  ([#1788](https://github.com/plaintextaccounting/hledger/issues/1788))
 
 - Updated: [Declaring accounts > Account types](https://hledger.org/hledger.html#account-types)
 
@@ -5751,7 +5845,7 @@ Patrik Keller.
 Fixes
 
 - `balance --declared` is now filtered correctly by a `not:ACCT` query.
-  ([#1783](https://github.com/simonmichael/hledger/issues/1783))
+  ([#1783](https://github.com/plaintextaccounting/hledger/issues/1783))
 
 - More reliable --version output, with commit date and without patch level.
 
@@ -5760,10 +5854,10 @@ Fixes
 Fixes
 
 - An extra "root" account is no longer shown (a regression in 1.24).
-  ([#1782](https://github.com/simonmichael/hledger/issues/1782))
+  ([#1782](https://github.com/plaintextaccounting/hledger/issues/1782))
 
 - Declared accounts are now filtered correctly by a not:ACCT query.
-  ([#1783](https://github.com/simonmichael/hledger/issues/1783))
+  ([#1783](https://github.com/plaintextaccounting/hledger/issues/1783))
 
 - More reliable --version output, with commit date and without patch level.
 
@@ -5802,12 +5896,12 @@ Features
   a balance for both used and declared accounts.
   The idea is to be able to see a useful "complete" balance report, even
   when you don't have transactions in all of your declared accounts yet.
-  ([#1765](https://github.com/simonmichael/hledger/issues/1765))
+  ([#1765](https://github.com/plaintextaccounting/hledger/issues/1765))
 
 - journal files now support a `decimal-mark` directive as a more
   principled way (than `commodity` directives) to specify the decimal character
   in use in that file, to ensure accurate number parsing.
-  ([#1670](https://github.com/simonmichael/hledger/issues/1670), Lawrence Wu)
+  ([#1670](https://github.com/plaintextaccounting/hledger/issues/1670), Lawrence Wu)
 
 Improvements
 
@@ -5815,7 +5909,7 @@ Improvements
   time and processing speed in transactions per second.
 
 - balance: support the --related flag, like register, showing the
-  other postings from the transactions. ([#1469](https://github.com/simonmichael/hledger/issues/1469), Stephen Morgan)
+  other postings from the transactions. ([#1469](https://github.com/plaintextaccounting/hledger/issues/1469), Stephen Morgan)
 
 - roi now uses posting dates when available, and honors the --date2
   flag. This will not change the results computed for the typical
@@ -5823,7 +5917,7 @@ Improvements
   (Dmitry Astapov)
 
 - aregister now shows transactions' secondary date if the --date2 flag is used.
-  ([#1731](https://github.com/simonmichael/hledger/issues/1731))
+  ([#1731](https://github.com/plaintextaccounting/hledger/issues/1731))
 
 - timedot: a D default commodity (and style) declared in a parent
   journal file will now be applied to timedot amounts. This means they
@@ -5834,7 +5928,7 @@ Improvements
   (Stephen Morgan)
 
 - register -V -H with no interval now values at report end date, like balance.
-  ([#1718](https://github.com/simonmichael/hledger/issues/1718), Stephen Morgan)
+  ([#1718](https://github.com/plaintextaccounting/hledger/issues/1718), Stephen Morgan)
 
 - Allow megaparsec 9.2.
 
@@ -5844,29 +5938,29 @@ Fixes
 
 - prices: Do not include zero amounts when calculating amounts for balance assignments. 
   This is not usually a problem, but can get in the way of auto-inferring prices.
-  ([#1736](https://github.com/simonmichael/hledger/issues/1736), Stephen Morgan)
+  ([#1736](https://github.com/plaintextaccounting/hledger/issues/1736), Stephen Morgan)
 
 - csv: Successfully parse an empty csv file. 
-  ([#1183](https://github.com/simonmichael/hledger/issues/1183), Stephen Morgan)
+  ([#1183](https://github.com/plaintextaccounting/hledger/issues/1183), Stephen Morgan)
 
 - balance: Balance reports with --depth=0 properly report aggregated
   values, not zero everywhere. 
-  ([#1761](https://github.com/simonmichael/hledger/issues/1761), Stephen Morgan)
+  ([#1761](https://github.com/plaintextaccounting/hledger/issues/1761), Stephen Morgan)
 
 - prices: Do not try to generate prices when there would be a zero
   denominator. Also correctly generate reverse prices for zero
   amounts. (Stephen Morgan)
 
 - csv: Allow both amount-in and amount-out fields to contain a zero.
-  ([#1733](https://github.com/simonmichael/hledger/issues/1733), Stephen Morgan)
+  ([#1733](https://github.com/plaintextaccounting/hledger/issues/1733), Stephen Morgan)
 
 - balance: Balance reports should consider date: queries when
   calculating report span with --date2. 
-  ([#1745](https://github.com/simonmichael/hledger/issues/1745), Stephen Morgan)
+  ([#1745](https://github.com/plaintextaccounting/hledger/issues/1745), Stephen Morgan)
 
 - print: auto: The print command should always display inferred
   amounts for --auto generated postings. 
-  ([#1276](https://github.com/simonmichael/hledger/issues/1276), Stephen Morgan)
+  ([#1276](https://github.com/plaintextaccounting/hledger/issues/1276), Stephen Morgan)
   
 ### hledger-ui 1.24
 
@@ -5895,14 +5989,14 @@ Fixes
 
 - When an invalid regular expression is entered at the `/` (filter) prompt,
   we now display an error instead of silently ignoring it.
-  ([#1394](https://github.com/simonmichael/hledger/issues/1394), Stephen Morgan)
+  ([#1394](https://github.com/plaintextaccounting/hledger/issues/1394), Stephen Morgan)
 
 - Entering the register screen now always positions the selection mid-screen.
   Previously it would be at bottom of screen on the first entry.
 
 - Report layout in the terminal is now robust with more kinds of wide
   characters, such as emoji.
-  ([#895](https://github.com/simonmichael/hledger/issues/895), Stephen Morgan)
+  ([#895](https://github.com/plaintextaccounting/hledger/issues/895), Stephen Morgan)
   
 ### hledger-web 1.24
 
@@ -5941,7 +6035,7 @@ Process
   (toonn)
 
 - cabal.project: Drop obsolete compatibility comment. 
-  ([#1365](https://github.com/simonmichael/hledger/issues/1365), toonn)
+  ([#1365](https://github.com/plaintextaccounting/hledger/issues/1365), toonn)
 
 - Bump default stackage snapshot to one avoiding buggy happy version.
 
@@ -6027,8 +6121,8 @@ Tools/process:
 
 - Our doctests are disabled with GHC 9 for now to work around an
   upstream bug. 
-  ([#1503](https://github.com/simonmichael/hledger/issues/1503), 
-  [#1615](https://github.com/simonmichael/hledger/issues/1615))
+  ([#1503](https://github.com/plaintextaccounting/hledger/issues/1503), 
+  [#1615](https://github.com/plaintextaccounting/hledger/issues/1615))
 
 - tools/commitlint is a new tool for hledger developers which checks and
   describes new commit conventions which simplify maintenance of
@@ -6037,7 +6131,7 @@ Tools/process:
   (`ln -sf ../../bin/commitling .git/hooks/commit-msg`), 
   and is also run by our CI workflows to check pull requests.
   <https://hledger.org/CONTRIBUTING.html#commit-messages>,
-  [tools/commitlint](https://github.com/simonmichael/hledger/blob/master/tools/commitlint)
+  [tools/commitlint](https://github.com/plaintextaccounting/hledger/blob/master/tools/commitlint)
   (#1602)
 
 ### hledger 1.23
@@ -6050,21 +6144,21 @@ Features
   precisely, between the value of the amounts' costs and the value of
   the amounts on the valuation date(s). (Ie, you can report gain in a
   different currency.)
-  ([#1623](https://github.com/simonmichael/hledger/issues/1623),
-  [#1432](https://github.com/simonmichael/hledger/issues/1432),
+  ([#1623](https://github.com/plaintextaccounting/hledger/issues/1623),
+  [#1432](https://github.com/plaintextaccounting/hledger/issues/1432),
   Stephen Morgan, Charlotte Van Petegem)
 
 - The new `-c/--commodity-style` option makes it easy to override
   commodity display styles at runtime, eg to adjust the number of
   decimal places or change the position of the symbol.
-  ([#1593](https://github.com/simonmichael/hledger/issues/1593), Arjen Langebaerd)
+  ([#1593](https://github.com/plaintextaccounting/hledger/issues/1593), Arjen Langebaerd)
 
 - The balance commands have a new `--commodity-column` flag that
   displays commodity symbols in a dedicated column, showing one line
   per commodity and all amounts as bare numbers.
-  ([#1559](https://github.com/simonmichael/hledger/issues/1559),
-  [#1626](https://github.com/simonmichael/hledger/issues/1626),
-  [#1654](https://github.com/simonmichael/hledger/issues/1654),
+  ([#1559](https://github.com/plaintextaccounting/hledger/issues/1559),
+  [#1626](https://github.com/plaintextaccounting/hledger/issues/1626),
+  [#1654](https://github.com/plaintextaccounting/hledger/issues/1654),
   Lawrence Wu, Simon Michael, Stephen Morgan)
 
 - The `balance --budget` option can now take an argument,
@@ -6072,18 +6166,18 @@ Features
   the journal's periodic transactions for setting budget goals. 
   This makes it possible to keep multiple named budgets in one journal, 
   and select the one you want with --budget's argument. 
-  ([#1612](https://github.com/simonmichael/hledger/issues/1612))
+  ([#1612](https://github.com/plaintextaccounting/hledger/issues/1612))
 
 - Period expressions now support `every weekday`, `every weekendday` and
   `every mon,wed,...` (multiple days of the week).
   This is intended for periodic transaction rules used with
   `--forecast` (or `bal --budget`).
-  ([#1632](https://github.com/simonmichael/hledger/issues/1632), Lawrence Wu)
+  ([#1632](https://github.com/plaintextaccounting/hledger/issues/1632), Lawrence Wu)
 
 - The new `--today=DATE` option allows overriding today's date. This
   can be useful in tests and examples using relative dates, to make
   them reproducible.
-  ([#1674](https://github.com/simonmichael/hledger/issues/1674), Stephen Morgan)
+  ([#1674](https://github.com/plaintextaccounting/hledger/issues/1674), Stephen Morgan)
 
 - In CSV rules, multi-line comments are now supported. Newlines in CSV
   data are preserved, or newlines can be added by writing `\n` when
@@ -6097,7 +6191,7 @@ Improvements
   (Stephen Morgan)
 
 - `register` no longer slows down when there are many report intervals.
-  ([#1683](https://github.com/simonmichael/hledger/issues/1683), Stephen Morgan)
+  ([#1683](https://github.com/plaintextaccounting/hledger/issues/1683), Stephen Morgan)
 
 - Numbers in SQL output now always use decimal period (`.`),
   independent of commodity display styles. 
@@ -6106,7 +6200,7 @@ Improvements
 - `--sort` now gives a more intuitive sort oder when there are
    multiple commodities. Negative numbers in one commodity are always
    less than positive numbers in another commodity.
-   ([#1563](https://github.com/simonmichael/hledger/issues/1563), Stephen Morgan)
+   ([#1563](https://github.com/plaintextaccounting/hledger/issues/1563), Stephen Morgan)
 
 - `--infer-market-price` has been renamed to `--infer-market-prices`.
   (The old spelling still works, since we accept flag prefixes.)
@@ -6118,11 +6212,11 @@ Improvements
   (eg: `hledger reg -p "every 15th day of month") now makes the 
   date column wide enough to show the start and end dates.
   It also wastes less whitespace after the column.
-  ([#1655](https://github.com/simonmichael/hledger/issues/1655), Stephen Morgan)
+  ([#1655](https://github.com/plaintextaccounting/hledger/issues/1655), Stephen Morgan)
 
 - In JSON output, object attributes are now ordered alphabetically,
   consistently for all GHC and haskell lib versions. 
-  ([#1618](https://github.com/simonmichael/hledger/issues/1618), Stephen Morgan)
+  ([#1618](https://github.com/plaintextaccounting/hledger/issues/1618), Stephen Morgan)
 
 - JSON output now indents with 2 spaces rather than 4. 
   (Stephen Morgan)
@@ -6132,13 +6226,13 @@ Improvements
   Multi-commodity amounts are sorted by comparing their amounts in
   each commodity, with alphabetically-first commodity symbols being
   most significant, and assuming zero when a commodity is missing.
-  ([#1563](https://github.com/simonmichael/hledger/issues/1563), 
-  [#1564](https://github.com/simonmichael/hledger/issues/1564), Stephen Morgan)
+  ([#1563](https://github.com/plaintextaccounting/hledger/issues/1563), 
+  [#1564](https://github.com/plaintextaccounting/hledger/issues/1564), Stephen Morgan)
   
 - The close command now uses the later of today or journal's last day
   as default closing date, providing more intuitive behaviour when
   closing a journal with future transactions. Docs have been improved.
-  ([#1604](https://github.com/simonmichael/hledger/issues/1604))
+  ([#1604](https://github.com/plaintextaccounting/hledger/issues/1604))
 
 - Rules for selecting the forecast period (within with --forecast
   generates transactions) have been tweaked slightly, and
@@ -6159,9 +6253,9 @@ Improvements
   `hledger reg --forecast -b 2020-01-01` on a journal containing 
   only periodic transaction rules now shows forecast transactions 
   starting from 2020-01-01, rather than from today.)
-  ([#1648](https://github.com/simonmichael/hledger/issues/1648), 
-  [#1665](https://github.com/simonmichael/hledger/issues/1665),
-  [#1667](https://github.com/simonmichael/hledger/issues/1667), 
+  ([#1648](https://github.com/plaintextaccounting/hledger/issues/1648), 
+  [#1665](https://github.com/plaintextaccounting/hledger/issues/1665),
+  [#1667](https://github.com/plaintextaccounting/hledger/issues/1667), 
   Stephen Morgan, Simon Michael)
 
 - Require base >=4.11, prevent red squares on Hackage's build matrix.
@@ -6175,21 +6269,21 @@ Fixes
   cf/bs/bse/is commands, since hledger 1.19, has been fixed.
   (cf/bs/bse/is with --tree --no-elide --begin DATE and certain
   account directives could show wrong balances).
-  ([#1698](https://github.com/simonmichael/hledger/issues/1698), Stephen Morgan)
+  ([#1698](https://github.com/plaintextaccounting/hledger/issues/1698), Stephen Morgan)
 
 - aregister now aligns multicommodity amounts properly (broken since 1.21).
-  ([#1656](https://github.com/simonmichael/hledger/issues/1656), Stephen Morgan)
+  ([#1656](https://github.com/plaintextaccounting/hledger/issues/1656), Stephen Morgan)
 
 - `balance -E` (and hledger-ui Z) now correctly show zero parent accounts,
   fixing a bug introduced in hledger 1.19.
-  ([#1688](https://github.com/simonmichael/hledger/issues/1688), Stephen Morgan)
+  ([#1688](https://github.com/plaintextaccounting/hledger/issues/1688), Stephen Morgan)
 
 - The `roi` command no longer gives an ugly error in a certain case
   with PnL applied on the first day of investment. (Dmitry Astapov)
 
 - `--forecast` now generates transactions up to the day before the
   specified report end date (instead of two days before).
-  ([#1633](https://github.com/simonmichael/hledger/issues/1633), Stephen Morgan)
+  ([#1633](https://github.com/plaintextaccounting/hledger/issues/1633), Stephen Morgan)
 
 - Certain errors in CSV conversion, such as a failing balance assertion,
   were always being reported as line 2.
@@ -6215,20 +6309,20 @@ Improvements
 Fixes
 
 - Toggle showing zero items properly even when called with --empty. 
-  ([#1237](https://github.com/simonmichael/hledger/issues/1237), Stephen Morgan)
+  ([#1237](https://github.com/plaintextaccounting/hledger/issues/1237), Stephen Morgan)
 
 - Do not hide empty accounts if they have non-empty subaccounts. 
-  ([#1237](https://github.com/simonmichael/hledger/issues/1237), Stephen Morgan)
+  ([#1237](https://github.com/plaintextaccounting/hledger/issues/1237), Stephen Morgan)
 
 - Allow unbalanced postings (parenthesised account name) in the add transaction form. 
-  ([#1058](https://github.com/simonmichael/hledger/issues/1058), Stephen Morgan)
+  ([#1058](https://github.com/plaintextaccounting/hledger/issues/1058), Stephen Morgan)
 
 - An XSS (cross-site scripting) vulnerability has been fixed.
   Previously (since hledger-web 0.24), javascript code could be added 
   to any autocompleteable field and could be executed automatically 
   by subsequent visitors viewing the journal.
   Thanks to Gaspard Baye and Hamidullah Muslih for reporting this vulnerability.
-  ([#1525](https://github.com/simonmichael/hledger/issues/1525), Arsen Arsenović)
+  ([#1525](https://github.com/plaintextaccounting/hledger/issues/1525), Arsen Arsenović)
 
 ### credits 1.23
 
@@ -6252,7 +6346,7 @@ Breaking changes
 
 - aregister no longer hides future transactions by default.
   This is a consequence of the fix for 
-  [#1638](https://github.com/simonmichael/hledger/issues/1638). 
+  [#1638](https://github.com/plaintextaccounting/hledger/issues/1638). 
   It makes aregister consistent, so we think it's a reasonable change.
   So if you have future-dated transactions in your journal which you
   don't want reported, you now must exclude them with `-e tomorrow` or
@@ -6269,11 +6363,11 @@ Fixes
   (broken in 1.22.1).
   Forecast transactions are now generated early and processed
   in the same way as other transactions.
-  ([#1638](https://github.com/simonmichael/hledger/issues/1638), Stephen Morgan)
+  ([#1638](https://github.com/plaintextaccounting/hledger/issues/1638), Stephen Morgan)
 
 - aregister preserves the order of same-day transactions again
   (broken in 1.22.1).
-  ([#1642](https://github.com/simonmichael/hledger/issues/1642), Stephen Morgan)
+  ([#1642](https://github.com/plaintextaccounting/hledger/issues/1642), Stephen Morgan)
 
 ### hledger-ui 1.22.2
 
@@ -6299,7 +6393,7 @@ Improvements
   more likely to be installed by system packages. (Jakob Schöttl)
 
 - roi docs now discuss how to quote multi-word queries.
-  ([#1609](https://github.com/simonmichael/hledger/issues/1609),
+  ([#1609](https://github.com/plaintextaccounting/hledger/issues/1609),
   Dmitry Astapov)
 
 - Allow megaparsec 9.1
@@ -6309,33 +6403,33 @@ Fixes
 - `cur:` and `amt:` queries now match the original amounts before
   valuation and cost conversion, as they did before hledger 1.22. We
   believe this is the more useful behaviour in practice. 
-  ([#1625](https://github.com/simonmichael/hledger/issues/1625), Stephen Morgan)
+  ([#1625](https://github.com/plaintextaccounting/hledger/issues/1625), Stephen Morgan)
 
 - Queries now work better with `register --related`, no longer showing
   duplicate postings when more than one posting in a transaction is
   matched. 
-  ([#1629](https://github.com/simonmichael/hledger/issues/1629), Stephen Morgan)
+  ([#1629](https://github.com/plaintextaccounting/hledger/issues/1629), Stephen Morgan)
 
 - Valuation now works with `register --related`. 
-  ([#1630](https://github.com/simonmichael/hledger/issues/1630), Stephen Morgan)
+  ([#1630](https://github.com/plaintextaccounting/hledger/issues/1630), Stephen Morgan)
 
 - Auto posting rules now also see inferred amounts,
   not just explicit amounts. 
-  ([#1412](https://github.com/simonmichael/hledger/issues/1412), Stephen Morgan)
+  ([#1412](https://github.com/plaintextaccounting/hledger/issues/1412), Stephen Morgan)
 
 - The aregister command now properly ignores a `depth:` argument. 
   It might now also behave more correctly with valuation or `--txn-dates`.
-  ([#1634](https://github.com/simonmichael/hledger/issues/1634), Stephen Morgan)
+  ([#1634](https://github.com/plaintextaccounting/hledger/issues/1634), Stephen Morgan)
 
 - Our info manuals now have more robust directory metadata (no
   subdirectory path), making them more likely to be linked in your
   top-level Info directory by system packages.
-  ([#1594](https://github.com/simonmichael/hledger/issues/1594))
+  ([#1594](https://github.com/plaintextaccounting/hledger/issues/1594))
   (Simon Michael, Damien Cassou)
 
 - The error message for a non-existent input file no longer shows
   excess double quotes.
-  ([#1601](https://github.com/simonmichael/hledger/issues/1601),
+  ([#1601](https://github.com/plaintextaccounting/hledger/issues/1601),
   Stephen Morgan)
 
 - Journal format docs: The commodity directive's scope is now
@@ -6346,16 +6440,16 @@ Fixes
 Improvements
 
 - Document watch mode and its limitations. 
-  ([#1617](https://github.com/simonmichael/hledger/issues/1617), 
-  [#911](https://github.com/simonmichael/hledger/issues/911), 
-  [#836](https://github.com/simonmichael/hledger/issues/836))
+  ([#1617](https://github.com/plaintextaccounting/hledger/issues/1617), 
+  [#911](https://github.com/plaintextaccounting/hledger/issues/911), 
+  [#836](https://github.com/plaintextaccounting/hledger/issues/836))
 
 - Allow megaparsec 9.1.
 
 Fixes
 
 - Up/down keys work on the transaction screen again (broken since 1.22). 
-  ([#1607](https://github.com/simonmichael/hledger/issues/1607), Stephen Morgan)
+  ([#1607](https://github.com/plaintextaccounting/hledger/issues/1607), Stephen Morgan)
 
 - Fix a possible off-by-one bug with valuation date when using `V` key on
   the transaction screen. (If it ever needs to use the journal's last day
@@ -6371,7 +6465,7 @@ Fixes
 
 - The register chart works again when there are multiple commodities and 
   transaction prices (broken since 1.22). 
-  ([#1597](https://github.com/simonmichael/hledger/issues/1597), Stephen Morgan)
+  ([#1597](https://github.com/plaintextaccounting/hledger/issues/1597), Stephen Morgan)
 
 ### credits 1.22.1
 
@@ -6404,7 +6498,7 @@ Docs:
   packager can install them with `install-info` and they will appear
   in info's Directory. We also provide a `dir` file making it easy
   for developers to see the latest dev manuals in their info Directory.
-  ([#1585](https://github.com/simonmichael/hledger/issues/1585)) (Damien Cassou, Simon Michael)
+  ([#1585](https://github.com/plaintextaccounting/hledger/issues/1585)) (Damien Cassou, Simon Michael)
 
 Chat:
 
@@ -6460,7 +6554,7 @@ Improvements
 
 - ANSI color is now disabled automatically (on stdout) when the
   `-o/--output-file` option is used (with a value other than `-`).
-  ([#1533](https://github.com/simonmichael/hledger/issues/1533))
+  ([#1533](https://github.com/plaintextaccounting/hledger/issues/1533))
 
 - ANSI color is now also available in debug output, determined in the
   usual way by `--color`, `NO_COLOR`, and whether the output (stderr)
@@ -6474,7 +6568,7 @@ Improvements
   colon in the latter) in CSV output is now consistent for single- and
   multi-period reports.
 
-- balance reports' CSV output now includes full account names. ([#1566](https://github.com/simonmichael/hledger/issues/1566))
+- balance reports' CSV output now includes full account names. ([#1566](https://github.com/plaintextaccounting/hledger/issues/1566))
   (Stephen Morgan)
 
 - csv: We now accept spaces when parsing amounts from CSV. (Eric
@@ -6490,29 +6584,29 @@ Improvements
 - GHC 9.0 is now officially supported. GHC 8.0, 8.2, 8.4 are no longer
   supported; we now require GHC 8.6 or greater.
 
-- Added a now-required lower bound on containers. ([#1514](https://github.com/simonmichael/hledger/issues/1514))
+- Added a now-required lower bound on containers. ([#1514](https://github.com/plaintextaccounting/hledger/issues/1514))
 
 Fixes
 
 - Auto posting rules now match postings more precisely, respecting
-  `cur:` and `amt:` queries. ([#1582](https://github.com/simonmichael/hledger/issues/1582)) (Stephen Morgan)
+  `cur:` and `amt:` queries. ([#1582](https://github.com/plaintextaccounting/hledger/issues/1582)) (Stephen Morgan)
 
 - balance reports: Fix empty cells when amounts are too wide to fit
-  (broken since 1.20) ([#1526](https://github.com/simonmichael/hledger/issues/1526)). (Stephen Morgan)
+  (broken since 1.20) ([#1526](https://github.com/plaintextaccounting/hledger/issues/1526)). (Stephen Morgan)
 
 - csv: Fix the escaping of double quotes in CSV output (broken in
   1.21). (Stephen Morgan, [#1508])
 
 - register: Fix the running total when there is a report interval
-  (broken since 1.19) ([#1568](https://github.com/simonmichael/hledger/issues/1568)). (Stephen Morgan)
+  (broken since 1.19) ([#1568](https://github.com/plaintextaccounting/hledger/issues/1568)). (Stephen Morgan)
 
-- stats: No longer gets confused by posting dates. ([#772](https://github.com/simonmichael/hledger/issues/772)) (Stephen Morgan)
+- stats: No longer gets confused by posting dates. ([#772](https://github.com/plaintextaccounting/hledger/issues/772)) (Stephen Morgan)
 
 - timeclock: `hledger print` shows timeclock amounts with just 2
-  decimal places again (broken in 1.21). ([#1527](https://github.com/simonmichael/hledger/issues/1527))
+  decimal places again (broken in 1.21). ([#1527](https://github.com/plaintextaccounting/hledger/issues/1527))
 
 - When all transaction amounts have the same sign, the error message
-  no longer adds an inferred price. ([#1551](https://github.com/simonmichael/hledger/issues/1551)) (Stephen Morgan)
+  no longer adds an inferred price. ([#1551](https://github.com/plaintextaccounting/hledger/issues/1551)) (Stephen Morgan)
 
 - Cleaned up some references to old man pages. (Felix Yan)
 
@@ -6535,15 +6629,15 @@ Improvements
 - GHC 9.0 is now officially supported. GHC 8.0, 8.2, 8.4 are no longer
   supported; we now require GHC 8.6 or greater.
 
-- Added a now-required lower bound on containers. ([#1514](https://github.com/simonmichael/hledger/issues/1514))
+- Added a now-required lower bound on containers. ([#1514](https://github.com/plaintextaccounting/hledger/issues/1514))
 
 Fixes
 
-- Queries in the register screen work again (broken in 1.21). ([#1523](https://github.com/simonmichael/hledger/issues/1523))
+- Queries in the register screen work again (broken in 1.21). ([#1523](https://github.com/plaintextaccounting/hledger/issues/1523))
   (Stephen Morgan)
 
 - Don't write to `./debug.log` when toggling value with `V`, or when
-  reloading with `g` or `--watch` in the Transaction screen. ([#1556](https://github.com/simonmichael/hledger/issues/1556))
+  reloading with `g` or `--watch` in the Transaction screen. ([#1556](https://github.com/plaintextaccounting/hledger/issues/1556))
   (Simon Michael, Stephen Morgan)
 
 ### hledger-web 1.22
@@ -6555,7 +6649,7 @@ Improvements
 
 - Allow yesod-form 1.7 (Felix Yan)
 
-- Add now-required lower bound on containers. ([#1514](https://github.com/simonmichael/hledger/issues/1514))
+- Add now-required lower bound on containers. ([#1514](https://github.com/plaintextaccounting/hledger/issues/1514))
 
 - GHC 9.0 is now officially supported. GHC 8.0, 8.2, 8.4 are no longer
   supported; we now require GHC 8.6 or greater.
@@ -6605,7 +6699,7 @@ and Garret McGraw.
   and tests in sync, making things more reliable for everyone. ([#1453])
 
 - Last but not least, hledger's bash completions (provided in ./shell-completions/)
-  have been [thoroughly updated](https://github.com/simonmichael/hledger/blob/master/CHANGES.md#121-2021-03-10)
+  have been [thoroughly updated](https://github.com/plaintextaccounting/hledger/blob/master/CHANGES.md#121-2021-03-10)
   ([#1404], [#1410], Vladimir Zhelezov).
 
 ### hledger cli 1.21
@@ -6631,7 +6725,7 @@ and Garret McGraw.
 - Some command aliases, considered deprecated, have been removed:
   `txns`, `equity`, and the single-letter command aliases `a`, `b`,
   `p`, and `r`. This was discussed at
-  https://github.com/simonmichael/hledger/pull/1423 and on the hledger
+  https://github.com/plaintextaccounting/hledger/pull/1423 and on the hledger
   mail list. It might annoy some folks; please read the issue and do
   follow up there if needed.
   
@@ -6798,22 +6892,22 @@ Caleb Maclennan,
 and
 Felix Van der Jeugt.
 
-[#931]:  https://github.com/simonmichael/hledger/issues/931
-[#1353]: https://github.com/simonmichael/hledger/issues/1353
-[#1396]: https://github.com/simonmichael/hledger/issues/1396
-[#1404]: https://github.com/simonmichael/hledger/issues/1404
-[#1405]: https://github.com/simonmichael/hledger/issues/1405
-[#1410]: https://github.com/simonmichael/hledger/issues/1410
-[#1417]: https://github.com/simonmichael/hledger/issues/1417
-[#1424]: https://github.com/simonmichael/hledger/issues/1424
-[#1434]: https://github.com/simonmichael/hledger/issues/1434
-[#1453]: https://github.com/simonmichael/hledger/issues/1453
-[#1461]: https://github.com/simonmichael/hledger/issues/1461
-[#1465]: https://github.com/simonmichael/hledger/issues/1465
-[#1468]: https://github.com/simonmichael/hledger/issues/1468
-[#1471]: https://github.com/simonmichael/hledger/issues/1471
-[#1483]: https://github.com/simonmichael/hledger/issues/1483
-[#1493]: https://github.com/simonmichael/hledger/issues/1493
+[#931]:  https://github.com/plaintextaccounting/hledger/issues/931
+[#1353]: https://github.com/plaintextaccounting/hledger/issues/1353
+[#1396]: https://github.com/plaintextaccounting/hledger/issues/1396
+[#1404]: https://github.com/plaintextaccounting/hledger/issues/1404
+[#1405]: https://github.com/plaintextaccounting/hledger/issues/1405
+[#1410]: https://github.com/plaintextaccounting/hledger/issues/1410
+[#1417]: https://github.com/plaintextaccounting/hledger/issues/1417
+[#1424]: https://github.com/plaintextaccounting/hledger/issues/1424
+[#1434]: https://github.com/plaintextaccounting/hledger/issues/1434
+[#1453]: https://github.com/plaintextaccounting/hledger/issues/1453
+[#1461]: https://github.com/plaintextaccounting/hledger/issues/1461
+[#1465]: https://github.com/plaintextaccounting/hledger/issues/1465
+[#1468]: https://github.com/plaintextaccounting/hledger/issues/1468
+[#1471]: https://github.com/plaintextaccounting/hledger/issues/1471
+[#1483]: https://github.com/plaintextaccounting/hledger/issues/1483
+[#1493]: https://github.com/plaintextaccounting/hledger/issues/1493
 
 ## 2021-01-29 hledger-1.20.4
 
@@ -8113,11 +8207,11 @@ usability & bug fixes.**
   hledger-ui on windows ?) (Dmitry Astapov, Simon Michael)
 
 - doc: fixed pandoc typography conversion in web manuals. Eg `--` was
-  being rendered as en-dash. ([#954](https://github.com/simonmichael/hledger/issues/954)).
+  being rendered as en-dash. ([#954](https://github.com/plaintextaccounting/hledger/issues/954)).
 
 Developers:
 
-- developer docs have moved from the wiki into CONTRIBUTING.md ([#920](https://github.com/simonmichael/hledger/issues/920))
+- developer docs have moved from the wiki into CONTRIBUTING.md ([#920](https://github.com/plaintextaccounting/hledger/issues/920))
 
 - new streamlined changelog update process. Shake targets:
   
@@ -8169,9 +8263,9 @@ Developers:
 - close: generated balance assertions now have exact amounts with all
   decimal digits, ignoring display precision. Also, balance assertion
   amounts will no longer contain prices.
-  ([#941](https://github.com/simonmichael/hledger/issues/941),
-  [#824](https://github.com/simonmichael/hledger/issues/824),
-  [#958](https://github.com/simonmichael/hledger/issues/958))
+  ([#941](https://github.com/plaintextaccounting/hledger/issues/941),
+  [#824](https://github.com/plaintextaccounting/hledger/issues/824),
+  [#958](https://github.com/plaintextaccounting/hledger/issues/958))
 
 - files: now shows up in the commands list
 
@@ -8181,7 +8275,7 @@ Developers:
   Astapov)
 
 - stats, ui: correct file order is preserved when using `--auto`
-  ([#949](https://github.com/simonmichael/hledger/issues/949))
+  ([#949](https://github.com/plaintextaccounting/hledger/issues/949))
 
 - journal: account directive: the account name can now be followed by
   a comment on the same line
@@ -8203,10 +8297,10 @@ Developers:
   decimal digits.  Previously it was possible, in case of a commodity
   directive limiting the display precision, to have a balance
   assertion error with asserted and actual amounts looking the
-  same. ([#941](https://github.com/simonmichael/hledger/issues/941))
+  same. ([#941](https://github.com/plaintextaccounting/hledger/issues/941))
 
 - journal: fixed a periodic transaction parsing failure
-  ([#942](https://github.com/simonmichael/hledger/issues/942)) (Dmitry
+  ([#942](https://github.com/plaintextaccounting/hledger/issues/942)) (Dmitry
   Astapov)
 
 ### hledger-ui 1.13
@@ -8288,7 +8382,7 @@ misc fixes**
 
 * balance command: fix wrongful eliding of zero-balance parent accounts in tree mode (Dmitry Astapov)  
 
-* journal format, bs/bse/cf/is commands: account directives can declare account types ([#877](https://github.com/simonmichael/hledger/issues/877))  
+* journal format, bs/bse/cf/is commands: account directives can declare account types ([#877](https://github.com/plaintextaccounting/hledger/issues/877))  
   Previously you had to use one of the standard english account names
   (assets, liabilities..) for top-level accounts, if you wanted them to
   appear in the right place in the balancesheet, balancesheetequity,
@@ -8333,32 +8427,32 @@ misc fixes**
 
 * journal format: account directives now allow whitespace or a comment after the account name  
 
-* journal format: using ~ for home directory in include directives now works ([#896](https://github.com/simonmichael/hledger/issues/896)) (Mykola Orliuk)  
+* journal format: using ~ for home directory in include directives now works ([#896](https://github.com/plaintextaccounting/hledger/issues/896)) (Mykola Orliuk)  
 
-* journal format: prevent misleading parse error messages with cyclic include directives ([#853](https://github.com/simonmichael/hledger/issues/853)) (Alex Chen)  
+* journal format: prevent misleading parse error messages with cyclic include directives ([#853](https://github.com/plaintextaccounting/hledger/issues/853)) (Alex Chen)  
 
-* journal format: transaction modifier multipliers handle total-priced amounts correctly ([#928](https://github.com/simonmichael/hledger/issues/928)).  
+* journal format: transaction modifier multipliers handle total-priced amounts correctly ([#928](https://github.com/plaintextaccounting/hledger/issues/928)).  
   Multipliers (*N) in transaction modifier rules did not multiply
   total-priced amounts properly.  Now the total prices are also multiplied,
   keeping the transaction balanced.
 
-* journal format: do amount inference/balance assignments/assertions before transaction modifiers ([#893](https://github.com/simonmichael/hledger/issues/893), [#908](https://github.com/simonmichael/hledger/issues/908)) (Jesse Rosenthal)  
+* journal format: do amount inference/balance assignments/assertions before transaction modifiers ([#893](https://github.com/plaintextaccounting/hledger/issues/893), [#908](https://github.com/plaintextaccounting/hledger/issues/908)) (Jesse Rosenthal)  
   Previously, transaction modifier (auto postings) rules were applied
   before missing amounts were inferred. This meant amount multipliers could
   generate too many missing-amount postings, making the transaction
-  unbalanceable ([#893](https://github.com/simonmichael/hledger/issues/893)).
+  unbalanceable ([#893](https://github.com/plaintextaccounting/hledger/issues/893)).
 
   Now, missing amount inference (and balance assignments, and balance
   assertions, which are interdependent) are done earlier, before
-  transaction modifier rules are applied ([#900](https://github.com/simonmichael/hledger/issues/900), [#903](https://github.com/simonmichael/hledger/issues/903)).
+  transaction modifier rules are applied ([#900](https://github.com/plaintextaccounting/hledger/issues/900), [#903](https://github.com/plaintextaccounting/hledger/issues/903)).
 
   Also, we now disallow the combination of balance assignments and
   transaction modifier rules which both affect the same account, which
-  could otherwise cause confusing balance assertion failures ([#912](https://github.com/simonmichael/hledger/issues/912)).
+  could otherwise cause confusing balance assertion failures ([#912](https://github.com/plaintextaccounting/hledger/issues/912)).
   (Because assignments now generate amounts to satisfy balance assertions
-  before transaction modifier rules are applied ([#908](https://github.com/simonmichael/hledger/issues/908)).)
+  before transaction modifier rules are applied ([#908](https://github.com/plaintextaccounting/hledger/issues/908)).)
 
-* journal format: periodic transaction rules are now aware of Y default year directives. ([#892](https://github.com/simonmichael/hledger/issues/892))  
+* journal format: periodic transaction rules are now aware of Y default year directives. ([#892](https://github.com/plaintextaccounting/hledger/issues/892))  
   Ie when a default year Y is in effect, they resolve partial or relative
   dates using Y/1/1 as the reference date, rather than today's date.
 
@@ -8366,7 +8460,7 @@ misc fixes**
 
 * fix "Any" build error with GHC < 8.4  
 
-* error screen: always show error position properly ([#904](https://github.com/simonmichael/hledger/issues/904)) (Mykola Orliuk)  
+* error screen: always show error position properly ([#904](https://github.com/plaintextaccounting/hledger/issues/904)) (Mykola Orliuk)  
 
 * accounts screen: show correct balances when there's only periodic transactions  
 
@@ -8402,7 +8496,7 @@ misc fixes**
 
 * styling tweaks; cyan/blue -> white/yellow  
 
-* less noisy styling in horizontal borders ([#838](https://github.com/simonmichael/hledger/issues/838))  
+* less noisy styling in horizontal borders ([#838](https://github.com/plaintextaccounting/hledger/issues/838))  
 
 * register screen: positive amounts: green -> black  
   The green/red scheme helped distinguish the changes column from the
@@ -8449,7 +8543,7 @@ misc fixes**
 
 * plog, plogAt: add missing newline  
 
-* split up journalFinalise, reorder journal finalisation steps ([#893](https://github.com/simonmichael/hledger/issues/893)) (Jesse Rosenthal)  
+* split up journalFinalise, reorder journal finalisation steps ([#893](https://github.com/plaintextaccounting/hledger/issues/893)) (Jesse Rosenthal)  
   The `journalFinalise` function has been split up, allowing more granular
   control.
 
@@ -8506,7 +8600,7 @@ fixes**
 * prices: query arguments are now supported. Prices can be filtered by
   date, and postings providing transaction prices can also be filtered.
 
-* rewrite: help clarifies relation to print `--auto` ([#745](https://github.com/simonmichael/hledger/issues/745))
+* rewrite: help clarifies relation to print `--auto` ([#745](https://github.com/plaintextaccounting/hledger/issues/745))
 
 * roi: a new command to compute return on investment, based on hledger-irr
 
@@ -8515,7 +8609,7 @@ fixes**
 
 * csv: We use a more robust CSV lib (cassava) and now support
   non-comma separators, eg `--separator ';'` (experimental, this flag
-  will probably become a CSV rule) ([#829](https://github.com/simonmichael/hledger/issues/829))
+  will probably become a CSV rule) ([#829](https://github.com/plaintextaccounting/hledger/issues/829))
 
 * csv: interpolated field names in values are now properly case insensitive, so
   this works:
@@ -8524,16 +8618,16 @@ fixes**
   date %Transaction_Date
 
 * journal: D (default commodity) directives no longer break multiplier
-  amounts in transaction modifiers (AKA automated postings) ([#860](https://github.com/simonmichael/hledger/issues/860))
+  amounts in transaction modifiers (AKA automated postings) ([#860](https://github.com/plaintextaccounting/hledger/issues/860))
 
 * journal: "Automated Postings" have been renamed to "Transaction Modifiers".
 
-* journal: transaction comments in transaction modifier rules are now parsed correctly. ([#745](https://github.com/simonmichael/hledger/issues/745))
+* journal: transaction comments in transaction modifier rules are now parsed correctly. ([#745](https://github.com/plaintextaccounting/hledger/issues/745))
 
 * journal: when include files form a cycle, we give an error instead
   of hanging.
 
-* upper-case day/month names in period expressions no longer give an error ([#847](https://github.com/simonmichael/hledger/issues/847), [#852](https://github.com/simonmichael/hledger/issues/852))
+* upper-case day/month names in period expressions no longer give an error ([#847](https://github.com/plaintextaccounting/hledger/issues/847), [#852](https://github.com/plaintextaccounting/hledger/issues/852))
 
 
 ### hledger-ui 1.11
@@ -8553,7 +8647,7 @@ fixes**
 
 ### hledger-lib 1.11
 
-* compilation now works when locale is unset ([#849](https://github.com/simonmichael/hledger/issues/849))
+* compilation now works when locale is unset ([#849](https://github.com/plaintextaccounting/hledger/issues/849))
 
 * all unit tests have been converted from HUnit+test-framework to easytest
 
@@ -8659,7 +8753,7 @@ misc fixes**
 
 * readJournalFile(s) cleanup, these now use InputOpts
 
-* doctests now run a bit faster ([#802](https://github.com/simonmichael/hledger/issues/802))
+* doctests now run a bit faster ([#802](https://github.com/plaintextaccounting/hledger/issues/802))
 
 
 ### hledger cli 1.10
@@ -8667,16 +8761,16 @@ misc fixes**
 * journal: many parse error messages have become more informative, and
   some now show the source line and error location.
 
-* journal: `;tag:` is no longer parsed as a tag named ";tag" ([#655](https://github.com/simonmichael/hledger/issues/655))
+* journal: `;tag:` is no longer parsed as a tag named ";tag" ([#655](https://github.com/plaintextaccounting/hledger/issues/655))
 
 * journal: transaction price amounts having their own price amounts is
   now a parse error
 
 * journal: amounts with space as digit group separator and trailing whitespace 
-  now parse correctly ([#780](https://github.com/simonmichael/hledger/issues/780))
+  now parse correctly ([#780](https://github.com/plaintextaccounting/hledger/issues/780))
 
 * journal: in amounts containing digits and a single space, the space
-  is now interpreted as a digit group separator, not a decimal separator ([#749](https://github.com/simonmichael/hledger/issues/749))
+  is now interpreted as a digit group separator, not a decimal separator ([#749](https://github.com/plaintextaccounting/hledger/issues/749))
 
 * journal: in commodity/format/D directives, the amount must now include a decimal separator.
 
@@ -8697,7 +8791,7 @@ misc fixes**
   semantics, especially with multiple files.  The manual now describes
   their behaviour precisely.
 
-* journal: `alias` and `apply account` directives now affect `account` directives ([#825](https://github.com/simonmichael/hledger/issues/825))
+* journal: `alias` and `apply account` directives now affect `account` directives ([#825](https://github.com/plaintextaccounting/hledger/issues/825))
 
 * journal: periodic transactions can now have all the usual transaction fields
   (status mark, code, description, comment), for generating more expressive
@@ -8707,18 +8801,18 @@ misc fixes**
   expression attached as a tag named "recur".
 
 * journal: periodic transactions now start on the first instance of the 
-  recurring date, rather than the day after the last regular transaction ([#750](https://github.com/simonmichael/hledger/issues/750))
+  recurring date, rather than the day after the last regular transaction ([#750](https://github.com/plaintextaccounting/hledger/issues/750))
 
 * journal: periodic transaction rules now allow period expressions relative to today's date
 
 * csv: amount-in/amount-out errors are more detailed
 
 * balance: `--drop` is now ignored when not in flat mode, 
-  rather than producing a corrupted report ([#754](https://github.com/simonmichael/hledger/issues/754))
+  rather than producing a corrupted report ([#754](https://github.com/plaintextaccounting/hledger/issues/754))
 
 * budget: `--drop` now preserves the `<unbudgeted>` top-level account in `--budget` reports
 
-* register: in CSV output, the code field is now included ([#746](https://github.com/simonmichael/hledger/issues/746))
+* register: in CSV output, the code field is now included ([#746](https://github.com/plaintextaccounting/hledger/issues/746))
 
 * smart dates now allow  the YYYYMM format, and are better documented
 
@@ -8727,7 +8821,7 @@ misc fixes**
 
 ### hledger-ui 1.10
 
-* the effect of `--value`, `--forecast`, and `--anon` flags is now preserved on reload ([#753](https://github.com/simonmichael/hledger/issues/753))
+* the effect of `--value`, `--forecast`, and `--anon` flags is now preserved on reload ([#753](https://github.com/plaintextaccounting/hledger/issues/753))
 
 * edit-at-transaction-position is now also supported when $EDITOR is neovim
 
@@ -8811,7 +8905,7 @@ found when reading files.
 customize sorting.  bal/bs/cf/is will sort accounts by account code,
 if any, then account name.
 
-* journal: support scientific number notation ([#704](https://github.com/simonmichael/hledger/issues/704), [#706](https://github.com/simonmichael/hledger/issues/706))
+* journal: support scientific number notation ([#704](https://github.com/plaintextaccounting/hledger/issues/704), [#706](https://github.com/plaintextaccounting/hledger/issues/706))
 
 * csv: reading a CSV file containing no records is no longer an error
 
@@ -8910,23 +9004,23 @@ Alvaro Fernando García.
 
 ### hledger-lib 1.5
 
-* `-V`/`--value` uses today's market prices by default, not those of last transaction date. [#683](https://github.com/simonmichael/hledger/issues/683), [#648](https://github.com/simonmichael/hledger/issues/648))
+* `-V`/`--value` uses today's market prices by default, not those of last transaction date. [#683](https://github.com/plaintextaccounting/hledger/issues/683), [#648](https://github.com/plaintextaccounting/hledger/issues/648))
 
 * csv: allow balance assignment (balance assertion only, no amount) in csv records (Nadrieril)
 
-* journal: allow space as digit group separator character, [#330](https://github.com/simonmichael/hledger/issues/330) (Mykola Orliuk)
+* journal: allow space as digit group separator character, [#330](https://github.com/plaintextaccounting/hledger/issues/330) (Mykola Orliuk)
 
-* journal: balance assertion errors now show line of failed assertion posting, [#481](https://github.com/simonmichael/hledger/issues/481) (Sam Jeeves)
+* journal: balance assertion errors now show line of failed assertion posting, [#481](https://github.com/plaintextaccounting/hledger/issues/481) (Sam Jeeves)
 
-* journal: better errors for directives, [#402](https://github.com/simonmichael/hledger/issues/402) (Mykola Orliuk)
+* journal: better errors for directives, [#402](https://github.com/plaintextaccounting/hledger/issues/402) (Mykola Orliuk)
 
-* journal: better errors for included files, [#660](https://github.com/simonmichael/hledger/issues/660) (Mykola Orliuk)
+* journal: better errors for included files, [#660](https://github.com/plaintextaccounting/hledger/issues/660) (Mykola Orliuk)
 
-* journal: commodity directives in parent files are inherited by included files, [#487](https://github.com/simonmichael/hledger/issues/487) (Mykola Orliuk)
+* journal: commodity directives in parent files are inherited by included files, [#487](https://github.com/plaintextaccounting/hledger/issues/487) (Mykola Orliuk)
 
-* journal: commodity directives limits precision even after `-B`, [#509](https://github.com/simonmichael/hledger/issues/509) (Mykola Orliuk)
+* journal: commodity directives limits precision even after `-B`, [#509](https://github.com/plaintextaccounting/hledger/issues/509) (Mykola Orliuk)
 
-* journal: decimal point/digit group separator chars are now inferred from an applicable commodity directive or default commodity directive. [#399](https://github.com/simonmichael/hledger/issues/399), [#487](https://github.com/simonmichael/hledger/issues/487) (Mykola Orliuk)
+* journal: decimal point/digit group separator chars are now inferred from an applicable commodity directive or default commodity directive. [#399](https://github.com/plaintextaccounting/hledger/issues/399), [#487](https://github.com/plaintextaccounting/hledger/issues/487) (Mykola Orliuk)
 
 * journal: numbers are parsed more strictly (Mykola Orliuk)
 
@@ -8952,7 +9046,7 @@ Alvaro Fernando García.
 
 * `--forecast` generates Ledger-style periodic transactions in the future (Dmitry Astapov, Mykola Orliuk)
 
-* `-V`/`--value` uses today's market prices by default, not those of last transaction date. [#683](https://github.com/simonmichael/hledger/issues/683), [#648](https://github.com/simonmichael/hledger/issues/648)
+* `-V`/`--value` uses today's market prices by default, not those of last transaction date. [#683](https://github.com/plaintextaccounting/hledger/issues/683), [#648](https://github.com/plaintextaccounting/hledger/issues/648)
 
 * add: suggest implied (parent) and declared (by account directives) account names also
 
@@ -8965,14 +9059,14 @@ Alvaro Fernando García.
 * import: the output of `--dry-run` is now valid journal format
 
 * print: `-B` shows converted amounts again, as in 1.1, even without
-  `-x`. [#551](https://github.com/simonmichael/hledger/issues/551) (Mykola Orliuk, Simon Michael)
+  `-x`. [#551](https://github.com/plaintextaccounting/hledger/issues/551) (Mykola Orliuk, Simon Michael)
 
 * tag: the first argument now filters tag names, additional arguments
-  filter transactions ([#261](https://github.com/simonmichael/hledger/issues/261))
+  filter transactions ([#261](https://github.com/plaintextaccounting/hledger/issues/261))
 
 ### hledger-ui 1.5
 
-* fix help -> view manual (on posix platforms) [#623](https://github.com/simonmichael/hledger/issues/623)
+* fix help -> view manual (on posix platforms) [#623](https://github.com/plaintextaccounting/hledger/issues/623)
 
 * support `-V`/`--value`, `--forecast`, `--auto`
 
@@ -9034,7 +9128,7 @@ all major hledger packages. See http://hledger.org/download for details.
 * add readJournalFile[s]WithOpts, with simpler arguments and support
 for detecting new transactions since the last read.
 
-* query: add payee: and note: query terms, improve description/payee/note docs (Jakub Zárybnický, Simon Michael, [#598](https://github.com/simonmichael/hledger/issues/598), [#608](https://github.com/simonmichael/hledger/issues/608))
+* query: add payee: and note: query terms, improve description/payee/note docs (Jakub Zárybnický, Simon Michael, [#598](https://github.com/plaintextaccounting/hledger/issues/598), [#608](https://github.com/plaintextaccounting/hledger/issues/608))
 
 * journal, cli: make trailing whitespace significant in regex account aliases
 Trailing whitespace in the replacement part of a regular expression
@@ -9055,7 +9149,7 @@ This simplifies things and facilitates future improvements.
 
 * deps: allow ansi-terminal 0.7
 
-* deps: add missing parsec lower bound, possibly related to [#596](https://github.com/simonmichael/hledger/issues/596), [fpco/stackage#2835](https://github.com/fpco/stackage/issues/2835)
+* deps: add missing parsec lower bound, possibly related to [#596](https://github.com/plaintextaccounting/hledger/issues/596), [fpco/stackage#2835](https://github.com/fpco/stackage/issues/2835)
 
 * deps: drop oldtime flag, require time 1.5+
 
@@ -9065,18 +9159,18 @@ This simplifies things and facilitates future improvements.
 
 <!-- 1.3.1 (2017/8/25) -->
 
-* Fix a bug with `-H` showing nothing for empty periods ([#583](https://github.com/simonmichael/hledger/issues/583), Nicholas Niro)
+* Fix a bug with `-H` showing nothing for empty periods ([#583](https://github.com/plaintextaccounting/hledger/issues/583), Nicholas Niro)
 This patch fixes a bug that happened when using the `-H` option on
 a period without any transaction. Previously, the behavior was no
 output at all even though it should have shown the previous ending balances
 of past transactions. (This is similar to previously using `-H` with `-E`,
 but with the extra advantage of not showing empty accounts)
 
-* allow megaparsec 6 ([#594](https://github.com/simonmichael/hledger/issues/594))
+* allow megaparsec 6 ([#594](https://github.com/plaintextaccounting/hledger/issues/594))
 
 * allow megaparsec-6.1 (Hans-Peter Deifel)
 
-* fix test suite with Cabal 2 ([#596](https://github.com/simonmichael/hledger/issues/596))
+* fix test suite with Cabal 2 ([#596](https://github.com/plaintextaccounting/hledger/issues/596))
 
 ### hledger cli 1.4
 
@@ -9090,9 +9184,9 @@ but with the extra advantage of not showing empty accounts)
 
 * cli: accept `-NUM` as a shortcut for `--depth=NUM` (eg: -2)
 
-* cli: improve command-line help for `--date2` ([#604](https://github.com/simonmichael/hledger/issues/604))
+* cli: improve command-line help for `--date2` ([#604](https://github.com/plaintextaccounting/hledger/issues/604))
 
-* cli: make `--help` and `-h` the same, drop `--man` and `--info` for now ([#579](https://github.com/simonmichael/hledger/issues/579))
+* cli: make `--help` and `-h` the same, drop `--man` and `--info` for now ([#579](https://github.com/plaintextaccounting/hledger/issues/579))
 
 * help: offers multiple formats, accepts topic substrings.
   The separate info/man commands have been dropped. help now
@@ -9104,7 +9198,7 @@ but with the extra advantage of not showing empty accounts)
   - otherwise it prints on stdout
   - (and it always prints on stdout when piped). 
   You can override this with the `--info`/`--man`/`--pager`/`--cat` flags.
-  ([#579](https://github.com/simonmichael/hledger/issues/579))
+  ([#579](https://github.com/plaintextaccounting/hledger/issues/579))
 
 * bal/bs/cf/is: `--sort-amount`/`-S` sorts by largest amount instead of
   account name
@@ -9117,9 +9211,9 @@ but with the extra advantage of not showing empty accounts)
   single final blank line.  Previously, amounts wider than the column
   headings would be separated by only a single space.
 
-* bs/is: don't let an empty subreport disable the grand totals (fixes [#588](https://github.com/simonmichael/hledger/issues/588))
+* bs/is: don't let an empty subreport disable the grand totals (fixes [#588](https://github.com/plaintextaccounting/hledger/issues/588))
 
-* cf: exclude asset accounts with ":fixed" in their name (Christian G. Warden, Simon Michael, [#584](https://github.com/simonmichael/hledger/issues/584))
+* cf: exclude asset accounts with ":fixed" in their name (Christian G. Warden, Simon Michael, [#584](https://github.com/plaintextaccounting/hledger/issues/584))
 
 * new balancesheetequity command: like balancesheet but also shows
   equity accounts (Nicholas Niro)
@@ -9155,9 +9249,9 @@ but with the extra advantage of not showing empty accounts)
 
 <!-- 1.3.1 (2017/8/25) -->
 
-* bs/is: don't let an empty subreport disable the grand totals ([#588](https://github.com/simonmichael/hledger/issues/588))
+* bs/is: don't let an empty subreport disable the grand totals ([#588](https://github.com/plaintextaccounting/hledger/issues/588))
 
-* allow megaparsec 6 ([#594](https://github.com/simonmichael/hledger/issues/594))
+* allow megaparsec 6 ([#594](https://github.com/plaintextaccounting/hledger/issues/594))
 
 * allow megaparsec-6.1 (Hans-Peter Deifel)
 
@@ -9167,7 +9261,7 @@ but with the extra advantage of not showing empty accounts)
 
 * a @FILE argument reads flags & args from FILE, one per line
 
-* enable `--pivot` and `--anon` options, like hledger CLI ([#474](https://github.com/simonmichael/hledger/issues/474)) (Jakub Zárybnický)
+* enable `--pivot` and `--anon` options, like hledger CLI ([#474](https://github.com/plaintextaccounting/hledger/issues/474)) (Jakub Zárybnický)
 
 * accept `-NUM` as a shortcut for `--depth NUM`
 
@@ -9177,7 +9271,7 @@ but with the extra advantage of not showing empty accounts)
 
 <!-- # 1.3.1 (2017/8/25) -->
 
-* allow megaparsec 6 ([#594](https://github.com/simonmichael/hledger/issues/594), Simon Michael, Hans-Peter Deifel)
+* allow megaparsec 6 ([#594](https://github.com/plaintextaccounting/hledger/issues/594), Simon Michael, Hans-Peter Deifel)
 
 * allow megaparsec-6.1 (Hans-Peter Deifel)
 
@@ -9191,9 +9285,9 @@ but with the extra advantage of not showing empty accounts)
 
 * a @FILE argument reads flags & args from FILE, one per line
 
-* enable `--pivot` and `--anon` options, like hledger CLI ([#474](https://github.com/simonmichael/hledger/issues/474)) (Jakub Zárybnický)
+* enable `--pivot` and `--anon` options, like hledger CLI ([#474](https://github.com/plaintextaccounting/hledger/issues/474)) (Jakub Zárybnický)
 
-* web: Make "Add transaction" button tabbable ([#430](https://github.com/simonmichael/hledger/issues/430)) (Jakub Zárybnický)
+* web: Make "Add transaction" button tabbable ([#430](https://github.com/plaintextaccounting/hledger/issues/430)) (Jakub Zárybnický)
 
 * accept `-NUM` as a shortcut for `--depth NUM`
 
@@ -9205,7 +9299,7 @@ but with the extra advantage of not showing empty accounts)
 
 <!-- # 1.3.1 (2017/8/25) -->
 
-* allow megaparsec 6 ([#594](https://github.com/simonmichael/hledger/issues/594), Simon Michael, Hans-Peter Deifel)
+* allow megaparsec 6 ([#594](https://github.com/plaintextaccounting/hledger/issues/594), Simon Michael, Hans-Peter Deifel)
 
 * allow megaparsec-6.1 (Hans-Peter Deifel)
 
@@ -9213,7 +9307,7 @@ but with the extra advantage of not showing empty accounts)
 
 ### hledger-api 1.4
 
-* api: add support for swagger2 2.1.5+ (fixes [#612](https://github.com/simonmichael/hledger/issues/612))
+* api: add support for swagger2 2.1.5+ (fixes [#612](https://github.com/plaintextaccounting/hledger/issues/612))
 
 <!-- # 1.3.1 (2017/8/25) -->
 
@@ -9270,19 +9364,19 @@ make changelog-draft shows the commits since last tag as org nodes
 The "uncleared" transaction/posting status (and associated UI flags
 and keys) has been renamed to "unmarked" to remove ambiguity and
 confusion. See the issue and linked mail list discussion for more
-background.  ([#564](https://github.com/simonmichael/hledger/issues/564))
+background.  ([#564](https://github.com/plaintextaccounting/hledger/issues/564))
 
 #### csv format
 
 In CSV conversion rules, assigning to the "balance" field name
-creates balance assertions ([#537](https://github.com/simonmichael/hledger/issues/537), Dmitry Astapov).
+creates balance assertions ([#537](https://github.com/plaintextaccounting/hledger/issues/537), Dmitry Astapov).
 
-Doubled minus signs are handled more robustly (fixes [#524](https://github.com/simonmichael/hledger/issues/524), Nicolas
+Doubled minus signs are handled more robustly (fixes [#524](https://github.com/plaintextaccounting/hledger/issues/524), Nicolas
 Wavrant, Simon Michael)
 
 #### Misc
 
-Multiple status: query terms are now OR'd together. ([#564](https://github.com/simonmichael/hledger/issues/564))
+Multiple status: query terms are now OR'd together. ([#564](https://github.com/plaintextaccounting/hledger/issues/564))
 
 Deps: allow megaparsec 5.3.
 
@@ -9295,21 +9389,21 @@ and keys, have been renamed to "unmarked" to remove ambiguity and
 confusion.  This means that we have dropped the `--uncleared` flag,
 and our `-U` flag now matches only unmarked things and not pending
 ones. See the issue and linked mail list discussion for more
-background. ([#564](https://github.com/simonmichael/hledger/issues/564))
+background. ([#564](https://github.com/plaintextaccounting/hledger/issues/564))
 
 Also the `-P` short flag has been added for `--pending`, and the `-U`/`-P`/`-C`
 flags can be combined. 
 
-bs/is: fix "Ratio has zero denominator" error ([#535](https://github.com/simonmichael/hledger/issues/535))
+bs/is: fix "Ratio has zero denominator" error ([#535](https://github.com/plaintextaccounting/hledger/issues/535))
 
-bs/is/cf: fix `--flat` ([#552](https://github.com/simonmichael/hledger/issues/552)) (Justin Le, Simon Michael)
+bs/is/cf: fix `--flat` ([#552](https://github.com/plaintextaccounting/hledger/issues/552)) (Justin Le, Simon Michael)
 
 bal/bs/is/cf: show negative amounts in red (Simon Michael, Justin Le).
 These commands now show negative amounts in red, when hledger detects
 that ANSI codes are supported, (ie when TERM is not "dumb" and stdout
 is not being redirected or piped).
 
-print: show pending mark on postings (fixes [#563](https://github.com/simonmichael/hledger/issues/563)).
+print: show pending mark on postings (fixes [#563](https://github.com/plaintextaccounting/hledger/issues/563)).
 A pending mark on postings is now displayed, just like a cleared mark.
 Also there will now be a space between the mark and account name.
 
@@ -9323,7 +9417,7 @@ prices: add `--inverted-costs` flag, sort output, increase precision
 
 rewrite: add support for rewriting multipler postings into different
 commodities. For example, postings in hours can be used to generate
-postings in USD. ([#557](https://github.com/simonmichael/hledger/issues/557)) (Christian G. Warden)
+postings in USD. ([#557](https://github.com/plaintextaccounting/hledger/issues/557)) (Christian G. Warden)
 
 `make addons` compiles the experimental add-ons.
 
@@ -9335,11 +9429,11 @@ The "uncleared" status, and associated UI flags and keys, have been
 renamed to "unmarked" to remove ambiguity and confusion.  This means
 that we have dropped the `--uncleared` flag, and our `-U` flag now
 matches only unmarked things and not pending ones. See the issue and
-linked mail list discussion for more background. ([#564](https://github.com/simonmichael/hledger/issues/564))
+linked mail list discussion for more background. ([#564](https://github.com/plaintextaccounting/hledger/issues/564))
 
 The P key toggles pending mode, consistent with U (unmarked) and C
 (cleared). There is also a temporary `--status-toggles` flag for testing
-other toggle styles; see `hledger-ui -h`. ([#564](https://github.com/simonmichael/hledger/issues/564))
+other toggle styles; see `hledger-ui -h`. ([#564](https://github.com/plaintextaccounting/hledger/issues/564))
 
 There is now less "warping" of selection when lists change:
 
@@ -9372,7 +9466,7 @@ Emacs movement keys are now supported, as well as VI keys.
 In the transaction screen, amounts are now better aligned, eg when
 there are posting status marks or virtual postings.
 
-Deps: allow brick 0.19 ([#575](https://github.com/simonmichael/hledger/issues/575), Felix Yan, Simon Michael)
+Deps: allow brick 0.19 ([#575](https://github.com/plaintextaccounting/hledger/issues/575), Felix Yan, Simon Michael)
 
 ### hledger-web 1.3
 
@@ -9417,7 +9511,7 @@ Michael Walker.
 
 bump stack config to latest lts,
 bump brick to 0.15.2 to allow hledger-iadd install in hledger dir,
-update cabal files to latest hpack 0.17.0/stack 1.4 format ([#512](https://github.com/simonmichael/hledger/issues/512)),
+update cabal files to latest hpack 0.17.0/stack 1.4 format ([#512](https://github.com/plaintextaccounting/hledger/issues/512)),
 use more accurate license tag in Cabal file (Peter Simons).
 
 #### Finance
@@ -9483,13 +9577,13 @@ been disabled, reducing build dependencies.
 
 #### Misc
 
-Fix a bug when tying the knot between postings and their parent transaction, reducing memory usage by about 10% ([#483](https://github.com/simonmichael/hledger/issues/483)) (Mykola Orliuk)
+Fix a bug when tying the knot between postings and their parent transaction, reducing memory usage by about 10% ([#483](https://github.com/plaintextaccounting/hledger/issues/483)) (Mykola Orliuk)
 
-Fix a few spaceleaks ([#413](https://github.com/simonmichael/hledger/issues/413)) (Moritz Kiefer)
+Fix a few spaceleaks ([#413](https://github.com/plaintextaccounting/hledger/issues/413)) (Moritz Kiefer)
 
 Add Ledger.Parse.Text to package.yaml, fixing a potential build failure.
 
-Allow megaparsec 5.2 ([#503](https://github.com/simonmichael/hledger/issues/503))
+Allow megaparsec 5.2 ([#503](https://github.com/plaintextaccounting/hledger/issues/503))
 
 Rename optserror -> usageError, consolidate with other error functions
 
@@ -9498,7 +9592,7 @@ Rename optserror -> usageError, consolidate with other error functions
 #### CLI
 
 "hledger" and "hledger -h" now print a better organised commands list
-and general usage message respectively ([#297](https://github.com/simonmichael/hledger/issues/297)).
+and general usage message respectively ([#297](https://github.com/plaintextaccounting/hledger/issues/297)).
 
 The common reporting flags can now be used anywhere on the command line.
 
@@ -9562,7 +9656,7 @@ handles prices better, and adds balance assertions (Mykola Orliuk).
 The rewrite command is more robust and powerful (Mykola Orliuk):
 
 - in addition to command-line rewrite options, it understands rewrite rules
-  defined in the journal, similar to Ledger's automated transactions ([#99](https://github.com/simonmichael/hledger/issues/99)).
+  defined in the journal, similar to Ledger's automated transactions ([#99](https://github.com/plaintextaccounting/hledger/issues/99)).
   Eg:
     ```journal
     = ^income
@@ -9587,7 +9681,7 @@ The rewrite command is more robust and powerful (Mykola Orliuk):
 #### balance
 
 A new `--pretty-tables` option uses unicode characters for rendering
-table borders in multicolumn reports ([#522](https://github.com/simonmichael/hledger/issues/522)) (Moritz Kiefer)
+table borders in multicolumn reports ([#522](https://github.com/plaintextaccounting/hledger/issues/522)) (Moritz Kiefer)
 
 #### balancesheet/cashflow/incomestatement
 
@@ -9596,43 +9690,43 @@ and generally having the same features as the balance command. (Justin Le)
 
 balancesheet has always ignored a begin date specified with a `-b` or
 `-p` option; now it also ignores a begin date specified with a `date:`
-query. (Related discussion at [#531](https://github.com/simonmichael/hledger/issues/531))
+query. (Related discussion at [#531](https://github.com/plaintextaccounting/hledger/issues/531))
 
 #### print
 
-The output of print is now always a valid journal (fixes [#465](https://github.com/simonmichael/hledger/issues/465)) (Mykola Orliuk).
+The output of print is now always a valid journal (fixes [#465](https://github.com/plaintextaccounting/hledger/issues/465)) (Mykola Orliuk).
 
 print now tries to preserves the format of implicit/explicit balancing
 amounts and prices, by default. To print with all amounts explicit,
-use the new `--explicit`/`-x` flag (fixes [#442](https://github.com/simonmichael/hledger/issues/442)). (Mykola Orliuk)
+use the new `--explicit`/`-x` flag (fixes [#442](https://github.com/plaintextaccounting/hledger/issues/442)). (Mykola Orliuk)
     
-Don't lose the commodity of zero amounts/zero balance assertions (fixes [#475](https://github.com/simonmichael/hledger/issues/475)) (Mykola Orliuk)
+Don't lose the commodity of zero amounts/zero balance assertions (fixes [#475](https://github.com/plaintextaccounting/hledger/issues/475)) (Mykola Orliuk)
 
 #### Misc
 
-Fix a regression in the readability of option parsing errors ([#478](https://github.com/simonmichael/hledger/issues/478)) (Hans-Peter Deifel)
+Fix a regression in the readability of option parsing errors ([#478](https://github.com/plaintextaccounting/hledger/issues/478)) (Hans-Peter Deifel)
 
 Fix an example in Cli/Main.hs (Steven R. Baker)
 
-Allow megaparsec 5.2 ([#503](https://github.com/simonmichael/hledger/issues/503))
+Allow megaparsec 5.2 ([#503](https://github.com/plaintextaccounting/hledger/issues/503))
 
 ### hledger-ui 1.2
 
-Fix a pattern match failure when pressing E on the transaction screen (fixes [#508](https://github.com/simonmichael/hledger/issues/508))
+Fix a pattern match failure when pressing E on the transaction screen (fixes [#508](https://github.com/plaintextaccounting/hledger/issues/508))
 
-Accounts with ? in name had empty registers (fixes [#498](https://github.com/simonmichael/hledger/issues/498)) (Bryan Richter)
+Accounts with ? in name had empty registers (fixes [#498](https://github.com/plaintextaccounting/hledger/issues/498)) (Bryan Richter)
 
 Allow brick 0.16 (Joshua Chia) and brick 0.17/vty 0.15 (Peter Simons)
 
-Allow megaparsec 5.2 (fixes [#503](https://github.com/simonmichael/hledger/issues/503))
+Allow megaparsec 5.2 (fixes [#503](https://github.com/plaintextaccounting/hledger/issues/503))
 
 Allow text-zipper 0.10
 
 ### hledger-web 1.2
 
-Accounts with ? in name had empty registers (fixes [#498](https://github.com/simonmichael/hledger/issues/498)) (Bryan Richter)
+Accounts with ? in name had empty registers (fixes [#498](https://github.com/plaintextaccounting/hledger/issues/498)) (Bryan Richter)
 
-Allow megaparsec 5.2 (fixes [#503](https://github.com/simonmichael/hledger/issues/503))
+Allow megaparsec 5.2 (fixes [#503](https://github.com/plaintextaccounting/hledger/issues/503))
 
 <!-- ### hledger-api 1.2 -->
 
@@ -9720,7 +9814,7 @@ Simon Michael, Johannes Gerer, Mykola Orliuk, Shubham Lagwankar.
 
 -   fix non-existent "oldtime" dependency ([#431](http://bugs.hledger.org/431))
 
--   [hledger-equity.hs](https://github.com/simonmichael/hledger/blob/master/bin/hledger-equity.hs) now generates valid journal format when there are multiple commodities
+-   [hledger-equity.hs](https://github.com/plaintextaccounting/hledger/blob/master/bin/hledger-equity.hs) now generates valid journal format when there are multiple commodities
 
 ### hledger-ui 1.1
 

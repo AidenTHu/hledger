@@ -1,4 +1,4 @@
-; Example from https://github.com/simonmichael/hledger/issues/2478 -
+; Example from https://github.com/plaintextaccounting/hledger/issues/2478 -
 ; the funky ordering requires whole-journal awareness when checking balance assertions.
 
 2025-01-02 second transaction

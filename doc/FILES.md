@@ -10,7 +10,7 @@ Some views and explanations of files in the hledger project, as of 2022-12.
 A full working copy of the official hledger [repos](REPOS.md)
 is best laid out like this (manually; we currently don't use git submodules):
 <pre>
-src/hledger/ - git clone https://github.com/simonmichael/hledger; cd hledger
+src/hledger/ - git clone https://github.com/plaintextaccounting/hledger; cd hledger
   site/      - git clone https://github.com/simonmichael/hledger_site site
   finance/   - git clone https://github.com/simonmichael/hledger_finance finance
 </pre>

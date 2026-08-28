@@ -40,4 +40,4 @@ dc2sign <"$1" | hledger -f- "${@:2}"
 # It would be a nice feature: offering a more traditional view of things, and reducing sign vs dc doubts.
 # "In France, you have to use a debit and a credit column, and can't use the positive/negative notation."
 # Would it provide any real new error checking power ? I'm not sure.
-# See also https://github.com/simonmichael/hledger/issues/71.
+# See also https://github.com/plaintextaccounting/hledger/issues/71.

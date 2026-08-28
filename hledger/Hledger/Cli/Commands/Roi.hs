@@ -40,7 +40,7 @@ roimode = hledgerCommandMode
   ,flagReq ["investment"] (\s opts -> Right $ setopt "investment" s opts) "QUERY"
     "query to select your investment transactions"
   ,flagReq ["profit-loss","pnl"] (\s opts -> Right $ setopt "pnl" s opts) "QUERY"
-    "query to select profit-and-loss or appreciation/valuation transactions"
+    "query to select profit-and-loss or appreciation/valuation transactions (optional)"
   ]
   cligeneralflagsgroups1
   hiddenflags
@@ -85,7 +85,9 @@ roi CliOpts{rawopts_=rawopts, reportspec_=rspec@ReportSpec{_rsReportOpts=ropts@R
     cantCompute msg = error' $ msg ++ " - will be unable to compute the rates of return"
 
   investmentsQuery <- makeQuery "investment"
-  pnlQuery         <- makeQuery "pnl"
+  pnlQuery         <- case maybestringopt "pnl" rawopts of
+                         Nothing -> return None
+                         Just _  -> makeQuery "pnl"
 
   when (pnlQuery == Any) $
     cantCompute "Need some transactions classed as investment and not pnl, but the pnl query matches any transaction"
@@ -277,6 +279,9 @@ interestSum :: Day -> CashFlow -> Double -> Double
 interestSum referenceDay cf rate = sum $ map go cf
   where go (t,m) = realToFrac (unMix m) * rate ** (fromIntegral (referenceDay `diffDays` t) / 365.25)
 
+-- Note: Holdings.hs's xirrPct duplicates this solver setup and
+-- interestSum's rate convention; keep them in sync, or extract a
+-- shared helper.
 solveIRR :: (Double -> Double) -> String -> String -> Double
 solveIRR npv errNotBracketed errSearchFailed =
   case ridders (RiddersParam 100 (AbsTol 0.00001))
