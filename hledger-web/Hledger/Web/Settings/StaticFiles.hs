@@ -28,6 +28,4 @@ staticSite =
             -- putStrLn "Using built-in web files" >> hFlush stdout
             return $(embed staticDir))
 
--- In development mode, staticDevel serves all files from static dir including subdirectories
--- tmp directory is created at runtime for Julius-generated JS files
 $(publicFiles staticDir)

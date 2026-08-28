@@ -57,6 +57,34 @@ function hledgerInitGlobal() {
     }
   });
 
+  // Button click handlers
+  document.addEventListener('click', function(e) {
+    var sidebarToggleBtn = e.target.closest('.close-sidebar-arrow-desktop, .open-sidebar-arrow, .mobile-menu-btn, .close-sidebar-arrow-mobile');
+    if (sidebarToggleBtn) {
+      e.preventDefault();
+      sidebarToggle();
+      return;
+    }
+
+    if (e.target.closest('.home-btn, .go-to-journal')) {
+      e.preventDefault();
+      location.href = document.hledgerWebBaseurl + '/journal';
+      return;
+    }
+
+    if (e.target.closest('.add-transaction-btn')) {
+      e.preventDefault();
+      addformShow();
+      return;
+    }
+
+    if (e.target.closest('.add-posting-btn')) {
+      e.preventDefault();
+      addformAddPosting();
+      return;
+    }
+  });
+
   // Tap outside sidebar to close on mobile
   document.addEventListener('click', function(e) {
     if (isMobile()) {
@@ -155,7 +183,6 @@ function toggleModal(modalId) {
 }
 
 function hledgerInitPage() {
-
   // add form helpers XXX move to addForm ?
 
   // date picker - using HTML5 date input for simplicity
@@ -214,23 +241,37 @@ function hledgerInitPage() {
   // focus and pre-fill the add form whenever it is shown
   var addmodal = document.getElementById('addmodal');
   if (addmodal) {
-    addmodal.addEventListener('shown.bs.modal', function() {
+    // Remove previous listeners to prevent memory leak on repeated calls
+    if (addmodal._shownHandler) {
+      addmodal.removeEventListener('shown.bs.modal', addmodal._shownHandler);
+    }
+    if (addmodal._hiddenHandler) {
+      addmodal.removeEventListener('hidden.bs.modal', addmodal._hiddenHandler);
+    }
+    addmodal._shownHandler = function() {
       addformFocus();
-    });
-    addmodal.addEventListener('hidden.bs.modal', function() {
+    };
+    addmodal._hiddenHandler = function() {
       // date picker cleanup if needed
-    });
+    };
+    addmodal.addEventListener('shown.bs.modal', addmodal._shownHandler);
+    addmodal.addEventListener('hidden.bs.modal', addmodal._hiddenHandler);
   }
 
   // ensure that the keypress listener on the final amount input is always active
   var addform = document.getElementById('addform');
   if (addform) {
-    addform.addEventListener('focus', function(e) {
+    // Remove previous listener to prevent memory leak on repeated calls
+    if (addform._focusHandler) {
+      addform.removeEventListener('focus', addform._focusHandler, true);
+    }
+    addform._focusHandler = function(e) {
       if (e.target.classList.contains('amount-input') &&
           e.target === addform.querySelector('.amount-input:last')) {
         addformLastAmountBindKey();
       }
-    }, true);
+    };
+    addform.addEventListener('focus', addform._focusHandler, true);
   }
 
   // set checkbox state from cookie (checked = show empty accounts)
@@ -381,6 +422,13 @@ function hledgerAjaxApplyPage(html, href, pushHistory) {
   scripts.forEach(function(s) { s.remove(); });
 
   var mainContent = document.getElementById('main-content');
+  
+  // Remove event listeners and clean up old content before replacing
+  var oldInputs = mainContent.querySelectorAll('input, textarea, select');
+  oldInputs.forEach(function(el) {
+    el.replaceWith(el.cloneNode(true));
+  });
+  
   mainContent.replaceWith(newMain);
   
   var oldMainMenu = oldSidebar.querySelector('.main-menu');

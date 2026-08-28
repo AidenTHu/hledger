@@ -121,7 +121,7 @@ ul {
 }
 
 #sidebar-menu .main-menu .top {
-    border: none !important;
+    border: none;
 }
 
 #sidebar-menu .main-menu a {
@@ -152,7 +152,7 @@ ul {
 #sidebar-menu .main-menu .amount {
     float: right;
     overflow-x:auto;
-    font-weight: 500 !important;
+    font-weight: 500;
 }
 
 tr.total .amount {
@@ -177,7 +177,7 @@ tr.total .amount {
 }
 
 #sidebar-menu .main-menu tr.hide {
-    display: none !important;
+    display: none;
 }
 
 #sidebar-menu .main-menu tr {
@@ -186,7 +186,7 @@ tr.total .amount {
 
 /* Highlighted transaction row styling */
 .highlighted {
-    background-color: #ffffcc !important;
+    background-color: #ffffcc;
 }
 
 /* Screen reader only class */
@@ -204,7 +204,7 @@ tr.total .amount {
 
 /* Highlighted transaction row styling */
 .highlighted {
-    background-color: #ffffcc !important;
+    background-color: #ffffcc;
 }
 
 /* Screen reader only class */
@@ -515,7 +515,7 @@ body.sidebar-hidden #top-left-controls .open-sidebar-arrow {
     z-index: 100;
 }
 
-#searchform button[onclick="addformShow()"],
+#searchform .add-transaction-btn,
 #searchform a[title="Clear search terms"],
 #searchform a[href="@{ManageR}"],
 #searchform button[data-bs-target="#helpmodal"] {
@@ -531,12 +531,12 @@ body.sidebar-hidden #top-left-controls .open-sidebar-arrow {
     border-radius: 0;
 }
 
-#searchform button[onclick="addformShow()"] .bi,
+#searchform .add-transaction-btn .bi,
 #searchform a[title="Clear search terms"] .bi,
 #searchform button[data-bs-target="#helpmodal"] .bi,
 #searchform .home-btn .bi {
     transform: scale(1.5);
-    vertical-align: unset !important;
+    vertical-align: unset;
     display: inline-flex;
 }
 
@@ -803,8 +803,8 @@ body.sidebar-hidden #top-left-controls label[for="hideEmptyAccountsDesktop"] {
 }
 
 .col-any-0 {
-    width:0 !important;
-    height:0 !important;
+    width:0;
+    height:0;
     float: left;
     opacity:0;
 }
@@ -823,7 +823,7 @@ body.sidebar-hidden #top-left-controls label[for="hideEmptyAccountsDesktop"] {
 /* Hide sidebar toggle button on larger screens */
 @media (min-width: 769px) {
     .visible-xs {
-        display: none !important;
+        display: none;
     }
 }
 
@@ -914,21 +914,21 @@ body.sidebar-hidden #top-left-controls label[for="hideEmptyAccountsDesktop"] {
     
     /* Mobile sidebar - ensure it's a single panel */
     #sidebar-menu.sidebar-offcanvas {
-        position: fixed !important;
-        top: 0 !important;
-        left: -90% !important;
-        width: 90% !important;
-        height: 100vh !important;
-        z-index: 40 !important;
-        transition: left 0.3s ease-out !important;
-        background: white !important;
-        overflow-y: auto !important;
-        box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important;
-        margin-top: 0 !important;
+        position: fixed;
+        top: 0;
+        left: -90%;
+        width: 90%;
+        height: 100vh;
+        z-index: 40;
+        transition: left 0.3s ease-out;
+        background: white;
+        overflow-y: auto;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        margin-top: 0;
     }
     
     #sidebar-menu.sidebar-offcanvas.active {
-        left: 0 !important;
+        left: 0;
     }
 
     #sidebar-menu .main-menu td {
